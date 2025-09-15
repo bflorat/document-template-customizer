@@ -7,6 +7,7 @@ import {
   type TemplateWithViews,
   type View,
   type ViewFetchFailure,
+  type TemplateLabelDefinition,
 } from "./model";
 import { parseAsciiDocSections } from "./parseAsciiDocSections";
 
@@ -53,10 +54,26 @@ export async function fetchTemplateMetadata(
       throw new Error(`YAML parse error: ${msg}`);
     }
 
+    const labelDefs = Array.isArray(parsed.labels)
+      ? parsed.labels
+          .map((label: any): TemplateLabelDefinition | null => {
+            const name = typeof label?.name === "string" ? label.name : undefined;
+            if (!name) return null;
+            const values = Array.isArray(label?.available_values)
+              ? label.available_values.filter((val: unknown): val is string => typeof val === "string")
+              : undefined;
+            return values && values.length
+              ? { name, available_values: values }
+              : { name };
+          })
+          .filter((label): label is TemplateLabelDefinition => label !== null)
+      : undefined;
+
     const data: TemplateMetadata = {
       author: parsed.author,
       license: parsed.license,
       views: Array.isArray(parsed.views) ? parsed.views : [],
+      labels: labelDefs,
     };
 
     return { url: target, raw, data };

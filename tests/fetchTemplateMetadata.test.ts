@@ -5,6 +5,7 @@ import {
   TemplateMetadataNotFoundError,
   ViewFetchError,
   type TemplateMetadata,
+  type TemplateLabelDefinition,
 } from "../src/model";
 
 // ----------- Helpers -----------
@@ -82,6 +83,19 @@ views:
     file: view-development.adoc
   - name: Security
     file: security.adoc
+labels:
+  - name: level
+    available_values:
+      - basic
+      - intermediate
+      - advanced
+  - name: project_size
+    available_values:
+      - small
+      - medium
+      - large
+  - name: persistence
+  - name: green-IT
 `;
 
 const VIEW_APP = `# Application View\n\nIntro\n\n## Overview\nDetails\n\n### Deep Dive\nMore details\n`;
@@ -101,6 +115,13 @@ describe("fetchTemplateMetadata", () => {
     expect(data.license).toBe("CC BY-SA 4.0");
     expect(data.views).toHaveLength(3);
     expect(data.views[0]).toEqual({ name: "Application", file: "view-application.adoc" });
+    expect(data.labels).toBeDefined();
+    const labels = data.labels as TemplateLabelDefinition[];
+    expect(labels).toHaveLength(4);
+    expect(labels[0]).toEqual({
+      name: "level",
+      available_values: ["basic", "intermediate", "advanced"],
+    });
   });
 
   it("throws TemplateMetadataNotFoundError on 404", async () => {

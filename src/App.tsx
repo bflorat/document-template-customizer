@@ -3,7 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { fetchTemplateAndViews } from './fetchTemplateMetadata'
-import { ViewFetchError, type TemplateWithViews, type ViewSection } from './model'
+import { ViewFetchError, type TemplateWithViews, type ViewSection, type TemplateLabelDefinition } from './model'
 
 
 const BASE='https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata';
@@ -56,6 +56,8 @@ const App = ()=> {
       <h1>Template: {data.metadata.data.author}</h1>
       <p>License: {data.metadata.data.license}</p>
 
+      {renderLabels(data.metadata.data.labels ?? [])}
+
       <h2>Views</h2>
       <div className="views-grid">
         {data.views.map(v => (
@@ -80,4 +82,23 @@ function formatSections(sections: ViewSection[], depth = 0): string {
       return `${header}${children}`;
     })
     .join('\n');
+}
+
+function renderLabels(labels: TemplateLabelDefinition[]): JSX.Element | null {
+  if (!labels.length) return null;
+  return (
+    <section className="labels-section">
+      <h2>Labels</h2>
+      <ul className="labels-list">
+        {labels.map(label => (
+          <li key={label.name}>
+            <strong>{label.name}</strong>
+            {label.available_values?.length ? (
+              <span>: {label.available_values.join(', ')}</span>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }

@@ -34,6 +34,26 @@
   white-space: pre-wrap;
 }
 
+.labels-section {
+  margin: 1.5rem 0;
+}
+
+.labels-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.labels-list li {
+  background: #eef2ff;
+  border-radius: 12px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.95rem;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
