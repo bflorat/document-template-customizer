@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -77,7 +77,18 @@ function formatSections(sections: ViewSection[], depth = 0): string {
   return sections
     .map(section => {
       const indentation = '  '.repeat(depth);
-      const header = `${indentation}- ${section.title}`;
+      const metaParts: string[] = [];
+      if (section.metadata?.id) {
+        metaParts.push(`id=${section.metadata.id}`);
+      }
+      if (section.metadata?.labels?.length) {
+        metaParts.push(`labels=${section.metadata.labels.join('|')}`);
+      }
+      if (section.metadata?.linkTo) {
+        metaParts.push(`link_to=${section.metadata.linkTo}`);
+      }
+      const metaSuffix = metaParts.length ? ` [${metaParts.join(' ')}]` : '';
+      const header = `${indentation}- ${section.title}${metaSuffix}`;
       const children = section.children.length ? `\n${formatSections(section.children, depth + 1)}` : '';
       return `${header}${children}`;
     })
