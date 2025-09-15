@@ -1,0 +1,60 @@
+# Document Template Customizer (DTC)
+
+This tool allows you to produce *personalized document templates* from a larger base template repository, such as https://github.com/bflorat/architecture-document-template[this one].
+
+While I’ve received good feedback on my previous document templates, a recurring criticism was that the *templates were too large*, leaving many sections unused. With DTC, you can *prepare smaller, tailored templates* filtered from a larger one.
+
+DTC can work not only with my own templates, but also with any base document template (self-hosted or not), as long as it follows a small metamodel.
+
+## Common use-case
+
+. An expert (typically an *Enterprise Architect*) selects or writes a base template. This base template is usually organization-wide.
+. Another expert (typically a *Solution Architect*) creates a customized, curated template for one or several projects. This includes both a *full template with explanations* and *blank documents* to be filled.
+. The project team then fills the *blank documents*, guided by the explanations in the customized template.
+
+
+## Features
+* [ ] Option "Tout" (pas de filtre)
+* [ ] CLI
+* [ ] Liens predefinis vers un site central (ex: contraintes) ?
+
+
+## History
+
+I want to write a small project in react.js 19 that allow to compute asciidoc documents from a base asciidoc document template. It contains an url selector to select an URL that contain a 'template-metadata.yaml' file like https://github.com/bflorat/architecture-document-template/tree/feat/add-medadata/ .
+
+
+
+Sample  template-metadata.yaml : 
+
+```
+author: Bertrand Florat
+license: CC BY-SA 4.0
+views:
+  - name: Application
+    file: view-application.adoc
+  - name: Development
+    file: view-development.adoc
+  - name: infrastructure
+    file: view-infrastructure.adoc
+  - name: Security
+    file: security.adoc
+  - name: sizing
+    file: view-sizing.adoc
+```
+
+https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/template-metadata.yaml
+
+
+```
+🏷{"id":"5a5f3bc5-7a1d-4f68-8385-8e1a19faf288", 
+   "labels":["stockage_persistent", "niveau::avancé", "taille_projet::moyen", "taille_projet::grand"]}
+# Gestion des transactions
+[...]
+
+🏷{"id":"a1e81580-8a2d-4d4d-8f99-6c9ae9ace122", 
+   "labels":["greenit", "niveau::avancé"], 
+   "link_to":"51bc1362-9c2f-4cd8-81d9-face77ed4dc6"}
+# Écoconception
+[...]
+```
