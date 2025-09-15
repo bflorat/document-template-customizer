@@ -166,7 +166,7 @@ describe("fetchTemplateAndViews", () => {
     const deepDive = overview.children[0];
     expect(deepDive.title).toBe("Deep Dive");
     expect(deepDive.metadata?.id).toBe("deep");
-    expect(deepDive.metadata?.links).toEqual(["intro", "appendix"]);
+    expect(deepDive.metadata?.linkTo).toEqual(["intro", "appendix"]);
   });
 
   it("throws ViewFetchError when one view is missing and strict=true (default)", async () => {

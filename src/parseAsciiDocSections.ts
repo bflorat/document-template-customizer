@@ -78,7 +78,7 @@ function parseMetadata(value: string): ViewSectionMetadata | undefined {
         if (typeof entry === "string") linkValues.push(entry);
       }
     }
-    if (linkValues.length) metadata.links = linkValues;
+    if (linkValues.length) metadata.linkTo = linkValues;
 
     return metadata;
   } catch (error) {

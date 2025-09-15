@@ -1,7 +1,7 @@
 export interface ViewSectionMetadata {
   id?: string;
   labels?: string[];
-  links?: string[];
+  linkTo?: string[];
   raw?: Record<string, unknown>;
 }
 
