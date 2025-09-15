@@ -84,8 +84,8 @@ function formatSections(sections: ViewSection[], depth = 0): string {
       if (section.metadata?.labels?.length) {
         metaParts.push(`labels=${section.metadata.labels.join('|')}`);
       }
-      if (section.metadata?.linkTo) {
-        metaParts.push(`link_to=${section.metadata.linkTo}`);
+      if (section.metadata?.links?.length) {
+        metaParts.push(`links=${section.metadata.links.join('|')}`);
       }
       const metaSuffix = metaParts.length ? ` [${metaParts.join(' ')}]` : '';
       const header = `${indentation}- ${section.title}${metaSuffix}`;

@@ -1,4 +1,4 @@
-import type { ViewSection, ViewSectionLabels } from "./model";
+import type { ViewSection, ViewSectionMetadata } from "./model";
 
 const HEADING_REGEX = /^\s*(#{1,6})\s+(.*)$/;
 const METADATA_REGEX = /^\s*🏷\s*(\{.*\})\s*$/;
@@ -7,7 +7,7 @@ export function parseAsciiDocSections(content: string): ViewSection[] {
   const lines = content.split(/\r?\n/);
   const roots: ViewSection[] = [];
   const stack: ViewSection[] = [];
-  let pendingMetadata: ViewSectionLabels | undefined;
+  let pendingMetadata: ViewSectionMetadata | undefined;
 
   for (const rawLine of lines) {
     const line = rawLine.trimEnd();
@@ -56,11 +56,11 @@ export function parseAsciiDocSections(content: string): ViewSection[] {
   return roots;
 }
 
-function parseMetadata(value: string): ViewSectionLabels | undefined {
+function parseMetadata(value: string): ViewSectionMetadata | undefined {
   try {
     const parsed = JSON.parse(value);
     if (!parsed || typeof parsed !== "object") return undefined;
-    const metadata: ViewSectionLabels = { raw: parsed as Record<string, unknown> };
+    const metadata: ViewSectionMetadata = { raw: parsed as Record<string, unknown> };
 
     if (typeof (parsed as any).id === "string") {
       metadata.id = (parsed as any).id;
@@ -69,9 +69,16 @@ function parseMetadata(value: string): ViewSectionLabels | undefined {
       const labels = (parsed as any).labels.filter((label: unknown): label is string => typeof label === "string");
       if (labels.length) metadata.labels = labels;
     }
-    if (typeof (parsed as any).link_to === "string") {
-      metadata.linkTo = (parsed as any).link_to;
+    const linkValues: string[] = [];
+    const rawLink = (parsed as any).link_to ?? (parsed as any).links;
+    if (typeof rawLink === "string") {
+      linkValues.push(rawLink);
+    } else if (Array.isArray(rawLink)) {
+      for (const entry of rawLink) {
+        if (typeof entry === "string") linkValues.push(entry);
+      }
     }
+    if (linkValues.length) metadata.links = linkValues;
 
     return metadata;
   } catch (error) {

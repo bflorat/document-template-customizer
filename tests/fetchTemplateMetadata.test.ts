@@ -98,7 +98,7 @@ labels:
   - name: green-IT
 `;
 
-const VIEW_APP = `# Application View\n\n🏷{"id":"intro","labels":["level::basic","project_size::medium"]}\n\n## Overview\nDetails\n\n🏷{"id":"deep","labels":["level::advanced"],"link_to":"intro"}\n\n### Deep Dive\nMore details\n`;
+const VIEW_APP = `# Application View\n\n🏷{"id":"intro","labels":["level::basic","project_size::medium"]}\n\n## Overview\nDetails\n\n🏷{"id":"deep","labels":["level::advanced"],"link_to":["intro","appendix"]}\n\n### Deep Dive\nMore details\n`;
 const VIEW_DEV = `# Development View\n\nContent D\n`;
 const VIEW_SEC = `# Security View\n\nContent S\n`;
 
@@ -166,7 +166,7 @@ describe("fetchTemplateAndViews", () => {
     const deepDive = overview.children[0];
     expect(deepDive.title).toBe("Deep Dive");
     expect(deepDive.metadata?.id).toBe("deep");
-    expect(deepDive.metadata?.linkTo).toBe("intro");
+    expect(deepDive.metadata?.links).toEqual(["intro", "appendix"]);
   });
 
   it("throws ViewFetchError when one view is missing and strict=true (default)", async () => {
