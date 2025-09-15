@@ -1,65 +1,13 @@
 import { parse } from "yaml";
-
-/* ================== Types ================== */
-
-export interface View {
-  name: string;
-  file: string;
-  url?: string;       // resolved URL for this view
-  content?: string;   // fetched .adoc content
-}
-
-export interface TemplateMetadata {
-  author: string;
-  license: string;
-  views: View[];
-}
-
-export interface TemplateFetchResult {
-  url: string;             // metadata URL
-  raw: string;             // raw YAML
-  data: TemplateMetadata;  // parsed metadata
-}
-
-export interface TemplateWithViews {
-  metadata: TemplateFetchResult;
-  views: Required<Pick<View, "name" | "file" | "url" | "content">>[];
-}
-
-export class TemplateMetadataNotFoundError extends Error {
-  public readonly attemptedUrl: string;
-  public readonly status?: number;
-
-  constructor(attemptedUrl: string, status?: number) {
-    super(
-      status
-        ? `template-metadata.yaml not found at ${attemptedUrl} (HTTP ${status}).`
-        : `template-metadata.yaml not found at ${attemptedUrl}.`
-    );
-    this.name = "TemplateMetadataNotFoundError";
-    this.attemptedUrl = attemptedUrl;
-    this.status = status;
-  }
-}
-
-export class ViewFetchError extends Error {
-  public readonly failures: Array<{
-    name: string;
-    file: string;
-    url: string;
-    status?: number;
-    message: string;
-  }>;
-
-  constructor(failures: ViewFetchError["failures"]) {
-    super(
-      `Failed to fetch ${failures.length} view file(s): ` +
-        failures.map(f => `${f.name} (${f.file}) [${f.status ?? "?"}]`).join(", ")
-    );
-    this.name = "ViewFetchError";
-    this.failures = failures;
-  }
-}
+import {
+  TemplateMetadataNotFoundError,
+  ViewFetchError,
+  type TemplateFetchResult,
+  type TemplateMetadata,
+  type TemplateWithViews,
+  type View,
+  type ViewFetchFailure,
+} from "./model";
 
 /* ================== Core ================== */
 
@@ -149,7 +97,7 @@ export async function fetchTemplateAndViews(
   }));
 
   // Simple concurrency limiter
-  const results: Array<{ ok: true; view: Required<View> } | { ok: false; failure: ViewFetchError["failures"][number] }> = [];
+  const results: Array<{ ok: true; view: Required<View> } | { ok: false; failure: ViewFetchFailure }> = [];
   let index = 0;
 
   async function worker() {
@@ -192,8 +140,12 @@ export async function fetchTemplateAndViews(
   const workers = Array.from({ length: Math.min(concurrency, toFetch.length) }, () => worker());
   await Promise.all(workers);
 
-  const failures = results.filter(r => !r.ok).map(r => (r as any).failure) as ViewFetchError["failures"];
-  const successes = results.filter(r => r.ok).map(r => (r as any).view) as Required<View>[];
+  const failures = results
+    .filter(r => !r.ok)
+    .map(r => (r as { ok: false; failure: ViewFetchFailure }).failure);
+  const successes = results
+    .filter((r): r is { ok: true; view: Required<View> } => r.ok)
+    .map(r => r.view);
 
   if (failures.length && strict) {
     throw new ViewFetchError(failures);
@@ -204,3 +156,16 @@ export async function fetchTemplateAndViews(
     views: successes,
   };
 }
+
+export {
+  TemplateMetadataNotFoundError,
+  ViewFetchError,
+} from "./model";
+
+export type {
+  TemplateFetchResult,
+  TemplateMetadata,
+  TemplateWithViews,
+  View,
+  ViewFetchFailure,
+} from "./model";

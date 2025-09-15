@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { fetchTemplateAndViews, ViewFetchError, type TemplateWithViews } from './fetchTemplateMetadata'
+import { fetchTemplateAndViews } from './fetchTemplateMetadata'
+import { ViewFetchError, type TemplateWithViews } from './model'
 
 
 const BASE='https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata';

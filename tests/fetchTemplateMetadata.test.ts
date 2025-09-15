@@ -1,12 +1,11 @@
 // tests/fetchTemplateWithViews.test.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { fetchTemplateMetadata, fetchTemplateAndViews } from "../src/fetchTemplateMetadata";
 import {
-  fetchTemplateMetadata,
-  fetchTemplateAndViews,
   TemplateMetadataNotFoundError,
   ViewFetchError,
   type TemplateMetadata,
-} from "../src/fetchTemplateMetadata";
+} from "../src/model";
 
 // ----------- Helpers -----------
 
