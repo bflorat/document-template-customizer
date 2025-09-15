@@ -84,9 +84,9 @@ views:
     file: security.adoc
 `;
 
-const VIEW_APP = "= Application View\n\nContent A\n";
-const VIEW_DEV = "= Development View\n\nContent D\n";
-const VIEW_SEC = "= Security View\n\nContent S\n";
+const VIEW_APP = `# Application View\n\nIntro\n\n## Overview\nDetails\n\n### Deep Dive\nMore details\n`;
+const VIEW_DEV = `# Development View\n\nContent D\n`;
+const VIEW_SEC = `# Security View\n\nContent S\n`;
 
 describe("fetchTemplateMetadata", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -135,6 +135,11 @@ describe("fetchTemplateAndViews", () => {
     const app = res.views.find(v => v.file === "view-application.adoc")!;
     expect(app.url).toBe(`${BASE}/view-application.adoc`);
     expect(app.content).toContain("Application View");
+    expect(app.sections).toBeDefined();
+    const rootSection = app.sections![0];
+    expect(rootSection.title).toBe("Application View");
+    expect(rootSection.children[0].title).toBe("Overview");
+    expect(rootSection.children[0].children[0].title).toBe("Deep Dive");
   });
 
   it("throws ViewFetchError when one view is missing and strict=true (default)", async () => {

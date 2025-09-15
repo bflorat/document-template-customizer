@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { fetchTemplateAndViews } from './fetchTemplateMetadata'
-import { ViewFetchError, type TemplateWithViews } from './model'
+import { ViewFetchError, type TemplateWithViews, type ViewSection } from './model'
 
 
 const BASE='https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata';
@@ -57,16 +57,27 @@ const App = ()=> {
       <p>License: {data.metadata.data.license}</p>
 
       <h2>Views</h2>
-      <ul>
+      <div className="views-grid">
         {data.views.map(v => (
-          <li key={v.file}>
+          <section key={v.file} className="view-card">
             <h3>{v.name}</h3>
-            <pre>{v.content}</pre>
-          </li>
+            <pre>{formatSections(v.sections ?? [])}</pre>
+          </section>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
 
 export default App
+
+function formatSections(sections: ViewSection[], depth = 0): string {
+  return sections
+    .map(section => {
+      const indentation = '  '.repeat(depth);
+      const header = `${indentation}- ${section.title}`;
+      const children = section.children.length ? `\n${formatSections(section.children, depth + 1)}` : '';
+      return `${header}${children}`;
+    })
+    .join('\n');
+}

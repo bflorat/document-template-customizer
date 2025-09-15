@@ -8,6 +8,7 @@ import {
   type View,
   type ViewFetchFailure,
 } from "./model";
+import { parseAsciiDocSections } from "./parseAsciiDocSections";
 
 /* ================== Core ================== */
 
@@ -122,7 +123,13 @@ export async function fetchTemplateAndViews(
         const content = await res.text();
         results.push({
           ok: true,
-          view: { name: item.name, file: item.file, url: item.url, content },
+          view: {
+            name: item.name,
+            file: item.file,
+            url: item.url,
+            content,
+            sections: parseAsciiDocSections(content),
+          },
         });
       } catch (e: any) {
         const message =

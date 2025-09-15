@@ -5,6 +5,35 @@
   text-align: center;
 }
 
+.views-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: flex-start;
+  margin-top: 1.5rem;
+}
+
+.view-card {
+  flex: 1 1 320px;
+  max-width: 380px;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fdfdfd;
+  text-align: left;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.view-card pre {
+  margin-top: 0.75rem;
+  background: #f4f4f4;
+  padding: 0.75rem;
+  border-radius: 4px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
