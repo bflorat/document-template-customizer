@@ -33,7 +33,8 @@ Options:
 * `--base-url` (`-b`) – required. The template root exposing `template-metadata.yaml`.
 * `--include` (`-i`) – comma-separated labels to keep (matching sections stay, others are pruned).
 * `--exclude` (`-e`) – comma-separated labels to drop (matching sections and children are removed).
-* `--output` (`-o`) – optional zip destination (defaults to `custom-template.zip`).
+* `--output` (`-o`) – optional zip destination relative to the current directory (defaults to `custom-template.zip`).
+* `--output-file` – optional absolute or relative output path.
 
 Exported views never contain the metadata marker lines (`🏷{...}`).
 

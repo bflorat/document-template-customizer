@@ -10,6 +10,7 @@ interface CliOptions {
   include: string[];
   exclude: string[];
   output: string;
+  outputFile?: string;
 }
 
 function parseArgs(argv: string[]): CliOptions {
@@ -43,6 +44,9 @@ function parseArgs(argv: string[]): CliOptions {
       case "--output":
       case "-o":
         options.output = argv[++i] ?? options.output;
+        break;
+      case "--output-file":
+        options.outputFile = argv[++i];
         break;
       case "--help":
       case "-h":
@@ -107,7 +111,9 @@ async function run() {
     }
 
     const buffer = await zip.generateAsync({ type: "nodebuffer" });
-    const targetPath = path.resolve(process.cwd(), options.output);
+    const targetPath = options.outputFile
+      ? path.resolve(options.outputFile)
+      : path.resolve(process.cwd(), options.output);
     await mkdir(path.dirname(targetPath), { recursive: true });
     await writeFile(targetPath, buffer);
 
