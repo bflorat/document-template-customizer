@@ -129,9 +129,31 @@ function insertBlankLines(lines: string[]): string[] {
   const result: string[] = [];
   for (let i = 0; i < lines.length; i++) {
     result.push(lines[i]);
-    if (i < lines.length - 1 && lines[i].trim()) {
+    if (i === lines.length - 1) break;
+
+    const currentType = classifyLine(lines[i]);
+    const nextType = classifyLine(lines[i + 1]);
+
+    if (currentType === "attribute") {
+      if (nextType !== "attribute") {
+        result.push("");
+      }
+    } else if (currentType === "heading") {
+      if (nextType === "heading" || nextType === "other") {
+        result.push("");
+      }
+    } else if (lines[i].trim()) {
       result.push("");
     }
   }
   return result;
+}
+
+type LineType = "heading" | "attribute" | "other";
+
+function classifyLine(line: string): LineType {
+  const trimmed = line.trim();
+  if (HEADING_REGEX.test(trimmed)) return "heading";
+  if (ATTRIBUTE_REGEX.test(trimmed)) return "attribute";
+  return "other";
 }
