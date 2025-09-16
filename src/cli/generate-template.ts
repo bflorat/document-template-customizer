@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
 import { fetchTemplateAndViews } from "../fetchTemplateMetadata.js";
 import { filterViewContent } from "../filterViewContent.js";
+import type { TemplateLabelDefinition, TemplateWithViews } from "../model/index.js";
 
 interface CliOptions {
   baseUrl?: string;
@@ -59,6 +61,42 @@ function parseArgs(argv: string[]): CliOptions {
   return options;
 }
 
+export function findUnknownLabels(
+  requested: string[],
+  definitions: TemplateLabelDefinition[] | undefined,
+  views: TemplateWithViews["views"]
+): string[] {
+  if (!requested.length) return [];
+
+  const known = new Set<string>();
+
+  if (definitions?.length) {
+    for (const def of definitions) {
+      known.add(def.name);
+      if (def.available_values?.length) {
+        for (const value of def.available_values) {
+          known.add(`${def.name}::${value}`);
+        }
+      }
+    }
+  }
+
+  const visit = (
+    section: NonNullable<TemplateWithViews["views"][number]["sections"]>[number]
+  ) => {
+    section.metadata?.labels?.forEach(label => known.add(label));
+    section.children.forEach(child => visit(child));
+  };
+
+  for (const view of views) {
+    view.sections?.forEach(section => visit(section));
+  }
+
+  if (!known.size) return requested.slice();
+
+  return requested.filter(label => !known.has(label));
+}
+
 function printUsage() {
   const message = `Usage: npx document-template-customizer --base-url <url> [options]\n\n` +
     `Options:\n` +
@@ -80,6 +118,11 @@ async function run() {
     const result = await fetchTemplateAndViews(options.baseUrl, {
       strict: false,
     });
+
+    const unknownLabels = findUnknownLabels(options.include, result.metadata.data.labels, result.views);
+    if (unknownLabels.length) {
+      throw new Error(`Unknown label(s): ${unknownLabels.join(", ")}`);
+    }
 
     const zip = new JSZip();
     let includedViews = 0;
@@ -123,4 +166,13 @@ async function run() {
   }
 }
 
-run();
+const isMainModule = (() => {
+  if (typeof process === "undefined") return false;
+  const entry = process.argv[1];
+  if (!entry) return false;
+  return fileURLToPath(import.meta.url) === path.resolve(entry);
+})();
+
+if (isMainModule) {
+  run();
+}

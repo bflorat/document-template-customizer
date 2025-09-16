@@ -23,14 +23,13 @@ DTC can work not only with my own templates, but also with any base document tem
 Build the CLI once, then generate a filtered archive:
 
 ```
-npm run cli -- --base-url https://example.com/template/ \
-  --include level::basic,persistence
+npm run cli -- --base-url https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata  --include level::basic,persistence
 ```
 
 Options:
 
 * `--base-url` (`-b`) – required. The template root exposing `template-metadata.yaml`.
-* `--include` (`-i`) – comma-separated labels to keep (matching sections stay, others are pruned).
+* `--include` (`-i`) – comma-separated labels to keep (matching sections stay, others are pruned). Unknown labels abort the run.
 * `--output` (`-o`) – optional zip destination relative to the current directory (defaults to `custom-template.zip`).
 * `--output-file` – optional absolute or relative output path.
 
