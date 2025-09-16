@@ -1,9 +1,5 @@
+import type { TemplateLabelDefinition } from "./TemplateLabelDefinition";
 import type { View } from "./View";
-
-export interface TemplateLabelDefinition {
-  name: string;
-  available_values?: string[];
-}
 
 export interface TemplateMetadata {
   author: string;
