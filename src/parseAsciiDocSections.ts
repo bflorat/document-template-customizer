@@ -1,15 +1,21 @@
-import type { ViewSection, ViewSectionMetadata } from "./model";
+import type { ViewSection, ViewSectionMetadata } from "./model/index.js";
+
+export interface ViewSectionWithLocation extends ViewSection {
+  startLine: number;
+  endLine: number;
+}
 
 const HEADING_REGEX = /^\s*(#{1,6})\s+(.*)$/;
 const METADATA_REGEX = /^\s*🏷\s*(\{.*\})\s*$/;
 
 export function parseAsciiDocSections(content: string): ViewSection[] {
   const lines = content.split(/\r?\n/);
-  const roots: ViewSection[] = [];
-  const stack: ViewSection[] = [];
+  const roots: ViewSectionWithLocation[] = [];
+  const stack: ViewSectionWithLocation[] = [];
   let pendingMetadata: ViewSectionMetadata | undefined;
 
-  for (const rawLine of lines) {
+  for (let index = 0; index < lines.length; index++) {
+    const rawLine = lines[index];
     const line = rawLine.trimEnd();
     const trimmed = line.trim();
 
@@ -31,17 +37,20 @@ export function parseAsciiDocSections(content: string): ViewSection[] {
     const title = titleRaw.trim();
     if (!title) continue;
 
-    const node: ViewSection = {
+    const node: ViewSectionWithLocation = {
       level,
       title,
       children: [],
       metadata: pendingMetadata,
+      startLine: index,
+      endLine: lines.length - 1,
     };
 
     pendingMetadata = undefined;
 
     while (stack.length && stack[stack.length - 1].level >= level) {
-      stack.pop();
+      const popped = stack.pop()!;
+      popped.endLine = Math.max(popped.startLine, index - 1);
     }
 
     if (!stack.length) {
@@ -51,6 +60,17 @@ export function parseAsciiDocSections(content: string): ViewSection[] {
     }
 
     stack.push(node);
+  }
+
+  const lastLineIndex = Math.max(0, lines.length - 1);
+  while (stack.length) {
+    const node = stack.pop()!;
+    if (node.endLine < node.startLine) {
+      node.endLine = node.startLine;
+    }
+    if (lastLineIndex > node.endLine) {
+      node.endLine = lastLineIndex;
+    }
   }
 
   return roots;

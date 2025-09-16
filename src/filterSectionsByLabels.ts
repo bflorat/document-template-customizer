@@ -1,4 +1,4 @@
-import type { ViewSection } from "./model";
+import type { ViewSection } from "./model/index.js";
 
 export type LabelFilterMode = "matching" | "nonMatching";
 

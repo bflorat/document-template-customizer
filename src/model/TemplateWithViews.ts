@@ -1,5 +1,5 @@
-import type { TemplateFetchResult } from "./TemplateFetchResult";
-import type { View } from "./View";
+import type { TemplateFetchResult } from "./TemplateFetchResult.js";
+import type { View } from "./View.js";
 
 export interface TemplateWithViews {
   metadata: TemplateFetchResult;

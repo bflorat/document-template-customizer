@@ -8,8 +8,8 @@ import {
   type View,
   type ViewFetchFailure,
   type TemplateLabelDefinition,
-} from "./model";
-import { parseAsciiDocSections } from "./parseAsciiDocSections";
+} from "./model/index.js";
+import { parseAsciiDocSections } from "./parseAsciiDocSections.js";
 
 /* ================== Core ================== */
 
@@ -66,7 +66,7 @@ export async function fetchTemplateMetadata(
               ? { name, available_values: values }
               : { name };
           })
-          .filter((label): label is TemplateLabelDefinition => label !== null)
+          .filter((label: TemplateLabelDefinition | null): label is TemplateLabelDefinition => label !== null)
       : undefined;
 
     const data: TemplateMetadata = {
@@ -184,7 +184,7 @@ export async function fetchTemplateAndViews(
 export {
   TemplateMetadataNotFoundError,
   ViewFetchError,
-} from "./model";
+} from "./model/index.js";
 
 export type {
   TemplateFetchResult,
@@ -192,4 +192,4 @@ export type {
   TemplateWithViews,
   View,
   ViewFetchFailure,
-} from "./model";
+} from "./model/index.js";

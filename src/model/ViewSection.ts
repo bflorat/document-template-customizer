@@ -1,4 +1,4 @@
-import type { ViewSectionMetadata } from "./ViewSectionMetadata";
+import type { ViewSectionMetadata } from "./ViewSectionMetadata.js";
 
 export interface ViewSection {
   level: number;

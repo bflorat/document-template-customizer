@@ -15,8 +15,27 @@ DTC can work not only with my own templates, but also with any base document tem
 
 ## Features
 * [ ] Option "Tout" (pas de filtre)
-* [ ] CLI
+* [x] CLI
 * [ ] Liens predefinis vers un site central (ex: contraintes) ?
+
+## CLI usage
+
+Build the CLI once, then generate a filtered archive:
+
+```
+npm run cli -- --base-url https://example.com/template/ \
+  --include level::basic,persistence \
+  --exclude mobile
+```
+
+Options:
+
+* `--base-url` (`-b`) – required. The template root exposing `template-metadata.yaml`.
+* `--include` (`-i`) – comma-separated labels to keep (matching sections stay, others are pruned).
+* `--exclude` (`-e`) – comma-separated labels to drop (matching sections and children are removed).
+* `--output` (`-o`) – optional zip destination (defaults to `custom-template.zip`).
+
+Exported views never contain the metadata marker lines (`🏷{...}`).
 
 
 ## History

@@ -1,4 +1,4 @@
-import type { ViewFetchFailure } from "./ViewFetchFailure";
+import type { ViewFetchFailure } from "./ViewFetchFailure.js";
 
 export class ViewFetchError extends Error {
   public readonly failures: ViewFetchFailure[];

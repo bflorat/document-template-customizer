@@ -10,15 +10,19 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "build:cli": "tsc --project tsconfig.cli.json",
+    "cli": "npm run build:cli --silent && node dist/cli/generate-template.js"
   },
   "dependencies": {
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "yaml": "^2.8.1"
+    "yaml": "^2.8.1",
+    "jszip": "^3.10.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@types/node": "^20.17.10",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react-swc": "^4.0.0",
