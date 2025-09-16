@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TemplateLabelDefinition, TemplateWithViews } from "../src/model";
-import { findUnknownLabels } from "../src/cli/generate-template";
+import { findUnknownLabels, parseArgs } from "../src/cli/generate-template";
 
 const defs: TemplateLabelDefinition[] = [
   { name: "level", available_values: ["basic", "advanced"] },
@@ -38,5 +38,36 @@ describe("findUnknownLabels", () => {
   it("treats all labels as unknown when definitions missing", () => {
     const emptyViews: TemplateWithViews["views"] = [];
     expect(findUnknownLabels(["anything"], undefined, emptyViews)).toEqual(["anything"]);
+  });
+});
+
+describe("parseArgs", () => {
+  it("supports --opt value format", () => {
+    const parsed = parseArgs([
+      "--base-url",
+      "https://example.com",
+      "--include",
+      "level::basic,persistence",
+      "--output",
+      "result.zip",
+    ]);
+
+    expect(parsed.baseUrl).toBe("https://example.com");
+    expect(parsed.include).toEqual(["level::basic", "persistence"]);
+    expect(parsed.output).toBe("result.zip");
+  });
+
+  it("supports --opt=value format", () => {
+    const parsed = parseArgs([
+      "--base-url=https://example.com",
+      "--include=level::basic,persistence",
+      "--output=result.zip",
+      "--output-file=/tmp/output.zip",
+    ]);
+
+    expect(parsed.baseUrl).toBe("https://example.com");
+    expect(parsed.include).toEqual(["level::basic", "persistence"]);
+    expect(parsed.output).toBe("result.zip");
+    expect(parsed.outputFile).toBe("/tmp/output.zip");
   });
 });

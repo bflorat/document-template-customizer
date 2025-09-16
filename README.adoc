@@ -36,7 +36,7 @@ Options:
 The generated archive contains two folders:
 
 * `template/` keeps the filtered views with their metadata marker lines intact.
-* `blank-template/` contains the same views but with metadata lines removed.
+* `blank-template/` contains the same views reduced to section titles and AsciiDoc attributes (body text removed).
 
 
 ## History

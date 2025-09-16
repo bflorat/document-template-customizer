@@ -14,7 +14,7 @@ interface CliOptions {
   outputFile?: string;
 }
 
-function parseArgs(argv: string[]): CliOptions {
+export function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
     include: [],
     output: "custom-template.zip",
@@ -26,35 +26,43 @@ function parseArgs(argv: string[]): CliOptions {
       .map(entry => entry.trim())
       .filter(Boolean);
 
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
-    switch (arg) {
-      case "--base-url":
-      case "-b":
-        options.baseUrl = argv[++i];
-        break;
-      case "--include":
-      case "-i":
-        options.include.push(...readList(argv[++i]));
-        break;
-      case "--output":
-      case "-o":
-        options.output = argv[++i] ?? options.output;
-        break;
-      case "--output-file":
-        options.outputFile = argv[++i];
-        break;
-      case "--help":
-      case "-h":
-        printUsage();
-        process.exit(0);
-      default:
-        if (arg.startsWith("-")) {
-          throw new Error(`Unknown option: ${arg}`);
-        }
-        // Positional base URL support
-        options.baseUrl ??= arg;
-        break;
+  const readValue = (arg: string, next: () => string | undefined) => {
+    const eqIndex = arg.indexOf("=");
+    if (eqIndex !== -1) {
+      return arg.slice(eqIndex + 1) || undefined;
+    }
+    return next();
+  };
+
+  let index = 0;
+  while (index < argv.length) {
+    const arg = argv[index++];
+    const nextValue = () => argv[index++];
+
+    if (arg === "--base-url" || arg === "-b") {
+      options.baseUrl = readValue(arg, nextValue);
+    } else if (arg.startsWith("--base-url=")) {
+      options.baseUrl = readValue(arg, () => undefined);
+    } else if (arg === "--include" || arg === "-i") {
+      options.include.push(...readList(readValue(arg, nextValue)));
+    } else if (arg.startsWith("--include=")) {
+      options.include.push(...readList(readValue(arg, () => undefined)));
+    } else if (arg === "--output" || arg === "-o") {
+      options.output = readValue(arg, nextValue) ?? options.output;
+    } else if (arg.startsWith("--output=")) {
+      options.output = readValue(arg, () => undefined) ?? options.output;
+    } else if (arg === "--output-file") {
+      options.outputFile = readValue(arg, nextValue);
+    } else if (arg.startsWith("--output-file=")) {
+      options.outputFile = readValue(arg, () => undefined);
+    } else if (arg === "--help" || arg === "-h") {
+      printUsage();
+      process.exit(0);
+    } else {
+      if (arg.startsWith("-")) {
+        throw new Error(`Unknown option: ${arg}`);
+      }
+      options.baseUrl ??= arg;
     }
   }
 

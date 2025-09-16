@@ -1,7 +1,8 @@
 import { filterSectionsByLabels } from "./filterSectionsByLabels.js";
 import { parseAsciiDocSections, type ViewSectionWithLocation } from "./parseAsciiDocSections.js";
 
-const METADATA_REGEX = /^\s*🏷\s*(\{.*\})\s*$/;
+const HEADING_REGEX = /^\s*#{1,6}\s+.+$/;
+const ATTRIBUTE_REGEX = /^\s*:[^:]+:.*$/;
 
 export interface FilterViewContentOptions {
   includeLabels?: string[];
@@ -47,8 +48,9 @@ export function filterViewContent(
   for (let i = 0; i < lines.length; i++) {
     if (dropMask[i]) continue;
     const line = lines[i];
+    const trimmed = line.trim();
     templateLines.push(line);
-    if (!METADATA_REGEX.test(line.trim())) {
+    if (HEADING_REGEX.test(trimmed) || ATTRIBUTE_REGEX.test(trimmed)) {
       blankLines.push(line);
     }
   }
@@ -57,7 +59,7 @@ export function filterViewContent(
   removeTrailingEmptyLines(blankLines);
 
   const templateContent = finalizeContent(templateLines, hadTrailingNewline);
-  const blankContent = finalizeContent(blankLines, hadTrailingNewline);
+  const blankContent = finalizeContent(insertBlankLines(blankLines), hadTrailingNewline);
 
   return {
     templateContent,
@@ -120,4 +122,16 @@ function finalizeContent(lines: string[], hadTrailingNewline: boolean): string {
     content += "\n";
   }
   return content;
+}
+
+function insertBlankLines(lines: string[]): string[] {
+  if (lines.length === 0) return lines;
+  const result: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    result.push(lines[i]);
+    if (i < lines.length - 1 && lines[i].trim()) {
+      result.push("");
+    }
+  }
+  return result;
 }
