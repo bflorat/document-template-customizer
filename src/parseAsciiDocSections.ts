@@ -13,6 +13,7 @@ export function parseAsciiDocSections(content: string): ViewSection[] {
   const roots: ViewSectionWithLocation[] = [];
   const stack: ViewSectionWithLocation[] = [];
   let pendingMetadata: ViewSectionMetadata | undefined;
+  let pendingMetadataLine: number | undefined;
 
   for (let index = 0; index < lines.length; index++) {
     const rawLine = lines[index];
@@ -23,12 +24,14 @@ export function parseAsciiDocSections(content: string): ViewSection[] {
     if (metadataMatch) {
       const parsed = parseMetadata(metadataMatch[1]);
       if (parsed) pendingMetadata = parsed;
+      pendingMetadataLine = index;
       continue;
     }
 
     const match = HEADING_REGEX.exec(line);
     if (!match) {
       if (trimmed) pendingMetadata = undefined;
+      if (trimmed) pendingMetadataLine = undefined;
       continue;
     }
 
@@ -42,11 +45,12 @@ export function parseAsciiDocSections(content: string): ViewSection[] {
       title,
       children: [],
       metadata: pendingMetadata,
-      startLine: index,
+      startLine: pendingMetadataLine ?? index,
       endLine: lines.length - 1,
     };
 
     pendingMetadata = undefined;
+    pendingMetadataLine = undefined;
 
     while (stack.length && stack[stack.length - 1].level >= level) {
       const popped = stack.pop()!;

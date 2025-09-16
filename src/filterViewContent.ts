@@ -5,7 +5,6 @@ const METADATA_REGEX = /^\s*🏷\s*(\{.*\})\s*$/;
 
 export interface FilterViewContentOptions {
   includeLabels?: string[];
-  excludeLabels?: string[];
 }
 
 function normalizeLabels(labels?: string[]): string[] {
@@ -15,7 +14,8 @@ function normalizeLabels(labels?: string[]): string[] {
 type SectionNode = ViewSectionWithLocation & { children: SectionNode[] };
 
 export interface FilterViewContentResult {
-  content: string;
+  templateContent: string;
+  blankContent: string;
   keptSections: number;
 }
 
@@ -24,7 +24,6 @@ export function filterViewContent(
   options: FilterViewContentOptions = {}
 ): FilterViewContentResult {
   const includeLabels = normalizeLabels(options.includeLabels);
-  const excludeLabels = normalizeLabels(options.excludeLabels);
   const lines = rawContent.split(/\r?\n/);
 
   const sections = parseAsciiDocSections(rawContent) as SectionNode[];
@@ -33,13 +32,6 @@ export function filterViewContent(
   if (includeLabels.length) {
     filteredSections = filterSectionsByLabels(filteredSections, {
       labels: includeLabels,
-      mode: "matching",
-    }) as SectionNode[];
-  }
-  if (excludeLabels.length) {
-    filteredSections = filterSectionsByLabels(filteredSections, {
-      labels: excludeLabels,
-      mode: "nonMatching",
     }) as SectionNode[];
   }
 
@@ -48,24 +40,28 @@ export function filterViewContent(
 
   const dropMask = createDropMask(lines.length, sections, keptStartLines);
 
-  const outputLines: string[] = [];
+  const templateLines: string[] = [];
+  const blankLines: string[] = [];
   const hadTrailingNewline = rawContent.endsWith("\n") || rawContent.endsWith("\r\n");
 
   for (let i = 0; i < lines.length; i++) {
     if (dropMask[i]) continue;
-    if (METADATA_REGEX.test(lines[i].trim())) continue;
-    outputLines.push(lines[i]);
+    const line = lines[i];
+    templateLines.push(line);
+    if (!METADATA_REGEX.test(line.trim())) {
+      blankLines.push(line);
+    }
   }
 
-  removeTrailingEmptyLines(outputLines);
+  removeTrailingEmptyLines(templateLines);
+  removeTrailingEmptyLines(blankLines);
 
-  let content = outputLines.join("\n");
-  if (content && hadTrailingNewline) {
-    content += "\n";
-  }
+  const templateContent = finalizeContent(templateLines, hadTrailingNewline);
+  const blankContent = finalizeContent(blankLines, hadTrailingNewline);
 
   return {
-    content,
+    templateContent,
+    blankContent,
     keptSections: keptStartLines.size,
   };
 }
@@ -115,4 +111,13 @@ function removeTrailingEmptyLines(lines: string[]) {
     lines.pop();
     lastIndex--;
   }
+}
+
+function finalizeContent(lines: string[], hadTrailingNewline: boolean): string {
+  if (lines.length === 0) return "";
+  let content = lines.join("\n");
+  if (hadTrailingNewline) {
+    content += "\n";
+  }
+  return content;
 }

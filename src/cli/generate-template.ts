@@ -8,7 +8,6 @@ import { filterViewContent } from "../filterViewContent.js";
 interface CliOptions {
   baseUrl?: string;
   include: string[];
-  exclude: string[];
   output: string;
   outputFile?: string;
 }
@@ -16,7 +15,6 @@ interface CliOptions {
 function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
     include: [],
-    exclude: [],
     output: "custom-template.zip",
   };
 
@@ -36,10 +34,6 @@ function parseArgs(argv: string[]): CliOptions {
       case "--include":
       case "-i":
         options.include.push(...readList(argv[++i]));
-        break;
-      case "--exclude":
-      case "-e":
-        options.exclude.push(...readList(argv[++i]));
         break;
       case "--output":
       case "-o":
@@ -70,7 +64,6 @@ function printUsage() {
     `Options:\n` +
     `  -b, --base-url   Required. URL of the base template repository.\n` +
     `  -i, --include    Comma-separated labels to include (sections matching any are kept).\n` +
-    `  -e, --exclude    Comma-separated labels to exclude (matching sections removed).\n` +
     `  -o, --output     Output zip path (default: custom-template.zip).\n` +
     `  -h, --help       Show this help message.\n`;
   console.log(message);
@@ -95,14 +88,20 @@ async function run() {
       if (!view.content) continue;
       const filtered = filterViewContent(view.content, {
         includeLabels: options.include,
-        excludeLabels: options.exclude,
       });
 
-      if (!filtered.content.trim()) {
+      const hasTemplate = filtered.templateContent.trim().length > 0;
+      const hasBlank = filtered.blankContent.trim().length > 0;
+      if (!hasTemplate && !hasBlank) {
         continue;
       }
 
-      zip.file(view.file, filtered.content);
+      if (hasTemplate) {
+        zip.file(`template/${view.file}`, filtered.templateContent);
+      }
+      if (hasBlank) {
+        zip.file(`blank-template/${view.file}`, filtered.blankContent);
+      }
       includedViews += 1;
     }
 

@@ -42,7 +42,7 @@ const tree: ViewSection[] = [
 
 describe("filterSectionsByLabels", () => {
   it("keeps only sections that match labels (or have matching descendants)", () => {
-    const filtered = filterSectionsByLabels(tree, { labels: ["keep"], mode: "matching" });
+    const filtered = filterSectionsByLabels(tree, { labels: ["keep"] });
 
     expect(filtered).toHaveLength(1);
     expect(filtered[0].title).toBe("Introduction");
@@ -51,16 +51,8 @@ describe("filterSectionsByLabels", () => {
     expect(filtered[0].children[0].children).toHaveLength(0); // History removed because it doesn't match
   });
 
-  it("removes sections that match excluded labels", () => {
-    const filtered = filterSectionsByLabels(tree, { labels: ["drop"], mode: "nonMatching" });
-
-    expect(filtered).toHaveLength(1);
-    expect(filtered[0].title).toBe("Introduction");
-    expect(filtered[0].children).toHaveLength(2);
-  });
-
   it("drops unrelated sections when no label matches", () => {
-    const filtered = filterSectionsByLabels(tree, { labels: ["absent"], mode: "matching" });
+    const filtered = filterSectionsByLabels(tree, { labels: ["absent"] });
 
     expect(filtered).toHaveLength(0);
   });

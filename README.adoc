@@ -24,19 +24,20 @@ Build the CLI once, then generate a filtered archive:
 
 ```
 npm run cli -- --base-url https://example.com/template/ \
-  --include level::basic,persistence \
-  --exclude mobile
+  --include level::basic,persistence
 ```
 
 Options:
 
 * `--base-url` (`-b`) – required. The template root exposing `template-metadata.yaml`.
 * `--include` (`-i`) – comma-separated labels to keep (matching sections stay, others are pruned).
-* `--exclude` (`-e`) – comma-separated labels to drop (matching sections and children are removed).
 * `--output` (`-o`) – optional zip destination relative to the current directory (defaults to `custom-template.zip`).
 * `--output-file` – optional absolute or relative output path.
 
-Exported views never contain the metadata marker lines (`🏷{...}`).
+The generated archive contains two folders:
+
+* `template/` keeps the filtered views with their metadata marker lines intact.
+* `blank-template/` contains the same views but with metadata lines removed.
 
 
 ## History
@@ -83,3 +84,5 @@ https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/he
 ## Others features ?
 
 * Ability to remove / add a specified section by number (2, 4.5...)
+* Preview the resulting template per view (blank mode)
+* Store configs (ex: set of selected labels...) so I can reopen it later

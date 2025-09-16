@@ -2,13 +2,11 @@ import { useState, type ChangeEvent } from 'react'
 import './App.css'
 
 const defaultIncludingLabels = ['Persistence', 'level::basic', 'level::intermediate']
-const defaultExcludingLabels = ['mobile', 'level::advanced']
 
 const App = () => {
   const [templateUrl, setTemplateUrl] = useState('https://...')
   const [keepAllSections, setKeepAllSections] = useState(false)
   const includingLabels = defaultIncludingLabels
-  const excludingLabels = defaultExcludingLabels
 
   const handleTemplateUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTemplateUrl(event.target.value)
@@ -34,43 +32,23 @@ const App = () => {
           />
         </label>
 
-        <div className="labels-layout">
-          <section className="labels-panel">
-            <h2>Labels used to insert matching sections</h2>
-            <table className="labels-table">
-              <thead>
-                <tr>
-                  <th scope="col">Including label</th>
+        <section className="labels-panel">
+          <h2>Labels used to insert matching sections</h2>
+          <table className="labels-table">
+            <thead>
+              <tr>
+                <th scope="col">Including label</th>
+              </tr>
+            </thead>
+            <tbody>
+              {includingLabels.map(label => (
+                <tr key={label}>
+                  <td>{label}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {includingLabels.map(label => (
-                  <tr key={label}>
-                    <td>{label}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-
-          <section className="labels-panel">
-            <h2>Labels used to exclude matching sections</h2>
-            <table className="labels-table">
-              <thead>
-                <tr>
-                  <th scope="col">Excluding label</th>
-                </tr>
-              </thead>
-              <tbody>
-                {excludingLabels.map(label => (
-                  <tr key={label}>
-                    <td>{label}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-        </div>
+              ))}
+            </tbody>
+          </table>
+        </section>
 
         <p className="or-text">or</p>
 
