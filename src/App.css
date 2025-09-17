@@ -132,6 +132,19 @@ header h1 {
   margin-top: 0.75rem;
 }
 
+.status {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.status-error {
+  color: #a61c1c;
+}
+
+.status-success {
+  color: #0f7a0f;
+}
+
 .available-labels {
   margin-top: 1rem;
   background: #fafafa;
