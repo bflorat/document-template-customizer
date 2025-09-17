@@ -50,6 +50,13 @@ const App = () => {
     setIncludingLabels(prev => prev.filter((_, i) => i !== index))
   }
 
+  const handleAvailableLabelDoubleClick = (label: string) => {
+    setIncludingLabels(prev => {
+      if (prev.includes(label)) return prev
+      return [...prev, label]
+    })
+  }
+
   const handleGenerate = async () => {
     if (isGenerating) return
 
@@ -182,7 +189,9 @@ const App = () => {
             <h3>Available labels</h3>
             <ul>
               {availableLabels.map(label => (
-                <li key={label}>{label}</li>
+                <li key={label} onDoubleClick={() => handleAvailableLabelDoubleClick(label)}>
+                  {label}
+                </li>
               ))}
             </ul>
           </div>
