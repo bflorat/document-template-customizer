@@ -46,10 +46,10 @@ describe("filterPartContent", () => {
     expect(result.templateContent).toContain("Small Section");
   });
 
-  it("returns empty content when nothing matches", () => {
+  it("keeps the top-level heading when nothing else matches", () => {
     const result = filterPartContent(SAMPLE_VIEW, { includeLabels: ["other"] });
-    expect(result.templateContent).toBe("");
-    expect(result.blankContent).toBe("");
+    expect(result.templateContent.trim()).toBe("# Application");
+    expect(result.blankContent.trim()).toBe("# Application");
     expect(result.keptSections).toBe(0);
   });
 

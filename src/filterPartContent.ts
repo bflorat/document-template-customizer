@@ -46,11 +46,9 @@ export function filterPartContent(
     filteredSections = collectMatchedSections(decisions);
     keepMask = createKeepMask(lines.length, decisions);
     // Always keep the first level-1 heading (e.g., "# Application")
-    // when there is at least one kept section in the document.
-    if (filteredSections.length) {
-      const h1Index = findFirstLevelOneHeadingIndex(lines);
-      if (h1Index !== -1) keepMask[h1Index] = true;
-    }
+    // even if no sections match, to avoid fully empty parts.
+    const h1Index = findFirstLevelOneHeadingIndex(lines);
+    if (h1Index !== -1) keepMask[h1Index] = true;
   } else {
     keepMask = new Array<boolean>(lines.length).fill(true);
   }
