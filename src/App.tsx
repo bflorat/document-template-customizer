@@ -50,9 +50,11 @@ const App = () => {
     setIncludingLabels(prev => prev.filter((_, i) => i !== index))
   }
 
-  const handleAvailableLabelDoubleClick = (label: string) => {
+  const handleAvailableLabelClick = (label: string) => {
     setIncludingLabels(prev => {
-      if (prev.includes(label)) return prev
+      if (prev.includes(label)) {
+        return prev.filter(item => item !== label)
+      }
       return [...prev, label]
     })
   }
@@ -188,11 +190,18 @@ const App = () => {
           <div className="available-labels">
             <h3>Available labels</h3>
             <ul>
-              {availableLabels.map(label => (
-                <li key={label} onDoubleClick={() => handleAvailableLabelDoubleClick(label)}>
-                  {label}
-                </li>
-              ))}
+              {availableLabels.map(label => {
+                const isSelected = includingLabels.includes(label)
+                return (
+                  <li
+                    key={label}
+                    onClick={() => handleAvailableLabelClick(label)}
+                    className={isSelected ? 'label-chip selected' : 'label-chip'}
+                  >
+                    {label}
+                  </li>
+                )
+              })}
             </ul>
           </div>
         </section>
