@@ -69,4 +69,16 @@ describe("filterPartContent", () => {
     expect(result.templateContent).toContain("Intro kept.");
     expect(result.templateContent).not.toContain("Medium Only");
   });
+
+  it("requires all labels on a section to match the selection (AND)", () => {
+    const view = `# Root\n\n🏷{"labels":["include-me","other"]}\n## Both\nKeep only if both labels selected.\n\n🏷{"labels":["include-me"]}\n## Only Include\nShould stay when only include-me is selected.`;
+
+    const onlyInclude = filterPartContent(view, { includeLabels: ["include-me"] });
+    expect(onlyInclude.templateContent).toContain("## Only Include");
+    expect(onlyInclude.templateContent).not.toContain("## Both");
+
+    const both = filterPartContent(view, { includeLabels: ["include-me","other"] });
+    expect(both.templateContent).toContain("## Only Include");
+    expect(both.templateContent).toContain("## Both");
+  });
 });

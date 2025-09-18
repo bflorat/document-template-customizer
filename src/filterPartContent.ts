@@ -153,7 +153,7 @@ function buildSectionDecisions(
   const candidateSet = new Set(labels);
 
   const evaluate = (section: SectionNode): SectionDecision => {
-    const matches = matchesAnyLabel(section.metadata?.labels, candidateSet, wildcard);
+    const matches = matchesAllLabels(section.metadata?.labels, candidateSet, wildcard);
     const children = section.children.map(evaluate);
     const keep = matches || children.some(child => child.keep);
     return {
@@ -181,21 +181,18 @@ function collectMatchedSections(decisions: SectionDecision[]): SectionNode[] {
   return result;
 }
 
-function matchesAnyLabel(
+function matchesAllLabels(
   labels: string[] | undefined,
   candidates: Set<string>,
   wildcard: boolean
 ): boolean {
   if (!labels?.length) return false;
-  if (!wildcard) {
-    return labels.some(label => candidates.has(label));
-  }
 
-  // Wildcard matching in both directions within the same namespace
-  return labels.some(label => {
+  const labelMatches = (label: string): boolean => {
     const trimmed = label.trim();
     if (!trimmed) return false;
     if (candidates.has(trimmed)) return true;
+    if (!wildcard) return false;
 
     const [ns = "", val = ""] = trimmed.split("::", 2);
     if (!ns) return false;
@@ -203,15 +200,17 @@ function matchesAnyLabel(
     // Candidate wildcard matches concrete label
     if (val && candidates.has(`${ns}::*`)) return true;
 
-    // Label wildcard matches concrete candidate value
+    // Label wildcard matches any candidate value in same namespace
     if (val === "*") {
       for (const cand of candidates) {
         if (cand.startsWith(`${ns}::`)) return true;
       }
     }
-
     return false;
-  });
+  };
+
+  // AND semantics: every section label must be satisfied
+  return labels.every(labelMatches);
 }
 
 function removeTrailingEmptyLines(lines: string[]) {

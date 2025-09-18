@@ -15,8 +15,10 @@ export function filterSectionsByLabels(
   const labelSet = new Set(labels);
 
   const prune = (section: PartSection): PartSection[] => {
-    const matches =
-      section.metadata?.labels?.some(label => matchesLabel(label, labelSet, wildcard)) ?? false;
+    const labels = section.metadata?.labels ?? [];
+    const matches = labels.length
+      ? labels.every(label => matchesLabel(label, labelSet, wildcard))
+      : false;
 
     const filteredChildren = section.children.flatMap(prune);
 
