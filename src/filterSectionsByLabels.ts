@@ -32,10 +32,22 @@ export function filterSectionsByLabels(
 }
 
 function matchesLabel(label: string, candidates: Set<string>, wildcard: boolean): boolean {
-  if (candidates.has(label)) return true;
+  const trimmed = label.trim();
+  if (candidates.has(trimmed)) return true;
   if (!wildcard) return false;
 
-  const [namespace = "", value = ""] = label.split('::', 2);
-  if (!namespace || !value) return false;
-  return candidates.has(`${namespace}::*`);
+  const [ns = "", val = ""] = trimmed.split('::', 2);
+  if (!ns) return false;
+
+  // Candidate wildcard matches concrete label
+  if (val && candidates.has(`${ns}::*`)) return true;
+
+  // Label wildcard matches any candidate value in same namespace
+  if (val === '*') {
+    for (const cand of candidates) {
+      if (cand.startsWith(`${ns}::`)) return true;
+    }
+  }
+
+  return false;
 }

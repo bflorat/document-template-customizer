@@ -59,4 +59,14 @@ describe("filterPartContent", () => {
     expect(result.templateContent).not.toContain("Child Removed");
     expect(result.templateContent).not.toContain("Child Without Labels");
   });
+
+  it("keeps sections labeled with wildcard when a specific value is selected", () => {
+    const nestedView = `# Root\n\n🏷{"labels":["project_size::*"]}\n## Intro\nIntro kept.\n\n🏷{"labels":["project_size::medium"]}\n### Medium Only\nShould go away.`;
+
+    const result = filterPartContent(nestedView, { includeLabels: ["project_size::large"] });
+
+    expect(result.templateContent).toContain("## Intro");
+    expect(result.templateContent).toContain("Intro kept.");
+    expect(result.templateContent).not.toContain("Medium Only");
+  });
 });
