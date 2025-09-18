@@ -142,30 +142,41 @@ header h1 {
   align-self: flex-start;
 }
 
-.status {
+.alert {
   margin-top: 0.75rem;
   font-size: 0.95rem;
   padding: 0.6rem 0.8rem;
-  background: #eef2ff;
-  border: 1px solid #d4dbf8;
-  color: #0d1f63;
   font-weight: 600;
   width: 100%;
   display: block;
-  align-self: stretch;
   border-radius: 0;
+  align-self: stretch;
 }
 
-.status-error {
-  background: #fef2f2;
-  border-color: #fca5a5;
-  color: #7d1616;
+.alert--info {
+  background: #E5F6FD;
+  border: 1px solid #81D4FA;
+  color: #01579B;
 }
 
-.status-success {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #0f3d21;
+.alert--warning {
+  background: #FFF8E1;
+  border: 1px solid #FFB74D;
+  color: #F57C00;
+}
+
+.alert--error {
+  background: #FFEBEE;
+  border: 1px solid #EF9A9A;
+  color: #B71C1C;
+}
+
+.template-load-status {
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  width: 100%;
+  display: block;
 }
 
 .available-labels {
@@ -213,25 +224,6 @@ header h1 {
   color: #666;
   font-style: italic;
   list-style: none;
-}
-
-.template-load-status {
-  margin-top: 0.25rem;
-  font-size: 0.9rem;
-  color: #0d1f63;
-  background: #eef2ff;
-  border: 1px solid #d4dbf8;
-  padding: 0.5rem 0.75rem;
-  width: 100%;
-  display: block;
-  border-radius: 0;
-  font-weight: 600;
-}
-
-.template-load-status.loaded {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #166534;
 }
 
 .preview-panel {

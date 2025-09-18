@@ -235,9 +235,9 @@ const App = () => {
           {previewOpen ? (
             <div className="preview-body">
               {previewLoading ? (
-                <p className="status">Loading preview…</p>
+                <p className="alert alert--info">Loading preview…</p>
               ) : previewError ? (
-                <p className="status status-error">{previewError}</p>
+                <p className="alert alert--warning">{previewError}</p>
               ) : previewParts.length === 0 ? (
                 <p className="empty-row">No parts to preview.</p>
               ) : (
@@ -268,10 +268,10 @@ const App = () => {
           {isGenerating ? '⏳ Generating…' : '🚀 Generate your template'}
         </button>
         {errorMessage ? (
-          <p className="status status-error">{errorMessage}</p>
+          <p className="alert alert--error">{errorMessage}</p>
         ) : null}
         {successMessage ? (
-          <p className="status status-success">{successMessage}</p>
+          <p className="alert alert--info">{successMessage}</p>
         ) : null}
       </form>
       <footer className="app-footer">
@@ -287,23 +287,23 @@ const App = () => {
 function TemplateLoadIndicator({ info }: { info: TemplateLoadInfo }) {
   if (info.state === 'idle') {
     return (
-      <p className="template-load-status">
+      <p className="template-load-status alert alert--info">
         Tip — load the base template to start.
       </p>
     )
   }
   if (info.state === 'loading') {
-    return <p className="template-load-status">Loading base template…</p>
+    return <p className="template-load-status alert alert--info">Loading base template…</p>
   }
   if (info.state === 'loaded') {
     return (
-      <p className="template-load-status loaded">
+      <p className="template-load-status alert alert--info">
         Base template loaded successfully in {formatDuration(info.durationMs)}
       </p>
     )
   }
   return (
-    <p className="template-load-status status-error">
+    <p className="template-load-status alert alert--error">
       Failed to load base template: {info.message}
     </p>
   )
