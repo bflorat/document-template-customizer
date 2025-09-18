@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react'
+import { useState, type ChangeEvent, type FormEvent } from 'react'
 import JSZip from 'jszip'
 import './App.css'
 import { fetchTemplateAndParts } from './fetchTemplateMetadata'
@@ -64,6 +64,11 @@ const App = () => {
     } catch {
       // loadFilteredParts already updates templateLoadInfo with the error
     }
+  }
+
+  const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    await handleLoadTemplate()
   }
 
   const loadFilteredParts = async (baseUrl: string, labelsToInclude: string[]) => {
@@ -170,7 +175,7 @@ const App = () => {
       <header>
         <h1>Document Template Customizer</h1>
       </header>
-      <form className="template-form">
+      <form className="template-form" onSubmit={handleFormSubmit}>
         <label className="input-group">
           <span>Base template URL:</span>
           <input
