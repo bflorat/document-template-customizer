@@ -38,6 +38,7 @@ const App = () => {
     setIncludingLabels(prev => {
       const next = [...prev]
       next[index] = value
+      next.sort((a, b) => a.localeCompare(b))
       return next
     })
   }
@@ -47,15 +48,23 @@ const App = () => {
   }
 
   const handleRemoveLabel = (index: number) => {
-    setIncludingLabels(prev => prev.filter((_, i) => i !== index))
+    setIncludingLabels(prev => {
+      const next = prev.filter((_, i) => i !== index)
+      next.sort((a, b) => a.localeCompare(b))
+      return next
+    })
   }
 
   const handleAvailableLabelClick = (label: string) => {
     setIncludingLabels(prev => {
       if (prev.includes(label)) {
-        return prev.filter(item => item !== label)
+        const filtered = prev.filter(item => item !== label)
+        filtered.sort((a, b) => a.localeCompare(b))
+        return filtered
       }
-      return [...prev, label]
+      const next = [...prev, label]
+      next.sort((a, b) => a.localeCompare(b))
+      return next
     })
   }
 
@@ -130,7 +139,7 @@ const App = () => {
   return (
     <div className="app">
       <header>
-        <h1>📄 Document Template Customizer</h1>
+        <h1>Document Template Customizer</h1>
       </header>
       <form className="template-form">
         <label className="input-group">
@@ -144,51 +153,8 @@ const App = () => {
         </label>
 
         <section className="labels-panel">
-          <h2>🏷️ Labels used to insert matching sections</h2>
-          <table className="labels-table editable">
-            <thead>
-              <tr>
-                <th scope="col">Including label</th>
-                <th scope="col" className="actions-col">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {includingLabels.length === 0 ? (
-                <tr>
-                  <td colSpan={2} className="empty-row">No labels selected yet.</td>
-                </tr>
-              ) : (
-                includingLabels.map((label, index) => (
-                  <tr key={index}>
-                    <td>
-                      <input
-                        className="label-input"
-                        type="text"
-                        value={label}
-                        placeholder="level::basic"
-                        onChange={event => handleLabelChange(index, event.target.value)}
-                      />
-                    </td>
-                    <td className="actions-cell">
-                      <button
-                        type="button"
-                        className="secondary-action"
-                        onClick={() => handleRemoveLabel(index)}
-                        aria-label={`Remove label ${label || index + 1}`}
-                      >
-                        ❌
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-          <button type="button" className="secondary-action add-label" onClick={handleAddLabel}>
-            Add label
-          </button>
           <div className="available-labels">
-            <h3>Available labels</h3>
+            <h3>🏷️ Labels of matching sections</h3>
             <ul>
               {availableLabels.map(label => {
                 const isSelected = includingLabels.includes(label)
