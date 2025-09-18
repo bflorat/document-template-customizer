@@ -288,7 +288,7 @@ const App = () => {
       </form>
       <footer className="app-footer">
         © 2025 Bertrand Florat — <a href='https://creativecommons.org/licenses/by-sa/4.0/'>CC BY-SA v4.0</a> —{' '}
-        More in the <a href="https://git.florat.net/bflorat/document-template-customizer" target="_blank" rel="noreferrer">
+        CLI, full documentation and more in the <a href="https://git.florat.net/bflorat/document-template-customizer" target="_blank" rel="noreferrer">
           project repository
         </a>
       </footer>

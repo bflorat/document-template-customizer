@@ -71,7 +71,7 @@ function hangingResponder() {
 // ----------- Fixtures -----------
 
 const BASE = "https://example.com/tpl";
-const METADATA_URL = `${BASE}/template-metadata.yaml`;
+const METADATA_URL = `${BASE}/base-template-metadata.yaml`;
 
 const YAML_OK = `
 author: Bertrand Florat

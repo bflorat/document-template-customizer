@@ -16,9 +16,9 @@ DTC can work not only with my own templates, but also with any base document tem
 
 * Must be written in asciidoc (Asciidoctor flavor with chapters using the `#` caracter, not the `=` ) or Markdown  
 * Must content a `README.adoc` or `README.md` introductionnal document at the root of the base template URL.
-* Must content a `template-metadata.yaml` file at the root of the base template URL. An exemple of the file 
+* Must include a `base-template-metadata.yaml` file at the root of the base template URL. An example of the file 
 
-TIP: Prefer ASCIIDOC for better documents (admonitiopns, better tables, TOC...)
+TIP: We strongly recommand ASCIIDOC over MArkdown for important documents (admonitiopns, better tables, TOC...)
 
 
 Sample `base-template-metadata.yaml`
@@ -59,7 +59,7 @@ npm run cli -- --base-url https://raw.githubusercontent.com/bflorat/architecture
 
 Options:
 
-* `--base-url` (`-b`) – required. The template root exposing `template-metadata.yaml`.
+* `--base-url` (`-b`) – required. The template root exposing `base-template-metadata.yaml`.
 * `--include` (`-i`) – comma-separated labels to keep (matching sections stay, others are pruned). Unknown labels abort the run.
 * `--output` (`-o`) – optional zip destination relative to the current directory (defaults to `custom-template.zip`).
 * `--output-file` – optional absolute or relative output path.
@@ -70,15 +70,15 @@ The generated archive contains two folders:
 * `blank-template/` contains the same parts reduced to section titles and AsciiDoc attributes (body text removed).
 * A `README.adoc` from the base template is always included at the root of the archive.
 
-If none `--include` labels are provided, the resulting template contains every base template sections. The base template **must** expose a `README.adoc` (case-insensitive) alongside `template-metadata.yaml`.
+If none `--include` labels are provided, the resulting template contains every base template sections. The base template **must** expose a `README.adoc` (case-insensitive) alongside `base-template-metadata.yaml`.
 
 ## History
 
-I want to write a small project in react.js 19 that allow to compute asciidoc documents from a base asciidoc document template. It contains an url selector to select an URL that contain a 'template-metadata.yaml' file like https://github.com/bflorat/architecture-document-template/tree/feat/add-medadata/ .
+I want to write a small project in react.js 19 that allow to compute asciidoc documents from a base asciidoc document template. It contains an url selector to select an URL that contain a `base-template-metadata.yaml` file like https://github.com/bflorat/architecture-document-template/tree/feat/add-medadata/ .
 
 
 
-Sample  template-metadata.yaml : 
+Sample  `base-template-metadata.yaml` : 
 
 ```
 author: Bertrand Florat
@@ -96,7 +96,7 @@ parts:
     file: view-sizing.adoc
 ```
 
-https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/template-metadata.yaml
+https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/base-template-metadata.yaml
 
 
 ```
