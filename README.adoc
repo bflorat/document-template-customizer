@@ -46,7 +46,11 @@ labels:
 
 * Every section of each part file of the base template should be annotated with a metadata line like : `🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract","introduction"]}`
   ** Keep a blank line between the metadata line and the section title line.
-
+  ** Used labels must be listed in the `base-template-metadata.yaml` file to be token into account.
+  ** Labels can be simple flag (like `performance`)
+  ** Some others are multi-values (like: `project_size` that supports threee values in this example: `project_size::large`, `project_size::medium` and `project_size::small`). All available values must be listed in `base-template-metadata.yaml` file.
+  ** You can use the `*` wildcard  in the multi-values labels. It means _any_. For instance, if you want that a section is always kept, whatever the project size is, set a `project_size::*` label on it.
+  ** Find many examples in https://github.com/bflorat/architecture-document-template[this base template].
 
 
 ## Features
