@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { filterPartContent } from "../src/filterPartContent";
 
-const SAMPLE_VIEW = `# Application\n:sectnums: 4\n:toc: left\n\n🏷{"labels":["include-me"]}\n## Included Section\nContent kept.\n\n🏷{"labels":["exclude-me"]}\n## Removed Section\nThis should disappear.\n\n## Plain Section\nNo metadata here.\n`;
+const SAMPLE_VIEW = `# Application\n:sectnums: 4\n:toc: left\n\n//🏷{"labels":["include-me"]}\n## Included Section\nContent kept.\n\n//🏷{"labels":["exclude-me"]}\n## Removed Section\nThis should disappear.\n\n## Plain Section\nNo metadata here.\n`;
 
 describe("filterPartContent", () => {
   it("removes metadata lines while keeping structure", () => {
@@ -39,7 +39,7 @@ describe("filterPartContent", () => {
   });
 
   it("honors wildcard label values", () => {
-    const viewWithWildcards = `# Demo\n\n🏷{"labels":["project_size::large"]}\n## Large Section\nBig\n\n🏷{"labels":["project_size::small"]}\n## Small Section\nSmall`;
+    const viewWithWildcards = `# Demo\n\n//🏷{"labels":["project_size::large"]}\n## Large Section\nBig\n\n//🏷{"labels":["project_size::small"]}\n## Small Section\nSmall`;
     const result = filterPartContent(viewWithWildcards, {
       includeLabels: ["project_size::*"],
       wildcard: true,
@@ -56,7 +56,7 @@ describe("filterPartContent", () => {
   });
 
   it("excludes non matching subsections even when parent matches", () => {
-    const nestedView = `# Root\n\n🏷{"labels":["keep-parent"]}\n## Matching Parent\nIntro that stays.\n\n🏷{"labels":["drop-me"]}\n### Child Removed\nRemove me.\n\n### Child Without Labels\nAlso removed.`;
+    const nestedView = `# Root\n\n//🏷{"labels":["keep-parent"]}\n## Matching Parent\nIntro that stays.\n\n//🏷{"labels":["drop-me"]}\n### Child Removed\nRemove me.\n\n### Child Without Labels\nAlso removed.`;
 
     const result = filterPartContent(nestedView, { includeLabels: ["keep-parent"] });
 
@@ -67,7 +67,7 @@ describe("filterPartContent", () => {
   });
 
   it("keeps sections labeled with wildcard when a specific value is selected", () => {
-    const nestedView = `# Root\n\n🏷{"labels":["project_size::*"]}\n## Intro\nIntro kept.\n\n🏷{"labels":["project_size::medium"]}\n### Medium Only\nShould go away.`;
+    const nestedView = `# Root\n\n//🏷{"labels":["project_size::*"]}\n## Intro\nIntro kept.\n\n//🏷{"labels":["project_size::medium"]}\n### Medium Only\nShould go away.`;
 
     const result = filterPartContent(nestedView, { includeLabels: ["project_size::large"] });
 
@@ -77,7 +77,7 @@ describe("filterPartContent", () => {
   });
 
   it("requires all labels on a section to match the selection (AND)", () => {
-    const view = `# Root\n\n🏷{"labels":["include-me","other"]}\n## Both\nKeep only if both labels selected.\n\n🏷{"labels":["include-me"]}\n## Only Include\nShould stay when only include-me is selected.`;
+    const view = `# Root\n\n//🏷{"labels":["include-me","other"]}\n## Both\nKeep only if both labels selected.\n\n//🏷{"labels":["include-me"]}\n## Only Include\nShould stay when only include-me is selected.`;
 
     const onlyInclude = filterPartContent(view, { includeLabels: ["include-me"] });
     expect(onlyInclude.templateContent).toContain("## Only Include");
@@ -89,7 +89,7 @@ describe("filterPartContent", () => {
   });
 
   it("unlabeled parent does not block matching children", () => {
-    const view = `# Root\n\n🏷{"labels":["a"]}\n## Child A\nA\n\n🏷{"labels":["b"]}\n## Child B\nB`;
+    const view = `# Root\n\n//🏷{"labels":["a"]}\n## Child A\nA\n\n//🏷{"labels":["b"]}\n## Child B\nB`;
 
     const res = filterPartContent(view, { includeLabels: ["a", "b", "c", "d"] });
     expect(res.templateContent).toContain("## Child A");

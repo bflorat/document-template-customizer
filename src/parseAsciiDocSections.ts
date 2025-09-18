@@ -6,7 +6,8 @@ export interface PartSectionWithLocation extends PartSection {
 }
 
 const HEADING_REGEX = /^\s*(#{1,6})\s+(.*)$/;
-const METADATA_REGEX = /^\s*🏷\s*(\{.*\})\s*$/;
+// Matches comment-style metadata marker placed immediately above a heading: `//🏷{...}`
+const METADATA_REGEX = /^\s*\/\/\s*🏷\s*(\{.*\})\s*$/;
 
 export function parseAsciiDocSections(content: string): PartSection[] {
   const lines = content.split(/\r?\n/);

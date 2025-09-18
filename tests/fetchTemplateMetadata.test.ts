@@ -98,7 +98,7 @@ labels:
   - name: green-IT
 `;
 
-const PART_APP = `# Application Part\n\n🏷{"id":"intro","labels":["level::basic","project_size::medium"]}\n\n## Overview\nDetails\n\n🏷{"id":"deep","labels":["level::advanced"],"link_to":["intro","appendix"]}\n\n### Deep Dive\nMore details\n`;
+const PART_APP = `# Application Part\n\n//🏷{"id":"intro","labels":["level::basic","project_size::medium"]}\n## Overview\nDetails\n\n//🏷{"id":"deep","labels":["level::advanced"],"link_to":["intro","appendix"]}\n### Deep Dive\nMore details\n`;
 const PART_DEV = `# Development Part\n\nContent D\n`;
 const PART_SEC = `# Security Part\n\nContent S\n`;
 const README_BODY = `= Template
