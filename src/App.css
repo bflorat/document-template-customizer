@@ -19,6 +19,15 @@
   text-align: center;
 }
 
+.app-footer a {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
 header h1 {
   margin: 0;
   font-size: 1.9rem;

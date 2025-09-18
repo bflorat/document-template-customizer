@@ -183,7 +183,10 @@ const App = () => {
         ) : null}
       </form>
       <footer className="app-footer">
-        © 2025 Bertrand Florat — CC BY-SA v4.0
+        © 2025 Bertrand Florat — CC BY-SA v4.0 —{' '}
+        <a href="https://git.florat.net/bflorat/document-template-customizer" target="_blank" rel="noreferrer">
+          More in the project repository
+        </a>
       </footer>
     </div>
   )
