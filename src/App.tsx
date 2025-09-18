@@ -87,7 +87,7 @@ const App = () => {
         const nextState: Record<string, { blank: boolean; full: boolean }> = {}
         filteredParts.forEach(part => {
           const existing = prev[part.file]
-          nextState[part.file] = existing ?? { blank: true, full: false }
+          nextState[part.file] = existing ?? { blank: false, full: false }
         })
         return nextState
       })

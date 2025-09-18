@@ -195,11 +195,18 @@ function createFetch(baseUrl: string): typeof fetch {
   const isFile = baseUrl.startsWith("file://");
   if (!isFile) return fetch;
 
-  return async (url: string | URL, init?: RequestInit): Promise<Response> => {
-    const target = typeof url === "string" ? url : url.toString();
+  return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    const target =
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+        ? input.toString()
+        : input.url;
+
     if (!target.startsWith("file://")) {
-      return fetch(url, init);
+      return fetch(input, init);
     }
+
     const filePath = fileURLToPath(target);
     const data = await readFile(filePath);
     return new Response(data);
