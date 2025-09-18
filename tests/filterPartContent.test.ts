@@ -6,7 +6,7 @@ const SAMPLE_VIEW = `# Application\n:sectnums: 4\n:toc: left\n\n🏷{"labels":["
 describe("filterPartContent", () => {
   it("removes metadata lines while keeping structure", () => {
     const result = filterPartContent(SAMPLE_VIEW, {});
-    expect(result.templateContent).toContain("🏷");
+    expect(result.templateContent).not.toContain("🏷");
     expect(result.templateContent).toContain("# Application");
     expect(result.blankContent.trim()).toBe(
       [
@@ -26,7 +26,7 @@ describe("filterPartContent", () => {
   it("keeps only sections matching include labels", () => {
     const result = filterPartContent(SAMPLE_VIEW, { includeLabels: ["include-me"] });
     expect(result.templateContent).toContain("## Included Section");
-    expect(result.templateContent).toContain("🏷");
+    expect(result.templateContent).not.toContain("🏷");
     expect(result.templateContent).not.toContain('"exclude-me"');
     expect(result.blankContent.trim()).toBe("## Included Section");
     expect(result.keptSections).toBeGreaterThan(0);

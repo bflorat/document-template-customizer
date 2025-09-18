@@ -3,6 +3,7 @@ import { parseAsciiDocSections, type PartSectionWithLocation } from "./parseAsci
 
 const HEADING_REGEX = /^\s*#{1,6}\s+.+$/;
 const ATTRIBUTE_REGEX = /^\s*:[^:]+:.*$/;
+const METADATA_REGEX = /^\s*🏷\s*(\{.*\})\s*$/;
 
 export interface FilterPartContentOptions {
   includeLabels?: string[];
@@ -46,6 +47,7 @@ export function filterPartContent(
     if (!keepMask[i]) continue;
     const line = lines[i];
     const trimmed = line.trim();
+    if (METADATA_REGEX.test(trimmed)) continue;
     templateLines.push(line);
     if (HEADING_REGEX.test(trimmed) || ATTRIBUTE_REGEX.test(trimmed)) {
       blankLines.push(line);
