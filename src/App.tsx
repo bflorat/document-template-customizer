@@ -35,6 +35,7 @@ const App = () => {
   const [previewError, setPreviewError] = useState<string | null>(null)
   const [previewParts, setPreviewParts] = useState<FilteredPart[]>([])
   const [templateLoadInfo, setTemplateLoadInfo] = useState<TemplateLoadInfo>({ state: 'idle' })
+  const [didAutoSelectAll, setDidAutoSelectAll] = useState(false)
 
   const handleTemplateUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTemplateUrl(event.target.value)
@@ -87,7 +88,15 @@ const App = () => {
         .filter(label => !label.endsWith('::*') && !multiValueNames.has(label))
         .sort((a, b) => compareLabels(a, b, labelOrder))
       setAvailableLabels(selectableLabels)
-      const filteredParts = buildFilteredPartsFromResult(result, labelsToInclude, knownSet)
+
+      // Select all available labels by default on first load
+      if (!didAutoSelectAll && includingLabels.length === 0) {
+        setIncludingLabels(selectableLabels)
+        setDidAutoSelectAll(true)
+      }
+
+      const effectiveLabels = labelsToInclude.length ? labelsToInclude : selectableLabels
+      const filteredParts = buildFilteredPartsFromResult(result, effectiveLabels, knownSet)
       setExpandedParts(prev => {
         const nextState: Record<string, { blank: boolean; full: boolean }> = {}
         filteredParts.forEach(part => {
@@ -262,8 +271,7 @@ const App = () => {
                   )
                 })
               )}
-            </ul>
-            <p><i>Tip: select none label to keep every section of the base template</i></p>            
+            </ul>            
           </div>
         </section>
 
