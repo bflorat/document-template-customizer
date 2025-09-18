@@ -32,6 +32,16 @@ describe("filterPartContent", () => {
     expect(result.keptSections).toBeGreaterThan(0);
   });
 
+  it("honors wildcard label values", () => {
+    const viewWithWildcards = `# Demo\n\n🏷{"labels":["project_size::large"]}\n## Large Section\nBig\n\n🏷{"labels":["project_size::small"]}\n## Small Section\nSmall`;
+    const result = filterPartContent(viewWithWildcards, {
+      includeLabels: ["project_size::*"],
+      wildcard: true,
+    });
+    expect(result.templateContent).toContain("Large Section");
+    expect(result.templateContent).toContain("Small Section");
+  });
+
   it("returns empty content when nothing matches", () => {
     const result = filterPartContent(SAMPLE_VIEW, { includeLabels: ["other"] });
     expect(result.templateContent).toBe("");

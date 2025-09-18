@@ -2,6 +2,7 @@ import type { PartSection } from "./model/index.js";
 
 interface FilterOptions {
   labels: string[];
+  wildcard?: boolean;
 }
 
 /**
@@ -9,12 +10,13 @@ interface FilterOptions {
  */
 export function filterSectionsByLabels(
   sections: PartSection[],
-  { labels }: FilterOptions
+  { labels, wildcard = false }: FilterOptions
 ): PartSection[] {
   const labelSet = new Set(labels);
 
   const prune = (section: PartSection): PartSection[] => {
-    const matches = section.metadata?.labels?.some(label => labelSet.has(label)) ?? false;
+    const matches =
+      section.metadata?.labels?.some(label => matchesLabel(label, labelSet, wildcard)) ?? false;
 
     const filteredChildren = section.children.flatMap(prune);
 
@@ -27,4 +29,13 @@ export function filterSectionsByLabels(
 
   return sections
     .flatMap(prune);
+}
+
+function matchesLabel(label: string, candidates: Set<string>, wildcard: boolean): boolean {
+  if (candidates.has(label)) return true;
+  if (!wildcard) return false;
+
+  const [namespace = "", value = ""] = label.split('::', 2);
+  if (!namespace || !value) return false;
+  return candidates.has(`${namespace}::*`);
 }

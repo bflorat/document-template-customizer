@@ -16,11 +16,11 @@ DTC can work not only with my own templates, but also with any base document tem
 
 * The template must be written in **AsciiDoc (Asciidoctor flavor)** — with sections starting with `#` characters, not `=` — or in **Markdown**.
 * A **`README.adoc`** or **`README.md`** file must be present at the root of the base template URL, providing an introduction.
-* A **`base-template-metadata.yaml`** file must be present at the root of the base template URL. A sample is provided below.
 
 [TIP]  
 We strongly recommend using **AsciiDoc** rather than Markdown for important documents, as it provides richer features such as admonitions, better tables, and an automatic table of contents.
 
+* A **`base-template-metadata.yaml`** file must be present at the root of the base template URL. A sample is provided below.
 
 .Sample `base-template-metadata.yaml` :
 
@@ -43,6 +43,10 @@ labels:
   - name: persistence
   - name: green-IT
 ```
+
+* Every section of each part file of the base template should be annotated with a metadata line like : `🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract","introduction"]}`
+  ** Keep a blank line between the metadata line and the section title line.
+
 
 
 ## Features
