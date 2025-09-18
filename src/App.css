@@ -271,6 +271,8 @@ header h1 {
   border-radius: 4px;
   padding: 0.75rem;
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 50lh;
   white-space: pre-wrap;
 }
 
