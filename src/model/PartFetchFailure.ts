@@ -1,4 +1,4 @@
-export interface ViewFetchFailure {
+export interface PartFetchFailure {
   name: string;
   file: string;
   url: string;

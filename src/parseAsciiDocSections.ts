@@ -1,6 +1,6 @@
-import type { ViewSection, ViewSectionMetadata } from "./model/index.js";
+import type { PartSection, PartSectionMetadata } from "./model/index.js";
 
-export interface ViewSectionWithLocation extends ViewSection {
+export interface PartSectionWithLocation extends PartSection {
   startLine: number;
   endLine: number;
 }
@@ -8,11 +8,11 @@ export interface ViewSectionWithLocation extends ViewSection {
 const HEADING_REGEX = /^\s*(#{1,6})\s+(.*)$/;
 const METADATA_REGEX = /^\s*🏷\s*(\{.*\})\s*$/;
 
-export function parseAsciiDocSections(content: string): ViewSection[] {
+export function parseAsciiDocSections(content: string): PartSection[] {
   const lines = content.split(/\r?\n/);
-  const roots: ViewSectionWithLocation[] = [];
-  const stack: ViewSectionWithLocation[] = [];
-  let pendingMetadata: ViewSectionMetadata | undefined;
+  const roots: PartSectionWithLocation[] = [];
+  const stack: PartSectionWithLocation[] = [];
+  let pendingMetadata: PartSectionMetadata | undefined;
   let pendingMetadataLine: number | undefined;
 
   for (let index = 0; index < lines.length; index++) {
@@ -47,7 +47,7 @@ export function parseAsciiDocSections(content: string): ViewSection[] {
       popped.endLine = Math.max(popped.startLine, nodeStartLine - 1);
     }
 
-    const node: ViewSectionWithLocation = {
+    const node: PartSectionWithLocation = {
       level,
       title,
       children: [],
@@ -82,11 +82,11 @@ export function parseAsciiDocSections(content: string): ViewSection[] {
   return roots;
 }
 
-function parseMetadata(value: string): ViewSectionMetadata | undefined {
+function parseMetadata(value: string): PartSectionMetadata | undefined {
   try {
     const parsed = JSON.parse(value);
     if (!parsed || typeof parsed !== "object") return undefined;
-    const metadata: ViewSectionMetadata = { raw: parsed as Record<string, unknown> };
+    const metadata: PartSectionMetadata = { raw: parsed as Record<string, unknown> };
 
     if (typeof (parsed as any).id === "string") {
       metadata.id = (parsed as any).id;

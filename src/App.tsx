@@ -1,9 +1,9 @@
 import { useState, type ChangeEvent } from 'react'
 import JSZip from 'jszip'
 import './App.css'
-import { fetchTemplateAndViews } from './fetchTemplateMetadata'
-import { filterViewContent } from './filterViewContent'
-import type { TemplateLabelDefinition, TemplateWithViews, ViewSection } from './model'
+import { fetchTemplateAndParts } from './fetchTemplateMetadata'
+import { filterPartContent } from './filterPartContent'
+import type { TemplateLabelDefinition, TemplateWithParts, PartSection } from './model'
 
 const DEFAULT_TEMPLATE_URL = 'https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/'
 const defaultIncludingLabels: string[] = []
@@ -18,7 +18,7 @@ const availableLabels: string[] = [
   'solution',
 ]
 
-type FilteredView = {
+type FilteredPart = {
   name: string
   file: string
   templateContent: string
@@ -34,7 +34,7 @@ const App = () => {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState<string | null>(null)
-  const [previewViews, setPreviewViews] = useState<FilteredView[]>([])
+  const [previewParts, setPreviewParts] = useState<FilteredPart[]>([])
 
   const handleTemplateUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTemplateUrl(event.target.value)
@@ -69,20 +69,20 @@ const App = () => {
     setSuccessMessage(null)
 
     try {
-      const filteredViews = await buildFilteredViews(baseUrl, labelsToInclude)
-      const includedViews = filteredViews.length
-      if (!includedViews) {
-        throw new Error('No views left after applying label filters.')
+    const filteredParts = await buildFilteredParts(baseUrl, labelsToInclude)
+      const includedParts = filteredParts.length
+      if (!includedParts) {
+        throw new Error('No parts left after applying label filters.')
       }
 
       const zip = new JSZip()
 
-      for (const view of filteredViews) {
-        if (view.templateContent.trim()) {
-          zip.file(`template/${view.file}`, view.templateContent)
+      for (const part of filteredParts) {
+        if (part.templateContent.trim()) {
+          zip.file(`template/${part.file}`, part.templateContent)
         }
-        if (view.blankContent.trim()) {
-          zip.file(`blank-template/${view.file}`, view.blankContent)
+        if (part.blankContent.trim()) {
+          zip.file(`blank-template/${part.file}`, part.blankContent)
         }
       }
 
@@ -96,7 +96,7 @@ const App = () => {
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
-      setSuccessMessage(`Generated archive with ${includedViews} view(s).`)
+      setSuccessMessage(`Generated archive with ${includedParts} part(s).`)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       setErrorMessage(message)
@@ -112,13 +112,13 @@ const App = () => {
     setPreviewLoading(true)
     setPreviewError(null)
     try {
-      const filteredViews = await buildFilteredViews(baseUrl, labelsToInclude)
-      setPreviewViews(filteredViews)
-      if (!filteredViews.length) {
-        setPreviewError('No views left after applying label filters.')
+      const filteredParts = await buildFilteredParts(baseUrl, labelsToInclude)
+      setPreviewParts(filteredParts)
+      if (!filteredParts.length) {
+        setPreviewError('No parts left after applying label filters.')
       }
     } catch (error) {
-      setPreviewViews([])
+      setPreviewParts([])
       const message = error instanceof Error ? error.message : String(error)
       setPreviewError(message)
     } finally {
@@ -157,7 +157,7 @@ const App = () => {
 
         <section className="labels-panel">
           <div className="available-labels">
-            <h3>🏷️ Labels used to insert matching sections</h3>
+            <h3>🏷️ Resulting template only contains sections matching these labels:</h3>
             <ul>
               {availableLabels.map(label => {
                 const isSelected = includingLabels.includes(label)
@@ -197,23 +197,23 @@ const App = () => {
                 <p className="status">Loading preview…</p>
               ) : previewError ? (
                 <p className="status status-error">{previewError}</p>
-              ) : previewViews.length === 0 ? (
-                <p className="empty-row">No views to preview.</p>
+              ) : previewParts.length === 0 ? (
+                <p className="empty-row">No parts to preview.</p>
               ) : (
-                previewViews.map(view => (
-                  <div key={view.file} className="preview-view">
+                previewParts.map(part => (
+                  <div key={part.file} className="preview-view">
                     <h4>
-                      {view.name}
-                      <span className="preview-file"> ({view.file})</span>
+                      {part.name}
+                      <span className="preview-file"> ({part.file})</span>
                     </h4>
                     <div className="preview-sections">
                       <details open>
                         <summary>Blank template</summary>
-                        <pre>{view.blankContent.trim() ? view.blankContent : '(blank)'}</pre>
+                        <pre>{part.blankContent.trim() ? part.blankContent : '(blank)'}</pre>
                       </details>
                       <details>
                         <summary>Full template</summary>
-                        <pre>{view.templateContent.trim() ? view.templateContent : '(blank)'}</pre>
+                        <pre>{part.templateContent.trim() ? part.templateContent : '(blank)'}</pre>
                       </details>
                     </div>
                   </div>
@@ -245,8 +245,8 @@ const App = () => {
 
 export default App
 
-async function buildFilteredViews(baseUrl: string, labelsToInclude: string[]): Promise<FilteredView[]> {
-  const result = await fetchTemplateAndViews(baseUrl, { strict: false })
+async function buildFilteredParts(baseUrl: string, labelsToInclude: string[]): Promise<FilteredPart[]> {
+  const result = await fetchTemplateAndParts(baseUrl, { strict: false })
 
   if (labelsToInclude.length) {
     const knownLabels = buildKnownLabelSet(result)
@@ -257,20 +257,20 @@ async function buildFilteredViews(baseUrl: string, labelsToInclude: string[]): P
   }
 
   const orderMap = new Map(
-    result.metadata.data.views.map((view, index) => [view.file, index])
+    result.metadata.data.parts.map((part, index) => [part.file, index])
   )
 
-  const orderedViews = [...result.views].sort((a, b) => {
+  const orderedParts = [...result.parts].sort((a, b) => {
     const aIndex = orderMap.get(a.file) ?? Number.MAX_SAFE_INTEGER
     const bIndex = orderMap.get(b.file) ?? Number.MAX_SAFE_INTEGER
     return aIndex - bIndex
   })
 
-  const filteredViews: FilteredView[] = []
+  const filteredParts: FilteredPart[] = []
 
-  for (const view of orderedViews) {
-    if (!view.content) continue
-    const filtered = filterViewContent(view.content, {
+  for (const part of orderedParts) {
+    if (!part.content) continue
+    const filtered = filterPartContent(part.content, {
       includeLabels: labelsToInclude,
     })
 
@@ -278,23 +278,23 @@ async function buildFilteredViews(baseUrl: string, labelsToInclude: string[]): P
     const hasBlank = filtered.blankContent.trim().length > 0
     if (!hasTemplate && !hasBlank) continue
 
-    filteredViews.push({
-      name: view.name,
-      file: view.file,
+    filteredParts.push({
+      name: part.name,
+      file: part.file,
       templateContent: filtered.templateContent,
       blankContent: filtered.blankContent,
     })
   }
 
-  return filteredViews
+  return filteredParts
 }
 
-function buildKnownLabelSet(result: TemplateWithViews): Set<string> {
+function buildKnownLabelSet(result: TemplateWithParts): Set<string> {
   const known = new Set<string>()
 
   addDefinitions(known, result.metadata.data.labels)
-  result.views.forEach(view => {
-    view.sections?.forEach(section => addSectionLabels(known, section))
+  result.parts.forEach(part => {
+    part.sections?.forEach(section => addSectionLabels(known, section))
   })
 
   return known
@@ -307,7 +307,7 @@ function addDefinitions(set: Set<string>, definitions: TemplateLabelDefinition[]
   })
 }
 
-function addSectionLabels(set: Set<string>, section: ViewSection) {
+function addSectionLabels(set: Set<string>, section: PartSection) {
   section.metadata?.labels?.forEach(label => set.add(label))
   section.children.forEach(child => addSectionLabels(set, child))
 }

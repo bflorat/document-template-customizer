@@ -35,8 +35,8 @@ Options:
 
 The generated archive contains two folders:
 
-* `template/` keeps the filtered views with their metadata marker lines intact.
-* `blank-template/` contains the same views reduced to section titles and AsciiDoc attributes (body text removed).
+* `template/` keeps the filtered parts with their metadata marker lines intact.
+* `blank-template/` contains the same parts reduced to section titles and AsciiDoc attributes (body text removed).
 
 If none `--include` labels are provided, the resulting template contains every base template sections.
 
@@ -51,7 +51,7 @@ Sample  template-metadata.yaml :
 ```
 author: Bertrand Florat
 license: CC BY-SA 4.0
-views:
+parts:
   - name: Application
     file: view-application.adoc
   - name: Development
@@ -84,6 +84,5 @@ https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/he
 ## Others features ?
 
 * Ability to remove / add a specified section by number (2, 4.5...)
-* Preview the resulting template per view (blank mode)
 * Store configs (ex: set of selected labels...) so I can reopen it later
-* Keep all sections from the base template : just select none label
+* Done: Keep all sections from the base template : just select none label

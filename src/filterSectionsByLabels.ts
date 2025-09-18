@@ -1,4 +1,4 @@
-import type { ViewSection } from "./model/index.js";
+import type { PartSection } from "./model/index.js";
 
 interface FilterOptions {
   labels: string[];
@@ -8,12 +8,12 @@ interface FilterOptions {
  * Keep only sections whose labels match any of the provided values.
  */
 export function filterSectionsByLabels(
-  sections: ViewSection[],
+  sections: PartSection[],
   { labels }: FilterOptions
-): ViewSection[] {
+): PartSection[] {
   const labelSet = new Set(labels);
 
-  const prune = (section: ViewSection): ViewSection[] => {
+  const prune = (section: PartSection): PartSection[] => {
     const matches = section.metadata?.labels?.some(label => labelSet.has(label)) ?? false;
 
     const filteredChildren = section.children.flatMap(prune);

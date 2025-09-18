@@ -14,7 +14,7 @@
   "include": [
     "src/cli/**/*.ts",
     "src/filterSectionsByLabels.ts",
-    "src/filterViewContent.ts",
+    "src/filterPartContent.ts",
     "src/fetchTemplateMetadata.ts",
     "src/parseAsciiDocSections.ts",
     "src/model/**/*.ts"

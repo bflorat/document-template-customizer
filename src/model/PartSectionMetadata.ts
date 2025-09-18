@@ -1,4 +1,4 @@
-export interface ViewSectionMetadata {
+export interface PartSectionMetadata {
   id?: string;
   labels?: string[];
   linkTo?: string[];

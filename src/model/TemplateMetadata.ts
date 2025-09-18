@@ -1,9 +1,9 @@
 import type { TemplateLabelDefinition } from "./TemplateLabelDefinition.js";
-import type { View } from "./View.js";
+import type { Part } from "./Part.js";
 
 export interface TemplateMetadata {
   author: string;
   license: string;
-  views: View[];
+  parts: Part[];
   labels?: TemplateLabelDefinition[];
 }

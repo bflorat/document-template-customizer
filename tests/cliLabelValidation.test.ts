@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { TemplateLabelDefinition, TemplateWithViews } from "../src/model";
+import type { TemplateLabelDefinition, TemplateWithParts } from "../src/model";
 import { findUnknownLabels, parseArgs } from "../src/cli/generate-template";
 
 const defs: TemplateLabelDefinition[] = [
@@ -7,7 +7,7 @@ const defs: TemplateLabelDefinition[] = [
   { name: "persistence" },
 ];
 
-const views: TemplateWithViews["views"] = [
+const parts: TemplateWithParts["parts"] = [
   {
     name: "Demo",
     file: "demo.adoc",
@@ -26,18 +26,18 @@ const views: TemplateWithViews["views"] = [
 
 describe("findUnknownLabels", () => {
   it("returns empty list when labels are declared", () => {
-    const result = findUnknownLabels(["level::basic", "persistence"], defs, views);
+    const result = findUnknownLabels(["level::basic", "persistence"], defs, parts);
     expect(result).toEqual([]);
   });
 
   it("returns unknown labels", () => {
-    const result = findUnknownLabels(["level::overvie", "persistence"], defs, views);
+    const result = findUnknownLabels(["level::overvie", "persistence"], defs, parts);
     expect(result).toEqual(["level::overvie"]);
   });
 
   it("treats all labels as unknown when definitions missing", () => {
-    const emptyViews: TemplateWithViews["views"] = [];
-    expect(findUnknownLabels(["anything"], undefined, emptyViews)).toEqual(["anything"]);
+    const emptyParts: TemplateWithParts["parts"] = [];
+    expect(findUnknownLabels(["anything"], undefined, emptyParts)).toEqual(["anything"]);
   });
 });
 

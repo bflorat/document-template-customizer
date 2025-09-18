@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import type { ViewSection } from "../src/model";
+import type { PartSection } from "../src/model";
 import { filterSectionsByLabels } from "../src/filterSectionsByLabels";
 
-const tree: ViewSection[] = [
+const tree: PartSection[] = [
   {
     level: 1,
     title: "Introduction",

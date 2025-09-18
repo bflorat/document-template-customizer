@@ -1,10 +1,10 @@
 import { filterSectionsByLabels } from "./filterSectionsByLabels.js";
-import { parseAsciiDocSections, type ViewSectionWithLocation } from "./parseAsciiDocSections.js";
+import { parseAsciiDocSections, type PartSectionWithLocation } from "./parseAsciiDocSections.js";
 
 const HEADING_REGEX = /^\s*#{1,6}\s+.+$/;
 const ATTRIBUTE_REGEX = /^\s*:[^:]+:.*$/;
 
-export interface FilterViewContentOptions {
+export interface FilterPartContentOptions {
   includeLabels?: string[];
 }
 
@@ -12,18 +12,18 @@ function normalizeLabels(labels?: string[]): string[] {
   return (labels ?? []).map(label => label.trim()).filter(Boolean);
 }
 
-type SectionNode = ViewSectionWithLocation & { children: SectionNode[] };
+type SectionNode = PartSectionWithLocation & { children: SectionNode[] };
 
-export interface FilterViewContentResult {
+export interface FilterPartContentResult {
   templateContent: string;
   blankContent: string;
   keptSections: number;
 }
 
-export function filterViewContent(
+export function filterPartContent(
   rawContent: string,
-  options: FilterViewContentOptions = {}
-): FilterViewContentResult {
+  options: FilterPartContentOptions = {}
+): FilterPartContentResult {
   const includeLabels = normalizeLabels(options.includeLabels);
   const lines = rawContent.split(/\r?\n/);
 

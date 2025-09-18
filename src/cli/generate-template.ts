@@ -3,9 +3,9 @@ import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
-import { fetchTemplateAndViews } from "../fetchTemplateMetadata.js";
-import { filterViewContent } from "../filterViewContent.js";
-import type { TemplateLabelDefinition, TemplateWithViews } from "../model/index.js";
+import { fetchTemplateAndParts } from "../fetchTemplateMetadata.js";
+import { filterPartContent } from "../filterPartContent.js";
+import type { TemplateLabelDefinition, TemplateWithParts } from "../model/index.js";
 
 interface CliOptions {
   baseUrl?: string;
@@ -72,7 +72,7 @@ export function parseArgs(argv: string[]): CliOptions {
 export function findUnknownLabels(
   requested: string[],
   definitions: TemplateLabelDefinition[] | undefined,
-  views: TemplateWithViews["views"]
+  parts: TemplateWithParts["parts"]
 ): string[] {
   if (!requested.length) return [];
 
@@ -90,14 +90,14 @@ export function findUnknownLabels(
   }
 
   const visit = (
-    section: NonNullable<TemplateWithViews["views"][number]["sections"]>[number]
+    section: NonNullable<TemplateWithParts["parts"][number]["sections"]>[number]
   ) => {
     section.metadata?.labels?.forEach(label => known.add(label));
     section.children.forEach(child => visit(child));
   };
 
-  for (const view of views) {
-    view.sections?.forEach(section => visit(section));
+  for (const part of parts) {
+    part.sections?.forEach(section => visit(section));
   }
 
   if (!known.size) return requested.slice();
@@ -123,21 +123,21 @@ async function run() {
       throw new Error("Missing required --base-url argument.");
     }
 
-    const result = await fetchTemplateAndViews(options.baseUrl, {
+    const result = await fetchTemplateAndParts(options.baseUrl, {
       strict: false,
     });
 
-    const unknownLabels = findUnknownLabels(options.include, result.metadata.data.labels, result.views);
+    const unknownLabels = findUnknownLabels(options.include, result.metadata.data.labels, result.parts);
     if (unknownLabels.length) {
       throw new Error(`Unknown label(s): ${unknownLabels.join(", ")}`);
     }
 
     const zip = new JSZip();
-    let includedViews = 0;
+    let includedParts = 0;
 
-    for (const view of result.views) {
-      if (!view.content) continue;
-      const filtered = filterViewContent(view.content, {
+    for (const part of result.parts) {
+      if (!part.content) continue;
+      const filtered = filterPartContent(part.content, {
         includeLabels: options.include,
       });
 
@@ -148,16 +148,16 @@ async function run() {
       }
 
       if (hasTemplate) {
-        zip.file(`template/${view.file}`, filtered.templateContent);
+        zip.file(`template/${part.file}`, filtered.templateContent);
       }
       if (hasBlank) {
-        zip.file(`blank-template/${view.file}`, filtered.blankContent);
+        zip.file(`blank-template/${part.file}`, filtered.blankContent);
       }
-      includedViews += 1;
+      includedParts += 1;
     }
 
-    if (includedViews === 0) {
-      throw new Error("No views left after applying label filters.");
+    if (includedParts === 0) {
+      throw new Error("No parts left after applying label filters.");
     }
 
     const buffer = await zip.generateAsync({ type: "nodebuffer" });
@@ -167,7 +167,7 @@ async function run() {
     await mkdir(path.dirname(targetPath), { recursive: true });
     await writeFile(targetPath, buffer);
 
-    console.log(`Generated ${targetPath} with ${includedViews} view(s).`);
+    console.log(`Generated ${targetPath} with ${includedParts} part(s).`);
   } catch (error: any) {
     console.error(error?.message ?? String(error));
     process.exitCode = 1;

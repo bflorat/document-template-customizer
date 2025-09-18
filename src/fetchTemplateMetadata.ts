@@ -1,12 +1,12 @@
 import { parse } from "yaml";
 import {
   TemplateMetadataNotFoundError,
-  ViewFetchError,
+  PartFetchError,
   type TemplateFetchResult,
   type TemplateMetadata,
-  type TemplateWithViews,
-  type View,
-  type ViewFetchFailure,
+  type TemplateWithParts,
+  type Part,
+  type PartFetchFailure,
   type TemplateLabelDefinition,
 } from "./model/index.js";
 import { parseAsciiDocSections } from "./parseAsciiDocSections.js";
@@ -72,7 +72,7 @@ export async function fetchTemplateMetadata(
     const data: TemplateMetadata = {
       author: parsed.author,
       license: parsed.license,
-      views: Array.isArray(parsed.views) ? parsed.views : [],
+      parts: Array.isArray(parsed.parts) ? parsed.parts : [],
       labels: labelDefs,
     };
 
@@ -87,19 +87,19 @@ export async function fetchTemplateMetadata(
 }
 
 /**
- * Fetch metadata, then try to fetch *all* .adoc views at <baseUrl>/<file>.
- * If any view fetch fails and `strict` is true (default), throws ViewFetchError listing all failures.
- * If `strict` is false, returns what succeeded; failed views are omitted.
+ * Fetch metadata, then try to fetch *all* .adoc parts at <baseUrl>/<file>.
+ * If any part fetch fails and `strict` is true (default), throws PartFetchError listing all failures.
+ * If `strict` is false, returns what succeeded; failed parts are omitted.
  */
-export async function fetchTemplateAndViews(
+export async function fetchTemplateAndParts(
   baseUrl: string,
   opts?: {
     timeoutMs?: number;
     fetchImpl?: FetchLike;
-    strict?: boolean;      // default true: throw if any view fails
+    strict?: boolean;      // default true: throw if any part fails
     concurrency?: number;  // default 6
   }
-): Promise<TemplateWithViews> {
+): Promise<TemplateWithParts> {
   const fetchFn = opts?.fetchImpl ?? fetch;
   const timeoutMs = opts?.timeoutMs ?? 15_000;
   const strict = opts?.strict ?? true;
@@ -108,14 +108,14 @@ export async function fetchTemplateAndViews(
   const metadata = await fetchTemplateMetadata(baseUrl, { timeoutMs, fetchImpl: fetchFn });
 
   const normalized = baseUrl.replace(/\/+$/, "");
-  const toFetch = metadata.data.views.map(v => ({
-    name: v.name,
-    file: v.file,
-    url: `${normalized}/${v.file.replace(/^\/+/, "")}`,
+  const toFetch = metadata.data.parts.map(part => ({
+    name: part.name,
+    file: part.file,
+    url: `${normalized}/${part.file.replace(/^\/+/, "")}`,
   }));
 
   // Simple concurrency limiter
-  const results: Array<{ ok: true; view: Required<View> } | { ok: false; failure: ViewFetchFailure }> = [];
+  const results: Array<{ ok: true; part: Required<Part> } | { ok: false; failure: PartFetchFailure }> = [];
   let index = 0;
 
   async function worker() {
@@ -140,7 +140,7 @@ export async function fetchTemplateAndViews(
         const content = await res.text();
         results.push({
           ok: true,
-          view: {
+          part: {
             name: item.name,
             file: item.file,
             url: item.url,
@@ -166,30 +166,30 @@ export async function fetchTemplateAndViews(
 
   const failures = results
     .filter(r => !r.ok)
-    .map(r => (r as { ok: false; failure: ViewFetchFailure }).failure);
+    .map(r => (r as { ok: false; failure: PartFetchFailure }).failure);
   const successes = results
-    .filter((r): r is { ok: true; view: Required<View> } => r.ok)
-    .map(r => r.view);
+    .filter((r): r is { ok: true; part: Required<Part> } => r.ok)
+    .map(r => r.part);
 
   if (failures.length && strict) {
-    throw new ViewFetchError(failures);
+    throw new PartFetchError(failures);
   }
 
   return {
     metadata,
-    views: successes,
+    parts: successes,
   };
 }
 
 export {
   TemplateMetadataNotFoundError,
-  ViewFetchError,
+  PartFetchError,
 } from "./model/index.js";
 
 export type {
   TemplateFetchResult,
   TemplateMetadata,
-  TemplateWithViews,
-  View,
-  ViewFetchFailure,
+  TemplateWithParts,
+  Part,
+  PartFetchFailure,
 } from "./model/index.js";
