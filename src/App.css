@@ -145,14 +145,23 @@ header h1 {
 .status {
   margin-top: 0.75rem;
   font-size: 0.95rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  background: #eef2ff;
+  border: 1px solid #d4dbf8;
+  color: #1f2a5a;
 }
 
 .status-error {
-  color: #a61c1c;
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #7f1d1d;
 }
 
 .status-success {
-  color: #0f7a0f;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #14532d;
 }
 
 .available-labels {
@@ -205,10 +214,16 @@ header h1 {
 .template-load-status {
   margin-top: 0.25rem;
   font-size: 0.9rem;
-  color: #4f46e5;
+  color: #1f2a5a;
+  background: #eef2ff;
+  border: 1px solid #d4dbf8;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
 }
 
 .template-load-status.loaded {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
   color: #166534;
 }
 
