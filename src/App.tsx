@@ -175,7 +175,7 @@ const App = () => {
   return (
     <div className="app">
       <header>
-        <h1>Document Template Customizer</h1>
+        <h1>📐 Document Template Customizer</h1>
       </header>
       <form className="template-form" onSubmit={handleFormSubmit}>
         <label className="input-group">
