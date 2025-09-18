@@ -146,10 +146,13 @@ header h1 {
   margin-top: 0.75rem;
   font-size: 0.95rem;
   padding: 0.6rem 0.8rem;
-  border-radius: 6px;
   background: #eef2ff;
   border: 1px solid #d4dbf8;
   color: #1f2a5a;
+  width: 100%;
+  display: block;
+  align-self: stretch;
+  border-radius: 0;
 }
 
 .status-error {
@@ -217,8 +220,10 @@ header h1 {
   color: #1f2a5a;
   background: #eef2ff;
   border: 1px solid #d4dbf8;
-  border-radius: 6px;
   padding: 0.5rem 0.75rem;
+  width: 100%;
+  display: block;
+  border-radius: 0;
 }
 
 .template-load-status.loaded {
