@@ -12,13 +12,14 @@ DTC can work not only with my own templates, but also with any base document tem
 . Another expert (typically a *Solution Architect*) creates a customized, curated template for one or several projects. This includes both a *full template with explanations* and *blank documents* to be filled.
 . The project team then fills the *blank documents*, guided by the explanations in the customized template.
 
-## Prerequises for a base template
+## Prerequisites for a Base Template
 
-* Must be written in Asciidoc in Acidoctor-flavor (with sections identified by the `#` characters, not the `=` one ) or Markdown.
-* Must content a `README.adoc` or `README.md` introductionnal document at the root of the base template URL.
-* Must content a `base-template-metadata.yaml` file at the root of the base template URL. An sample is provided bellow.
+* The template must be written in **AsciiDoc (Asciidoctor flavor)** — with sections starting with `#` characters, not `=` — or in **Markdown**.
+* A **`README.adoc`** or **`README.md`** file must be present at the root of the base template URL, providing an introduction.
+* A **`base-template-metadata.yaml`** file must be present at the root of the base template URL. A sample is provided below.
 
-TIP: We strongly recommand ASCIIDOC over MArkdown for important documents (admonitiopns, better tables, TOC...)
+[TIP]  
+We strongly recommend using **AsciiDoc** rather than Markdown for important documents, as it provides richer features such as admonitions, better tables, and an automatic table of contents.
 
 
 .Sample `base-template-metadata.yaml` :
