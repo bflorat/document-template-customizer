@@ -89,13 +89,18 @@ const App = () => {
         .sort((a, b) => compareLabels(a, b, labelOrder))
       setAvailableLabels(selectableLabels)
 
-      // Select all available labels by default on first load
+      // Select all available labels by default on first load (UI only)
       if (!didAutoSelectAll && includingLabels.length === 0) {
         setIncludingLabels(selectableLabels)
         setDidAutoSelectAll(true)
       }
 
-      const effectiveLabels = labelsToInclude.length ? labelsToInclude : selectableLabels
+      // Matching rule: if none OR all labels are selected, keep full template
+      const selectedSet = new Set(labelsToInclude)
+      const isAllSelected = labelsToInclude.length > 0 &&
+        labelsToInclude.length === selectableLabels.length &&
+        selectableLabels.every(l => selectedSet.has(l))
+      const effectiveLabels = (labelsToInclude.length === 0 || isAllSelected) ? [] : labelsToInclude
       const filteredParts = buildFilteredPartsFromResult(result, effectiveLabels, knownSet)
       setExpandedParts(prev => {
         const nextState: Record<string, { blank: boolean; full: boolean }> = {}

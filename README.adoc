@@ -45,6 +45,7 @@ labels:
 ```
 
 * Every section of each part file of the base template should be annotated with a metadata line like : `🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract","introduction"]}`
+  ** First level section (with a single) is always kept and should not be annotated.
   ** Keep a blank line between the metadata line and the section title line.
   ** Used labels must be listed in the `base-template-metadata.yaml` file to be token into account.
   ** Labels can be simple flag (like `performance`)
@@ -94,3 +95,12 @@ If none `--include` labels are provided, the resulting template contains every b
 
 
 In the resulting zip, add a customization-context.yaml file that sum-up : date of the template generation, base template url, selected labels
+
+
+Matching rules:
+- If all or none label is selected, resulting template = the full base template
+- The first level sections (single '#') are always kept
+- If a parent section doesn't match, drop all sub-sections recusivelly
+- If a parent section matches, evaluate each sub-section and keep it only if it matches
+- If the base template is annotated with a wilcard multi-value label like project_size::* , it means that any selected label (project_size::small, project_size::large...) matches
+

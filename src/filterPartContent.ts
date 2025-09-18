@@ -161,9 +161,13 @@ function buildSectionDecisions(
   const candidateSet = new Set(labels);
 
   const evaluate = (section: SectionNode): SectionDecision => {
-    const matches = matchesAllLabels(section.metadata?.labels, candidateSet, wildcard);
+    const labels = section.metadata?.labels ?? [];
+    const hasLabels = labels.length > 0;
+    const matches = hasLabels ? matchesAllLabels(labels, candidateSet, wildcard) : false;
     const children = section.children.map(evaluate);
-    const keep = matches; // if parent doesn't match, drop entire subtree
+    // If the section has labels and doesn't match, drop the subtree.
+    // If it has no labels, keep it only if any child is kept.
+    const keep = hasLabels ? matches : children.some(child => child.keep);
     return {
       node: section,
       matches,

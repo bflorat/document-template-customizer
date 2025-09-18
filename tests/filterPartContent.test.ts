@@ -30,6 +30,8 @@ describe("filterPartContent", () => {
     expect(result.templateContent).not.toContain('"exclude-me"');
     expect(result.blankContent.trim()).toBe([
       "# Application",
+      ":sectnums: 4",
+      ":toc: left",
       "",
       "## Included Section",
     ].join("\n"));
@@ -84,5 +86,13 @@ describe("filterPartContent", () => {
     const both = filterPartContent(view, { includeLabels: ["include-me","other"] });
     expect(both.templateContent).toContain("## Only Include");
     expect(both.templateContent).toContain("## Both");
+  });
+
+  it("unlabeled parent does not block matching children", () => {
+    const view = `# Root\n\n🏷{"labels":["a"]}\n## Child A\nA\n\n🏷{"labels":["b"]}\n## Child B\nB`;
+
+    const res = filterPartContent(view, { includeLabels: ["a", "b", "c", "d"] });
+    expect(res.templateContent).toContain("## Child A");
+    expect(res.templateContent).toContain("## Child B");
   });
 });
