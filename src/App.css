@@ -12,6 +12,13 @@
   gap: 2.5rem;
 }
 
+.app-footer {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: #555;
+  text-align: center;
+}
+
 header h1 {
   margin: 0;
   font-size: 1.9rem;
@@ -51,6 +58,7 @@ header h1 {
   width: 100%;
 }
 
+
 .labels-panel {
   flex: 1;
 }
@@ -61,36 +69,20 @@ header h1 {
   margin: 0 0 0.75rem;
 }
 
-.labels-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #fff;
+.selected-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.labels-table th,
-.labels-table td {
-  border: 1px solid #bcbcbc;
-  padding: 0.55rem 0.75rem;
-  font-size: 0.95rem;
-  text-align: left;
+.selected-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.labels-table th {
-  background-color: #d9d9d9;
-  font-weight: 600;
-}
-
-.labels-table.editable .actions-col {
-  width: 60px;
-}
-
-.labels-table.editable .actions-cell {
-  width: 1%;
-  white-space: nowrap;
-}
-
-.labels-table .empty-row {
-  text-align: center;
+.empty-row {
+  margin: 0;
   color: #666;
   font-style: italic;
 }
@@ -102,6 +94,10 @@ header h1 {
   border: 1px solid #bcbcbc;
   border-radius: 4px;
   box-sizing: border-box;
+}
+
+.remove-label {
+  white-space: nowrap;
 }
 
 .secondary-action {
@@ -130,6 +126,7 @@ header h1 {
 
 .add-label {
   margin-top: 0.75rem;
+  align-self: flex-start;
 }
 
 .status {

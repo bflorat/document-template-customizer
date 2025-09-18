@@ -8,13 +8,13 @@ import type { TemplateLabelDefinition, TemplateWithViews, ViewSection } from './
 const DEFAULT_TEMPLATE_URL = 'https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/'
 const defaultIncludingLabels: string[] = []
 const availableLabels: string[] = [
-  'level::basic',
-  'level::intermediate',
-  'level::advanced',
-  'persistence',
-  'mobile',
   'detail_level::abstract',
   'detail_level::in-depth',
+  'level::advanced',
+  'level::basic',
+  'level::intermediate',
+  'mobile',
+  'persistence',
   'solution',
 ]
 
@@ -143,7 +143,7 @@ const App = () => {
       </header>
       <form className="template-form">
         <label className="input-group">
-          <span>Base template URL</span>
+          <span>Base template URL:</span>
           <input
             type="url"
             placeholder={DEFAULT_TEMPLATE_URL}
@@ -182,6 +182,9 @@ const App = () => {
           <p className="status status-success">{successMessage}</p>
         ) : null}
       </form>
+      <footer className="app-footer">
+        © 2025 Bertrand Florat — CC BY-SA v4.0
+      </footer>
     </div>
   )
 }
