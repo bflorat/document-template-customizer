@@ -45,6 +45,12 @@ export function filterPartContent(
     const decisions = buildSectionDecisions(sections, includeLabels, wildcard);
     filteredSections = collectMatchedSections(decisions);
     keepMask = createKeepMask(lines.length, decisions);
+    // Always keep the first level-1 heading (e.g., "# Application")
+    // when there is at least one kept section in the document.
+    if (filteredSections.length) {
+      const h1Index = findFirstLevelOneHeadingIndex(lines);
+      if (h1Index !== -1) keepMask[h1Index] = true;
+    }
   } else {
     keepMask = new Array<boolean>(lines.length).fill(true);
   }
@@ -143,6 +149,17 @@ function countSections(sections: SectionNode[]): number {
     total += 1 + countSections(section.children as SectionNode[]);
   }
   return total;
+}
+
+function findFirstLevelOneHeadingIndex(lines: string[]): number {
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trimStart();
+    if (trimmed.startsWith('#') && !trimmed.startsWith('##')) {
+      // ensure it is a heading, not just a hash character word
+      if (/^#\s+/.test(trimmed)) return i;
+    }
+  }
+  return -1;
 }
 
 function buildSectionDecisions(
