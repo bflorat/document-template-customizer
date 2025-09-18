@@ -202,6 +202,10 @@ const README_CANDIDATES = [
   "Readme.adoc",
   "readme.adoc",
   "ReadMe.adoc",
+  "README.md",
+  "Readme.md",
+  "readme.md",
+  "ReadMe.md",
 ];
 
 async function fetchReadme(
@@ -225,6 +229,6 @@ async function fetchReadme(
   }
 
   throw new Error(
-    `README.adoc is required in the base template. Tried: ${README_CANDIDATES.join(", ")}`
+    `README (adoc/md) is required in the base template. Tried: ${README_CANDIDATES.join(", ")}`
   );
 }

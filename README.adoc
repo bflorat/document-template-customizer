@@ -68,9 +68,9 @@ The generated archive contains two folders:
 
 * `template/` keeps the filtered parts with their metadata marker lines intact.
 * `blank-template/` contains the same parts reduced to section titles and AsciiDoc attributes (body text removed).
-* A `README.adoc` from the base template is always included at the root of the archive.
+* A `README.adoc` or `README.md` from the base template is always included at the root of the archive.
 
-If none `--include` labels are provided, the resulting template contains every base template sections. The base template **must** expose a `README.adoc` (case-insensitive) alongside `base-template-metadata.yaml`.
+If none `--include` labels are provided, the resulting template contains every base template sections. The base template **must** expose a `README.adoc` or `README.md` (case-insensitive) alongside `base-template-metadata.yaml`.
 
 ## History
 

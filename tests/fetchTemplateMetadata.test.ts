@@ -226,7 +226,7 @@ describe("fetchTemplateAndParts", () => {
     const fetchMock = buildFetchMock([[METADATA_URL, ok("   \n  ")]]);
     await expect(
       fetchTemplateAndParts(BASE, { fetchImpl: fetchMock })
-    ).rejects.toThrow(/Empty template-metadata\.yaml/);
+    ).rejects.toThrow(/Empty base-template-metadata\.yaml/);
   });
 
   it("fails when README.adoc is missing", async () => {
@@ -239,6 +239,20 @@ describe("fetchTemplateAndParts", () => {
 
     await expect(
       fetchTemplateAndParts(BASE, { fetchImpl: fetchMock })
-    ).rejects.toThrow(/README\.adoc is required/);
+    ).rejects.toThrow(/README \(adoc\/md\) is required/);
+  });
+
+  it("accepts README.md in addition to README.adoc", async () => {
+    const fetchMock = buildFetchMock([
+      [METADATA_URL, ok(YAML_OK)],
+      [`${BASE}/view-application.adoc`, ok(PART_APP)],
+      [`${BASE}/view-development.adoc`, ok(PART_DEV)],
+      [`${BASE}/security.adoc`, ok(PART_SEC)],
+      [`${BASE}/README.md`, ok(README_BODY)],
+    ]);
+
+    const res = await fetchTemplateAndParts(BASE, { fetchImpl: fetchMock });
+    expect(res.readme.file).toBe("README.md");
+    expect(res.readme.content).toContain("Template");
   });
 });
