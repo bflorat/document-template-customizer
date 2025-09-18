@@ -18,41 +18,26 @@ const availableLabels: string[] = [
   'solution',
 ]
 
+type FilteredView = {
+  name: string
+  file: string
+  templateContent: string
+  blankContent: string
+}
+
 const App = () => {
   const [templateUrl, setTemplateUrl] = useState('')
-  const [keepAllSections, setKeepAllSections] = useState(false)
   const [includingLabels, setIncludingLabels] = useState(defaultIncludingLabels)
   const [isGenerating, setIsGenerating] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [previewError, setPreviewError] = useState<string | null>(null)
+  const [previewViews, setPreviewViews] = useState<FilteredView[]>([])
 
   const handleTemplateUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTemplateUrl(event.target.value)
-  }
-
-  const handleKeepAllChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setKeepAllSections(event.target.checked)
-  }
-
-  const handleLabelChange = (index: number, value: string) => {
-    setIncludingLabels(prev => {
-      const next = [...prev]
-      next[index] = value
-      next.sort((a, b) => a.localeCompare(b))
-      return next
-    })
-  }
-
-  const handleAddLabel = () => {
-    setIncludingLabels(prev => [...prev, ''])
-  }
-
-  const handleRemoveLabel = (index: number) => {
-    setIncludingLabels(prev => {
-      const next = prev.filter((_, i) => i !== index)
-      next.sort((a, b) => a.localeCompare(b))
-      return next
-    })
   }
 
   const handleAvailableLabelClick = (label: string) => {
@@ -68,53 +53,37 @@ const App = () => {
     })
   }
 
+  const resolveBaseUrl = () => (templateUrl || DEFAULT_TEMPLATE_URL).trim()
+
+  const computeLabelsToInclude = () =>
+    includingLabels.map(label => label.trim()).filter(Boolean)
+
   const handleGenerate = async () => {
     if (isGenerating) return
 
-    const baseUrl = (templateUrl || DEFAULT_TEMPLATE_URL).trim()
-    const labelsToInclude = keepAllSections
-      ? []
-      : includingLabels.map(label => label.trim()).filter(Boolean)
+    const baseUrl = resolveBaseUrl()
+    const labelsToInclude = computeLabelsToInclude()
 
     setIsGenerating(true)
     setErrorMessage(null)
     setSuccessMessage(null)
 
     try {
-      const result = await fetchTemplateAndViews(baseUrl, { strict: false })
-      if (labelsToInclude.length) {
-        const knownLabels = buildKnownLabelSet(result)
-        const unknown = labelsToInclude.filter(label => !knownLabels.has(label))
-        if (unknown.length) {
-          throw new Error(`Unknown label(s): ${unknown.join(', ')}`)
-        }
+      const filteredViews = await buildFilteredViews(baseUrl, labelsToInclude)
+      const includedViews = filteredViews.length
+      if (!includedViews) {
+        throw new Error('No views left after applying label filters.')
       }
 
       const zip = new JSZip()
-      let includedViews = 0
 
-      for (const view of result.views) {
-        if (!view.content) continue
-        const filtered = filterViewContent(view.content, {
-          includeLabels: labelsToInclude,
-        })
-
-        const hasTemplate = filtered.templateContent.trim().length > 0
-        const hasBlank = filtered.blankContent.trim().length > 0
-
-        if (!hasTemplate && !hasBlank) continue
-
-        if (hasTemplate) {
-          zip.file(`template/${view.file}`, filtered.templateContent)
+      for (const view of filteredViews) {
+        if (view.templateContent.trim()) {
+          zip.file(`template/${view.file}`, view.templateContent)
         }
-        if (hasBlank) {
-          zip.file(`blank-template/${view.file}`, filtered.blankContent)
+        if (view.blankContent.trim()) {
+          zip.file(`blank-template/${view.file}`, view.blankContent)
         }
-        includedViews += 1
-      }
-
-      if (includedViews === 0) {
-        throw new Error('No views left after applying label filters.')
       }
 
       const blob = await zip.generateAsync({ type: 'blob' })
@@ -136,6 +105,40 @@ const App = () => {
     }
   }
 
+  const refreshPreview = async () => {
+    const baseUrl = resolveBaseUrl()
+    const labelsToInclude = computeLabelsToInclude()
+
+    setPreviewLoading(true)
+    setPreviewError(null)
+    try {
+      const filteredViews = await buildFilteredViews(baseUrl, labelsToInclude)
+      setPreviewViews(filteredViews)
+      if (!filteredViews.length) {
+        setPreviewError('No views left after applying label filters.')
+      }
+    } catch (error) {
+      setPreviewViews([])
+      const message = error instanceof Error ? error.message : String(error)
+      setPreviewError(message)
+    } finally {
+      setPreviewLoading(false)
+    }
+  }
+
+  const handleTogglePreview = async () => {
+    const next = !previewOpen
+    setPreviewOpen(next)
+    if (next) {
+      await refreshPreview()
+    }
+  }
+
+  const handleRefreshPreview = async () => {
+    if (!previewOpen || previewLoading) return
+    await refreshPreview()
+  }
+
   return (
     <div className="app">
       <header>
@@ -154,7 +157,7 @@ const App = () => {
 
         <section className="labels-panel">
           <div className="available-labels">
-            <h3>🏷️ Labels of matching sections</h3>
+            <h3>🏷️ Labels used to insert matching sections</h3>
             <ul>
               {availableLabels.map(label => {
                 const isSelected = includingLabels.includes(label)
@@ -172,6 +175,54 @@ const App = () => {
           </div>
         </section>
 
+        <section className="preview-panel">
+          <div className="preview-header">
+            <button type="button" className="secondary-action" onClick={handleTogglePreview}>
+              {previewOpen ? 'Hide preview' : 'Show preview'}
+            </button>
+            {previewOpen ? (
+              <button
+                type="button"
+                className="secondary-action"
+                onClick={handleRefreshPreview}
+                disabled={previewLoading}
+              >
+                Refresh preview
+              </button>
+            ) : null}
+          </div>
+          {previewOpen ? (
+            <div className="preview-body">
+              {previewLoading ? (
+                <p className="status">Loading preview…</p>
+              ) : previewError ? (
+                <p className="status status-error">{previewError}</p>
+              ) : previewViews.length === 0 ? (
+                <p className="empty-row">No views to preview.</p>
+              ) : (
+                previewViews.map(view => (
+                  <div key={view.file} className="preview-view">
+                    <h4>
+                      {view.name}
+                      <span className="preview-file"> ({view.file})</span>
+                    </h4>
+                    <div className="preview-sections">
+                      <details open>
+                        <summary>Blank template</summary>
+                        <pre>{view.blankContent.trim() ? view.blankContent : '(blank)'}</pre>
+                      </details>
+                      <details>
+                        <summary>Full template</summary>
+                        <pre>{view.templateContent.trim() ? view.templateContent : '(blank)'}</pre>
+                      </details>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : null}
+        </section>
+
         <button type="button" className="primary-action" onClick={handleGenerate} disabled={isGenerating}>
           {isGenerating ? '⏳ Generating…' : '🚀 Generate your template'}
         </button>
@@ -184,8 +235,8 @@ const App = () => {
       </form>
       <footer className="app-footer">
         © 2025 Bertrand Florat — CC BY-SA v4.0 —{' '}
-        <a href="https://git.florat.net/bflorat/document-template-customizer" target="_blank" rel="noreferrer">
-          More in the project repository
+        More in the <a href="https://git.florat.net/bflorat/document-template-customizer" target="_blank" rel="noreferrer">
+          project repository
         </a>
       </footer>
     </div>
@@ -193,6 +244,50 @@ const App = () => {
 }
 
 export default App
+
+async function buildFilteredViews(baseUrl: string, labelsToInclude: string[]): Promise<FilteredView[]> {
+  const result = await fetchTemplateAndViews(baseUrl, { strict: false })
+
+  if (labelsToInclude.length) {
+    const knownLabels = buildKnownLabelSet(result)
+    const unknown = labelsToInclude.filter(label => !knownLabels.has(label))
+    if (unknown.length) {
+      throw new Error(`Unknown label(s): ${unknown.join(', ')}`)
+    }
+  }
+
+  const orderMap = new Map(
+    result.metadata.data.views.map((view, index) => [view.file, index])
+  )
+
+  const orderedViews = [...result.views].sort((a, b) => {
+    const aIndex = orderMap.get(a.file) ?? Number.MAX_SAFE_INTEGER
+    const bIndex = orderMap.get(b.file) ?? Number.MAX_SAFE_INTEGER
+    return aIndex - bIndex
+  })
+
+  const filteredViews: FilteredView[] = []
+
+  for (const view of orderedViews) {
+    if (!view.content) continue
+    const filtered = filterViewContent(view.content, {
+      includeLabels: labelsToInclude,
+    })
+
+    const hasTemplate = filtered.templateContent.trim().length > 0
+    const hasBlank = filtered.blankContent.trim().length > 0
+    if (!hasTemplate && !hasBlank) continue
+
+    filteredViews.push({
+      name: view.name,
+      file: view.file,
+      templateContent: filtered.templateContent,
+      blankContent: filtered.blankContent,
+    })
+  }
+
+  return filteredViews
+}
 
 function buildKnownLabelSet(result: TemplateWithViews): Set<string> {
   const known = new Set<string>()

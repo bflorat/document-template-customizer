@@ -192,6 +192,72 @@ header h1 {
   background: #dbe4ff;
 }
 
+.preview-panel {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fbfbff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.preview-header {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.preview-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.preview-view {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0.75rem;
+}
+
+.preview-view h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.preview-file {
+  font-weight: 400;
+  color: #666;
+}
+
+.preview-view pre {
+  margin: 0;
+  background: #f7f9ff;
+  border-radius: 4px;
+  padding: 0.75rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.preview-sections {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.preview-sections details {
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background: #fff;
+  padding: 0.5rem 0.75rem;
+}
+
+.preview-sections summary {
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
 .or-text {
   margin: 0;
   color: #616161;
