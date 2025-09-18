@@ -86,3 +86,5 @@ https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/he
 * Ability to remove / add a specified section by number (2, 4.5...)
 * Store configs (ex: set of selected labels...) so I can reopen it later
 * Done: Keep all sections from the base template : just select none label
+
+## TODO

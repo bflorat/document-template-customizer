@@ -200,6 +200,7 @@ const App = () => {
         <section className="labels-panel">
           <div className="available-labels">
             <h3>🏷️ Resulting template only contains sections matching these labels:</h3>
+            <p>(Select none label to get the full base template)</p>
             <ul>
               {templateLoadInfo.state === 'loading' ? (
                 <li className="empty-label">Loading labels…</li>
@@ -282,7 +283,7 @@ const App = () => {
         ) : null}
       </form>
       <footer className="app-footer">
-        © 2025 Bertrand Florat — CC BY-SA v4.0 —{' '}
+        © 2025 Bertrand Florat — <a href='https://creativecommons.org/licenses/by-sa/4.0/'>CC BY-SA v4.0</a> —{' '}
         More in the <a href="https://git.florat.net/bflorat/document-template-customizer" target="_blank" rel="noreferrer">
           project repository
         </a>
