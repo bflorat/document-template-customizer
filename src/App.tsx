@@ -110,6 +110,7 @@ const App = () => {
 
     const baseUrl = resolveBaseUrl()
     const labelsToInclude = computeLabelsToInclude()
+    const startTime = performance.now()
 
     setIsGenerating(true)
     setErrorMessage(null)
@@ -156,7 +157,8 @@ const App = () => {
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
-      setSuccessMessage(`Generated archive with ${includedParts} part(s).`)
+      const durationMs = performance.now() - startTime
+      setSuccessMessage(`Generated archive with ${includedParts} part(s) in ${formatDuration(durationMs)}.`)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       setErrorMessage(message)
@@ -240,7 +242,6 @@ const App = () => {
         <section className="labels-panel">
           <div className="available-labels">
             <h3>🏷️ Resulting template only contains sections matching these labels:</h3>
-            <p>(Select none label to get the full base template)</p>
             <ul>
               {templateLoadInfo.state === 'loading' ? (
                 <li className="empty-label">Loading labels…</li>
@@ -261,6 +262,7 @@ const App = () => {
                 })
               )}
             </ul>
+            <p><i>Tip: select none label to keep every section of the base template</i></p>            
           </div>
         </section>
 
