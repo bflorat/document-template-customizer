@@ -20,13 +20,10 @@ export function filterSectionsByLabels(
       ? labels.every(label => matchesLabel(label, labelSet, wildcard))
       : false;
 
+    if (!matches) return [];
+
     const filteredChildren = section.children.flatMap(prune);
-
-    if (matches) {
-      return [{ ...section, children: filteredChildren }];
-    }
-
-    return filteredChildren;
+    return [{ ...section, children: filteredChildren }];
   };
 
   return sections

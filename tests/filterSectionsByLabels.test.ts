@@ -41,12 +41,9 @@ const tree: PartSection[] = [
 ];
 
 describe("filterSectionsByLabels", () => {
-  it("keeps only sections that match labels", () => {
+  it("drops children when parent doesn't match (no bubbling)", () => {
     const filtered = filterSectionsByLabels(tree, { labels: ["keep"] });
-
-    expect(filtered).toHaveLength(1);
-    expect(filtered[0].title).toBe("Context");
-    expect(filtered[0].children).toHaveLength(0);
+    expect(filtered).toHaveLength(0);
   });
 
   it("drops unrelated sections when no label matches", () => {

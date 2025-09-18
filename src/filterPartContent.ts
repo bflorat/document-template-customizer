@@ -98,11 +98,6 @@ function createKeepMask(lineCount: number, decisions: SectionDecision[]): boolea
   const process = (decision: SectionDecision) => {
     if (!decision.keep) return;
 
-    if (!decision.matches) {
-      decision.children.forEach(process);
-      return;
-    }
-
     const section = decision.node;
     const sectionStart = clampLine(section.startLine);
     const sectionEnd = clampLine(section.endLine);
@@ -124,9 +119,7 @@ function createKeepMask(lineCount: number, decisions: SectionDecision[]): boolea
         markRange(cursor, Math.min(childStart - 1, sectionEnd));
       }
 
-      if (child.keep) {
-        process(child);
-      }
+      process(child);
 
       cursor = Math.max(cursor, childEnd + 1);
       if (cursor > sectionEnd) break;
@@ -170,7 +163,7 @@ function buildSectionDecisions(
   const evaluate = (section: SectionNode): SectionDecision => {
     const matches = matchesAllLabels(section.metadata?.labels, candidateSet, wildcard);
     const children = section.children.map(evaluate);
-    const keep = matches || children.some(child => child.keep);
+    const keep = matches; // if parent doesn't match, drop entire subtree
     return {
       node: section,
       matches,
@@ -187,11 +180,7 @@ function collectMatchedSections(decisions: SectionDecision[]): SectionNode[] {
   for (const decision of decisions) {
     if (!decision.keep) continue;
     const keptChildren = collectMatchedSections(decision.children);
-    if (decision.matches) {
-      result.push({ ...decision.node, children: keptChildren });
-    } else {
-      result.push(...keptChildren);
-    }
+    result.push({ ...decision.node, children: keptChildren });
   }
   return result;
 }
