@@ -192,6 +192,22 @@ header h1 {
   background: #dbe4ff;
 }
 
+.available-labels .empty-label {
+  color: #666;
+  font-style: italic;
+  list-style: none;
+}
+
+.template-load-status {
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+  color: #4f46e5;
+}
+
+.template-load-status.loaded {
+  color: #166534;
+}
+
 .preview-panel {
   width: 100%;
   border: 1px solid #e0e0e0;

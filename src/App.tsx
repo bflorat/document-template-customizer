@@ -7,16 +7,6 @@ import type { TemplateLabelDefinition, TemplateWithParts, PartSection } from './
 
 const DEFAULT_TEMPLATE_URL = 'https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/'
 const defaultIncludingLabels: string[] = []
-const availableLabels: string[] = [
-  'detail_level::abstract',
-  'detail_level::in-depth',
-  'level::advanced',
-  'level::basic',
-  'level::intermediate',
-  'mobile',
-  'persistence',
-  'solution',
-]
 
 type FilteredPart = {
   name: string
@@ -25,9 +15,16 @@ type FilteredPart = {
   blankContent: string
 }
 
+type TemplateLoadInfo =
+  | { state: 'idle' }
+  | { state: 'loading' }
+  | { state: 'loaded'; durationMs: number }
+  | { state: 'error'; message: string };
+
 const App = () => {
   const [templateUrl, setTemplateUrl] = useState('')
   const [includingLabels, setIncludingLabels] = useState(defaultIncludingLabels)
+  const [availableLabels, setAvailableLabels] = useState<string[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -35,6 +32,7 @@ const App = () => {
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState<string | null>(null)
   const [previewParts, setPreviewParts] = useState<FilteredPart[]>([])
+  const [templateLoadInfo, setTemplateLoadInfo] = useState<TemplateLoadInfo>({ state: 'idle' })
 
   const handleTemplateUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTemplateUrl(event.target.value)
@@ -58,6 +56,24 @@ const App = () => {
   const computeLabelsToInclude = () =>
     includingLabels.map(label => label.trim()).filter(Boolean)
 
+  const loadFilteredParts = async (baseUrl: string, labelsToInclude: string[]) => {
+    setTemplateLoadInfo({ state: 'loading' })
+    const start = performance.now()
+    try {
+      const result = await fetchTemplateAndParts(baseUrl, { strict: false })
+      const knownSet = buildKnownLabelSet(result)
+      setAvailableLabels(Array.from(knownSet).sort((a, b) => a.localeCompare(b)))
+      const filteredParts = buildFilteredPartsFromResult(result, labelsToInclude, knownSet)
+      const durationMs = performance.now() - start
+      setTemplateLoadInfo({ state: 'loaded', durationMs })
+      return filteredParts
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      setTemplateLoadInfo({ state: 'error', message })
+      throw error
+    }
+  }
+
   const handleGenerate = async () => {
     if (isGenerating) return
 
@@ -69,7 +85,7 @@ const App = () => {
     setSuccessMessage(null)
 
     try {
-    const filteredParts = await buildFilteredParts(baseUrl, labelsToInclude)
+      const filteredParts = await loadFilteredParts(baseUrl, labelsToInclude)
       const includedParts = filteredParts.length
       if (!includedParts) {
         throw new Error('No parts left after applying label filters.')
@@ -112,7 +128,7 @@ const App = () => {
     setPreviewLoading(true)
     setPreviewError(null)
     try {
-      const filteredParts = await buildFilteredParts(baseUrl, labelsToInclude)
+      const filteredParts = await loadFilteredParts(baseUrl, labelsToInclude)
       setPreviewParts(filteredParts)
       if (!filteredParts.length) {
         setPreviewError('No parts left after applying label filters.')
@@ -154,23 +170,30 @@ const App = () => {
             onChange={handleTemplateUrlChange}
           />
         </label>
+        <TemplateLoadIndicator info={templateLoadInfo} />
 
         <section className="labels-panel">
           <div className="available-labels">
             <h3>🏷️ Resulting template only contains sections matching these labels:</h3>
             <ul>
-              {availableLabels.map(label => {
-                const isSelected = includingLabels.includes(label)
-                return (
-                  <li
-                    key={label}
-                    onClick={() => handleAvailableLabelClick(label)}
-                    className={isSelected ? 'label-chip selected' : 'label-chip'}
-                  >
-                    {label}
-                  </li>
-                )
-              })}
+              {templateLoadInfo.state === 'loading' ? (
+                <li className="empty-label">Loading labels…</li>
+              ) : availableLabels.length === 0 ? (
+                <li className="empty-label">No labels found.</li>
+              ) : (
+                availableLabels.map(label => {
+                  const isSelected = includingLabels.includes(label)
+                  return (
+                    <li
+                      key={label}
+                      onClick={() => handleAvailableLabelClick(label)}
+                      className={isSelected ? 'label-chip selected' : 'label-chip'}
+                    >
+                      {label}
+                    </li>
+                  )
+                })
+              )}
             </ul>
           </div>
         </section>
@@ -243,13 +266,47 @@ const App = () => {
   )
 }
 
+function TemplateLoadIndicator({ info }: { info: TemplateLoadInfo }) {
+  if (info.state === 'idle') {
+    return (
+      <p className="template-load-status">
+        Tip: Click "Show preview" or "Generate your template" to load the base template.
+      </p>
+    )
+  }
+  if (info.state === 'loading') {
+    return <p className="template-load-status">Loading base template…</p>
+  }
+  if (info.state === 'loaded') {
+    return (
+      <p className="template-load-status loaded">
+        <strong>Tip:</strong> Base template loaded successfully in {formatDuration(info.durationMs)}
+      </p>
+    )
+  }
+  return (
+    <p className="template-load-status status-error">
+      Failed to load base template: {info.message}
+    </p>
+  )
+}
+
 export default App
 
-async function buildFilteredParts(baseUrl: string, labelsToInclude: string[]): Promise<FilteredPart[]> {
-  const result = await fetchTemplateAndParts(baseUrl, { strict: false })
+function formatDuration(ms: number): string {
+  if (!Number.isFinite(ms)) return '0 ms'
+  if (ms >= 1000) return `${(ms / 1000).toFixed(2)} s`
+  return `${Math.round(ms)} ms`
+}
+
+function buildFilteredPartsFromResult(
+  result: TemplateWithParts,
+  labelsToInclude: string[],
+  knownSet?: Set<string>
+): FilteredPart[] {
+  const knownLabels = knownSet ?? buildKnownLabelSet(result)
 
   if (labelsToInclude.length) {
-    const knownLabels = buildKnownLabelSet(result)
     const unknown = labelsToInclude.filter(label => !knownLabels.has(label))
     if (unknown.length) {
       throw new Error(`Unknown label(s): ${unknown.join(', ')}`)
