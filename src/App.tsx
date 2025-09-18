@@ -81,7 +81,10 @@ const App = () => {
     try {
       const result = await fetchTemplateAndParts(baseUrl, { strict: false })
       const knownSet = buildKnownLabelSet(result)
-      setAvailableLabels(Array.from(knownSet).sort((a, b) => a.localeCompare(b)))
+      const selectableLabels = Array.from(knownSet)
+        .filter(label => !label.endsWith('::*'))
+        .sort((a, b) => a.localeCompare(b))
+      setAvailableLabels(selectableLabels)
       const filteredParts = buildFilteredPartsFromResult(result, labelsToInclude, knownSet)
       setExpandedParts(prev => {
         const nextState: Record<string, { blank: boolean; full: boolean }> = {}
