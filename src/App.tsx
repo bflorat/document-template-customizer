@@ -25,6 +25,7 @@ const App = () => {
   const [templateUrl, setTemplateUrl] = useState('')
   const [includingLabels, setIncludingLabels] = useState(defaultIncludingLabels)
   const [availableLabels, setAvailableLabels] = useState<string[]>([])
+  const [expandedParts, setExpandedParts] = useState<Record<string, { blank: boolean; full: boolean }>>({})
   const [isGenerating, setIsGenerating] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -38,17 +39,15 @@ const App = () => {
     setTemplateUrl(event.target.value)
   }
 
-  const handleAvailableLabelClick = (label: string) => {
-    setIncludingLabels(prev => {
-      if (prev.includes(label)) {
-        const filtered = prev.filter(item => item !== label)
-        filtered.sort((a, b) => a.localeCompare(b))
-        return filtered
-      }
-      const next = [...prev, label]
-      next.sort((a, b) => a.localeCompare(b))
-      return next
-    })
+  const handleAvailableLabelClick = async (label: string) => {
+    const next = includingLabels.includes(label)
+      ? includingLabels.filter(item => item !== label)
+      : [...includingLabels, label]
+    next.sort((a, b) => a.localeCompare(b))
+    setIncludingLabels(next)
+    if (previewOpen) {
+      await refreshPreview(next)
+    }
   }
 
   const resolveBaseUrl = () => (templateUrl || DEFAULT_TEMPLATE_URL).trim()
@@ -84,6 +83,14 @@ const App = () => {
       const knownSet = buildKnownLabelSet(result)
       setAvailableLabels(Array.from(knownSet).sort((a, b) => a.localeCompare(b)))
       const filteredParts = buildFilteredPartsFromResult(result, labelsToInclude, knownSet)
+      setExpandedParts(prev => {
+        const nextState: Record<string, { blank: boolean; full: boolean }> = {}
+        filteredParts.forEach(part => {
+          const existing = prev[part.file]
+          nextState[part.file] = existing ?? { blank: true, full: false }
+        })
+        return nextState
+      })
       const durationMs = performance.now() - start
       setTemplateLoadInfo({ state: 'loaded', durationMs })
       return { filteredParts, readme: result.readme }
@@ -145,9 +152,9 @@ const App = () => {
     }
   }
 
-  const refreshPreview = async () => {
+  const refreshPreview = async (overrideLabels?: string[]) => {
     const baseUrl = resolveBaseUrl()
-    const labelsToInclude = computeLabelsToInclude()
+    const labelsToInclude = overrideLabels ?? computeLabelsToInclude()
 
     setPreviewLoading(true)
     setPreviewError(null)
@@ -177,6 +184,19 @@ const App = () => {
   const handleRefreshPreview = async () => {
     if (!previewOpen || previewLoading) return
     await refreshPreview()
+  }
+
+  const handleSectionToggle = (file: string, section: 'blank' | 'full', open: boolean) => {
+    setExpandedParts(prev => {
+      const current = prev[file] ?? { blank: true, full: false }
+      return {
+        ...prev,
+        [file]: {
+          ...current,
+          [section]: open,
+        },
+      }
+    })
   }
 
   return (
@@ -256,24 +276,37 @@ const App = () => {
               ) : previewParts.length === 0 ? (
                 <p className="empty-row">No parts to preview.</p>
               ) : (
-                previewParts.map(part => (
-                  <div key={part.file} className="preview-view">
-                    <h4>
-                      {part.name}
-                      <span className="preview-file"> ({part.file})</span>
-                    </h4>
-                    <div className="preview-sections">
-                      <details open>
-                        <summary>Blank template</summary>
-                        <pre>{part.blankContent.trim() ? part.blankContent : '(blank)'}</pre>
-                      </details>
-                      <details>
-                        <summary>Full template</summary>
-                        <pre>{part.templateContent.trim() ? part.templateContent : '(blank)'}</pre>
-                      </details>
+                previewParts.map(part => {
+                  const state = expandedParts[part.file] ?? { blank: true, full: false }
+                  return (
+                    <div key={part.file} className="preview-view">
+                      <h4>
+                        {part.name}
+                        <span className="preview-file"> ({part.file})</span>
+                      </h4>
+                      <div className="preview-sections">
+                        <details
+                          open={state.blank}
+                          onToggle={event =>
+                            handleSectionToggle(part.file, 'blank', (event.target as HTMLDetailsElement).open)
+                          }
+                        >
+                          <summary>Blank template</summary>
+                          <pre>{part.blankContent.trim() ? part.blankContent : '(blank)'}</pre>
+                        </details>
+                        <details
+                          open={state.full}
+                          onToggle={event =>
+                            handleSectionToggle(part.file, 'full', (event.target as HTMLDetailsElement).open)
+                          }
+                        >
+                          <summary>Full template</summary>
+                          <pre>{part.templateContent.trim() ? part.templateContent : '(blank)'}</pre>
+                        </details>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  )
+                })
               )}
             </div>
           ) : null}

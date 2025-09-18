@@ -7,6 +7,7 @@ const METADATA_REGEX = /^\s*🏷\s*(\{.*\})\s*$/;
 
 export interface FilterPartContentOptions {
   includeLabels?: string[];
+  wildcard?: boolean;
 }
 
 function normalizeLabels(labels?: string[]): string[] {
@@ -26,6 +27,7 @@ export function filterPartContent(
   options: FilterPartContentOptions = {}
 ): FilterPartContentResult {
   const includeLabels = normalizeLabels(options.includeLabels);
+  const wildcard = options.wildcard ?? true;
   const lines = rawContent.split(/\r?\n/);
 
   const sections = parseAsciiDocSections(rawContent) as SectionNode[];
@@ -34,6 +36,7 @@ export function filterPartContent(
   if (includeLabels.length) {
     filteredSections = filterSectionsByLabels(filteredSections, {
       labels: includeLabels,
+      wildcard,
     }) as SectionNode[];
   }
 
