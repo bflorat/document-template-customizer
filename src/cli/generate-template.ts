@@ -129,10 +129,14 @@ async function run() {
       fetchImpl,
     });
 
-    const unknownLabels = findUnknownLabels(options.include, result.metadata.data.labels, result.parts);
+    const knownLabels = collectKnownLabels(result);
+    const unknownLabels = options.include.filter(label => !knownLabels.has(label));
     if (unknownLabels.length) {
       throw new Error(`Unknown label(s): ${unknownLabels.join(", ")}`);
     }
+
+    const wildcardDefaults = Array.from(knownLabels).filter(label => label.endsWith('::*'));
+    const effectiveInclude = Array.from(new Set([...options.include, ...wildcardDefaults]));
 
     const zip = new JSZip();
     let includedParts = 0;
@@ -140,7 +144,7 @@ async function run() {
     for (const part of result.parts) {
       if (!part.content) continue;
       const filtered = filterPartContent(part.content, {
-        includeLabels: options.include,
+        includeLabels: effectiveInclude,
       });
 
       const hasTemplate = filtered.templateContent.trim().length > 0;
@@ -211,4 +215,24 @@ function createFetch(baseUrl: string): typeof fetch {
     const data = await readFile(filePath);
     return new Response(data);
   };
+}
+
+function collectKnownLabels(template: TemplateWithParts): Set<string> {
+  const known = new Set<string>();
+
+  template.metadata.data.labels?.forEach(def => {
+    known.add(def.name);
+    def.available_values?.forEach(value => known.add(`${def.name}::${value}`));
+  });
+
+  const visit = (
+    section: NonNullable<TemplateWithParts["parts"][number]["sections"]>[number]
+  ) => {
+    section.metadata?.labels?.forEach(label => known.add(label));
+    section.children.forEach(child => visit(child));
+  };
+
+  template.parts.forEach(part => part.sections?.forEach(section => visit(section)));
+
+  return known;
 }
