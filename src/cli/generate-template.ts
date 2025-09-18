@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { writeFile, mkdir } from "node:fs/promises";
+import { writeFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
@@ -123,8 +123,10 @@ async function run() {
       throw new Error("Missing required --base-url argument.");
     }
 
+    const fetchImpl = createFetch(options.baseUrl);
     const result = await fetchTemplateAndParts(options.baseUrl, {
       strict: false,
+      fetchImpl,
     });
 
     const unknownLabels = findUnknownLabels(options.include, result.metadata.data.labels, result.parts);
@@ -187,4 +189,19 @@ const isMainModule = (() => {
 
 if (isMainModule) {
   run();
+}
+
+function createFetch(baseUrl: string): typeof fetch {
+  const isFile = baseUrl.startsWith("file://");
+  if (!isFile) return fetch;
+
+  return async (url: string | URL, init?: RequestInit): Promise<Response> => {
+    const target = typeof url === "string" ? url : url.toString();
+    if (!target.startsWith("file://")) {
+      return fetch(url, init);
+    }
+    const filePath = fileURLToPath(target);
+    const data = await readFile(filePath);
+    return new Response(data);
+  };
 }

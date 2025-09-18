@@ -71,7 +71,10 @@ const App = () => {
     await handleLoadTemplate()
   }
 
-  const loadFilteredParts = async (baseUrl: string, labelsToInclude: string[]) => {
+  const loadFilteredParts = async (
+    baseUrl: string,
+    labelsToInclude: string[]
+  ): Promise<{ filteredParts: FilteredPart[]; readme: { file: string; content: string } }> => {
     setTemplateLoadInfo({ state: 'loading' })
     const start = performance.now()
     setAvailableLabels([])
