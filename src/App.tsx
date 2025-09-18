@@ -288,7 +288,7 @@ function TemplateLoadIndicator({ info }: { info: TemplateLoadInfo }) {
   if (info.state === 'idle') {
     return (
       <p className="template-load-status">
-        Tip: Click "Show preview" or "Generate your template" to load the base template.
+        Tip — load the base template to start.
       </p>
     )
   }
@@ -298,7 +298,7 @@ function TemplateLoadIndicator({ info }: { info: TemplateLoadInfo }) {
   if (info.state === 'loaded') {
     return (
       <p className="template-load-status loaded">
-        <strong>Base template loaded successfully in {formatDuration(info.durationMs)}</strong>
+        Base template loaded successfully in {formatDuration(info.durationMs)}
       </p>
     )
   }
