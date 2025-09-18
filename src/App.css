@@ -9,7 +9,7 @@
 .app {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 1.25rem;
 }
 
 .app-footer {
