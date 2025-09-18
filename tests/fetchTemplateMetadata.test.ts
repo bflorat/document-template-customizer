@@ -101,6 +101,10 @@ labels:
 const PART_APP = `# Application Part\n\n🏷{"id":"intro","labels":["level::basic","project_size::medium"]}\n\n## Overview\nDetails\n\n🏷{"id":"deep","labels":["level::advanced"],"link_to":["intro","appendix"]}\n\n### Deep Dive\nMore details\n`;
 const PART_DEV = `# Development Part\n\nContent D\n`;
 const PART_SEC = `# Security Part\n\nContent S\n`;
+const README_BODY = `= Template
+
+This is the base readme.
+`;
 
 describe("fetchTemplateMetadata", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -145,12 +149,15 @@ describe("fetchTemplateAndParts", () => {
       [`${BASE}/view-application.adoc`, ok(PART_APP)],
       [`${BASE}/view-development.adoc`, ok(PART_DEV)],
       [`${BASE}/security.adoc`, ok(PART_SEC)],
+      [`${BASE}/README.adoc`, ok(README_BODY)],
     ]);
 
     const res = await fetchTemplateAndParts(`${BASE}//`, { fetchImpl: fetchMock, concurrency: 2 });
 
     expect(res.metadata.url).toBe(METADATA_URL);
     expect(res.parts).toHaveLength(3);
+    expect(res.readme.file).toBe("README.adoc");
+    expect(res.readme.content).toContain("Template");
 
     // Check one part content
     const app = res.parts.find(v => v.file === "view-application.adoc")!;
@@ -175,6 +182,7 @@ describe("fetchTemplateAndParts", () => {
       [`${BASE}/view-application.adoc`, ok(PART_APP)],
       [`${BASE}/view-development.adoc`, http(404)],
       [`${BASE}/security.adoc`, ok(PART_SEC)],
+      [`${BASE}/README.adoc`, ok(README_BODY)],
     ]);
 
     await expect(fetchTemplateAndParts(BASE, { fetchImpl: fetchMock })).rejects.toBeInstanceOf(
@@ -198,6 +206,7 @@ describe("fetchTemplateAndParts", () => {
       [`${BASE}/view-application.adoc`, ok(PART_APP)],
       [`${BASE}/view-development.adoc`, http(500)],
       [`${BASE}/security.adoc`, ok(PART_SEC)],
+      [`${BASE}/README.adoc`, ok(README_BODY)],
     ]);
 
     const res = await fetchTemplateAndParts(BASE, {
@@ -218,5 +227,18 @@ describe("fetchTemplateAndParts", () => {
     await expect(
       fetchTemplateAndParts(BASE, { fetchImpl: fetchMock })
     ).rejects.toThrow(/Empty template-metadata\.yaml/);
+  });
+
+  it("fails when README.adoc is missing", async () => {
+    const fetchMock = buildFetchMock([
+      [METADATA_URL, ok(YAML_OK)],
+      [`${BASE}/view-application.adoc`, ok(PART_APP)],
+      [`${BASE}/view-development.adoc`, ok(PART_DEV)],
+      [`${BASE}/security.adoc`, ok(PART_SEC)],
+    ]);
+
+    await expect(
+      fetchTemplateAndParts(BASE, { fetchImpl: fetchMock })
+    ).rejects.toThrow(/README\.adoc is required/);
   });
 });

@@ -156,6 +156,10 @@ async function run() {
       includedParts += 1;
     }
 
+    if (result.readme?.content) {
+      zip.file(result.readme.file, result.readme.content);
+    }
+
     if (includedParts === 0) {
       throw new Error("No parts left after applying label filters.");
     }

@@ -4,4 +4,5 @@ import type { Part } from "./Part.js";
 export interface TemplateWithParts {
   metadata: TemplateFetchResult;
   parts: Required<Pick<Part, "name" | "file" | "url" | "content" | "sections">>[];
+  readme: { file: string; content: string };
 }

@@ -12,6 +12,37 @@ DTC can work not only with my own templates, but also with any base document tem
 . Another expert (typically a *Solution Architect*) creates a customized, curated template for one or several projects. This includes both a *full template with explanations* and *blank documents* to be filled.
 . The project team then fills the *blank documents*, guided by the explanations in the customized template.
 
+## Prerequises for a base template
+
+* Must be written in asciidoc (Asciidoctor flavor with chapters using the `#` caracter, not the `=` ) or Markdown  
+* Must content a `README.adoc` or `README.md` introductionnal document at the root of the base template URL.
+* Must content a `template-metadata.yaml` file at the root of the base template URL. An exemple of the file 
+
+TIP: Prefer ASCIIDOC for better documents (admonitiopns, better tables, TOC...)
+
+
+Sample `base-template-metadata.yaml`
+
+```
+author: ACME
+license: CC BY-SA 4.0
+parts:
+  - name: Application
+    file: view-application.adoc
+  - name: Development
+    file: view-development.adoc
+  - name: infrastructure
+    file: view-infrastructure.adoc  
+labels:
+  - detail_level: 
+      - abstract      # conceptual, principles, big picture
+      - overview      # broad but slightly more concrete
+      - detailed      # technical specifics, diagrams, modules
+      - in-depth      # exhaustive detail, e.g., data models, algorithms
+  - name: persistence
+  - name: green-IT
+  ```
+
 
 ## Features
 * [ ] Option "Tout" (pas de filtre)
@@ -37,8 +68,9 @@ The generated archive contains two folders:
 
 * `template/` keeps the filtered parts with their metadata marker lines intact.
 * `blank-template/` contains the same parts reduced to section titles and AsciiDoc attributes (body text removed).
+* A `README.adoc` from the base template is always included at the root of the archive.
 
-If none `--include` labels are provided, the resulting template contains every base template sections.
+If none `--include` labels are provided, the resulting template contains every base template sections. The base template **must** expose a `README.adoc` (case-insensitive) alongside `template-metadata.yaml`.
 
 ## History
 

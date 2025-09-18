@@ -83,7 +83,7 @@ const App = () => {
       const filteredParts = buildFilteredPartsFromResult(result, labelsToInclude, knownSet)
       const durationMs = performance.now() - start
       setTemplateLoadInfo({ state: 'loaded', durationMs })
-      return filteredParts
+      return { filteredParts, readme: result.readme }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       setTemplateLoadInfo({ state: 'error', message })
@@ -102,7 +102,7 @@ const App = () => {
     setSuccessMessage(null)
 
     try {
-      const filteredParts = await loadFilteredParts(baseUrl, labelsToInclude)
+      const { filteredParts, readme: fetchedReadme } = await loadFilteredParts(baseUrl, labelsToInclude)
       const includedParts = filteredParts.length
       if (!includedParts) {
         throw new Error('No parts left after applying label filters.')
@@ -117,6 +117,10 @@ const App = () => {
         if (part.blankContent.trim()) {
           zip.file(`blank-template/${part.file}`, part.blankContent)
         }
+      }
+
+      if (fetchedReadme?.content) {
+        zip.file(fetchedReadme.file, fetchedReadme.content)
       }
 
       const blob = await zip.generateAsync({ type: 'blob' })
@@ -145,7 +149,7 @@ const App = () => {
     setPreviewLoading(true)
     setPreviewError(null)
     try {
-      const filteredParts = await loadFilteredParts(baseUrl, labelsToInclude)
+      const { filteredParts } = await loadFilteredParts(baseUrl, labelsToInclude)
       setPreviewParts(filteredParts)
       if (!filteredParts.length) {
         setPreviewError('No parts left after applying label filters.')

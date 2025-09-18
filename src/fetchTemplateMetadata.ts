@@ -114,6 +114,8 @@ export async function fetchTemplateAndParts(
     url: `${normalized}/${part.file.replace(/^\/+/, "")}`,
   }));
 
+  const readme = await fetchReadme(normalized, fetchFn, timeoutMs);
+
   // Simple concurrency limiter
   const results: Array<{ ok: true; part: Required<Part> } | { ok: false; failure: PartFetchFailure }> = [];
   let index = 0;
@@ -178,6 +180,7 @@ export async function fetchTemplateAndParts(
   return {
     metadata,
     parts: successes,
+    readme,
   };
 }
 
@@ -193,3 +196,35 @@ export type {
   Part,
   PartFetchFailure,
 } from "./model/index.js";
+
+const README_CANDIDATES = [
+  "README.adoc",
+  "Readme.adoc",
+  "readme.adoc",
+  "ReadMe.adoc",
+];
+
+async function fetchReadme(
+  baseUrl: string,
+  fetchFn: FetchLike,
+  timeoutMs: number
+): Promise<{ file: string; content: string }> {
+  for (const candidate of README_CANDIDATES) {
+    const target = `${baseUrl}/${candidate}`;
+    try {
+      const res = await fetchWithTimeout(fetchFn, target, timeoutMs);
+      if (!res.ok) continue;
+      const content = await res.text();
+      if (!content.trim()) continue;
+      return { file: candidate, content };
+    } catch (error) {
+      if (error instanceof Error && error.name !== "AbortError") {
+        continue;
+      }
+    }
+  }
+
+  throw new Error(
+    `README.adoc is required in the base template. Tried: ${README_CANDIDATES.join(", ")}`
+  );
+}
