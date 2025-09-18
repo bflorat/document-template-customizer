@@ -56,6 +56,16 @@ const App = () => {
   const computeLabelsToInclude = () =>
     includingLabels.map(label => label.trim()).filter(Boolean)
 
+  const handleLoadTemplate = async () => {
+    const baseUrl = resolveBaseUrl()
+    const labelsToInclude = computeLabelsToInclude()
+    try {
+      await loadFilteredParts(baseUrl, labelsToInclude)
+    } catch {
+      // loadFilteredParts already updates templateLoadInfo with the error
+    }
+  }
+
   const loadFilteredParts = async (baseUrl: string, labelsToInclude: string[]) => {
     setTemplateLoadInfo({ state: 'loading' })
     const start = performance.now()
@@ -171,6 +181,14 @@ const App = () => {
           />
         </label>
         <TemplateLoadIndicator info={templateLoadInfo} />
+        <button
+          type="button"
+          className="secondary-action load-template"
+          onClick={handleLoadTemplate}
+          disabled={templateLoadInfo.state === 'loading'}
+        >
+          {templateLoadInfo.state === 'loading' ? 'Loading…' : 'Load base template'}
+        </button>
 
         <section className="labels-panel">
           <div className="available-labels">
@@ -280,7 +298,7 @@ function TemplateLoadIndicator({ info }: { info: TemplateLoadInfo }) {
   if (info.state === 'loaded') {
     return (
       <p className="template-load-status loaded">
-        <strong>Tip:</strong> Base template loaded successfully in {formatDuration(info.durationMs)}
+        <strong>Base template loaded successfully in {formatDuration(info.durationMs)}</strong>
       </p>
     )
   }
