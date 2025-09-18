@@ -1,12 +1,12 @@
 # Document Template Customizer (DTC)
 
-This tool allows you to produce *personalized document templates* from a larger base template repository, such as https://github.com/bflorat/architecture-document-template[this one].
+This tool lets you produce *personalized document templates* from a larger base template repository, such as https://github.com/bflorat/architecture-document-template[this one].
 
 While I’ve received good feedback on my previous document templates, a recurring criticism was that the *templates were too large*, leaving many sections unused. With DTC, you can *prepare smaller, tailored templates* filtered from a larger one.
 
-DTC can work not only with my own templates, but also with any base document template (self-hosted or not), as long as it follows a small metamodel.
+DTC works with my templates and with any base document template (self‑hosted or not), as long as it follows a simple metamodel.
 
-## Common use-case
+## Common use cases
 
 . An expert (typically an *Enterprise Architect*) selects or writes a base template. This base template is usually organization-wide.
 . Another expert (typically a *Solution Architect*) creates a customized, curated template for one or several projects. This includes both a *full template with explanations* and *blank documents* to be filled.
@@ -44,25 +44,25 @@ labels:
   - name: green-IT
 ```
 
-* Every section of each part file of the base template should be annotated with a metadata line just above the section title. Supported syntaxes:
-  ** AsciiDoc comment: `//🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract","context"]}`
-  ** Markdown HTML comment: `<!--🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract","context"]}-->`
-  ** First level section (with a single `#`) is always kept and should not be annotated.
-  ** Used labels must be listed in the `base-template-metadata.yaml` file to be token into account.
-  ** Labels can be simple flag (like `performance`)
-  ** Some others are multi-values (like: `project_size` that supports three values in this example: `project_size::large`, `project_size::medium` and `project_size::small`). All available values must be listed in `base-template-metadata.yaml` file.
-  ** You can use the `*` wildcard  in the multi-values labels. It means _any_. For instance, if you want that a section is always kept, whatever the project size is, set a `project_size::*` label on it.
-  ** Find many examples in https://github.com/bflorat/architecture-document-template[this base template].
+* Every section of each part file of the base template should be annotated with a metadata line directly above the section title (no blank line). Supported syntaxes:
+  ** AsciiDoc comment: `//🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract", "context"]}`
+  ** Markdown HTML comment: `<!--🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract", "context"]}-->`
+  ** Level‑1 sections (single `#`) are always kept and should not be annotated.
+  ** All labels used in sections must be listed in `base-template-metadata.yaml` to be taken into account.
+  ** Labels can be a simple flag (e.g., `performance`).
+  ** Others are multi‑valued (e.g., `project_size` supporting: `project_size::large`, `project_size::medium`, `project_size::small`). All available values must be listed in `base-template-metadata.yaml`.
+  ** You can use the `*` wildcard in multi‑valued labels to mean “any”. For instance, to always keep a section regardless of project size, use `project_size::*`.
+  ** See many examples in https://github.com/bflorat/architecture-document-template[this base template].
 
 
 ## Matching rules
 
-- If all or none label is selected, resulting template = the full base template.
-- The first level sections (single '#') are always kept.
-- The labels act as a 'AND' logical operator : a section is kept only if all associated labels are selected.
-- If a parent section doesn't match, all sub-sections are dropped recursively.
-- If a parent section matches, each sub-section is evaluated and only matching sections are kept.
-- If the base template is annotated with a wilcard multi-value label like `project_size::*` , any selected label (like `project_size::small` or `project_size::large` matches.
+- If all or no labels are selected, the resulting template is the full base template.
+- Level‑1 sections (single `#`) are always kept.
+- Labels use AND semantics: a section is kept only if all its labels are satisfied by the selection.
+- If a parent section doesn’t match, all its subsections are dropped recursively.
+- If a parent section matches, each subsection is evaluated and kept only if it matches.
+- If the base template uses a wildcard multi‑value label like `project_size::*`, it matches any selected label in the same namespace (e.g., `project_size::small`, `project_size::large`).
 
 ## CLI usage
 
@@ -84,11 +84,10 @@ The generated archive contains two folders:
 * `template/` keeps the filtered parts with their metadata marker lines intact.
 * `blank-template/` contains the same parts reduced to section titles and AsciiDoc attributes (body text removed).
 
-If none `--include` labels are provided, the resulting template contains every base template sections. The base template **must** expose a `README.adoc` (case-insensitive) alongside `base-template-metadata.yaml`.
+If no `--include` labels are provided, the resulting template contains every section of the base template. The base template **must** expose a `README.adoc` (case‑insensitive) alongside `base-template-metadata.yaml`.
 
 
 ## Tips
-* Produced template contains it the zip a `customization-context.yaml` file containing every information used to create it : date of the template generation, base template url, selected labels.
-
+* The generated zip contains a `customization-context.yaml` file with the generation date, base template URL, and selected labels.
 
 
