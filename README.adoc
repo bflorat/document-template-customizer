@@ -55,8 +55,14 @@ labels:
   ** Find many examples in https://github.com/bflorat/architecture-document-template[this base template].
 
 
-## Features
-* [ ] Liens predefinis vers un site central (ex: contraintes) ?
+## Matching rules
+
+- If all or none label is selected, resulting template = the full base template.
+- The first level sections (single '#') are always kept.
+- The labels act as a 'AND' logical operator : a section is kept only if all associated labels are selected.
+- If a parent section doesn't match, all sub-sections are dropped recursively.
+- If a parent section matches, each sub-section is evaluated and only matching sections are kept.
+- If the base template is annotated with a wilcard multi-value label like `project_size::*` , any selected label (like `project_size::small` or `project_size::large` matches.
 
 ## CLI usage
 
@@ -85,22 +91,4 @@ If none `--include` labels are provided, the resulting template contains every b
 * Produced template contains it the zip a `customization-context.yaml` file containing every information used to create it : date of the template generation, base template url, selected labels.
 
 
-## Others features ?
 
-* Ability to remove / add a specified section by number (2, 4.5...)
-
-
-## TODO
-
-   "link_to":"51bc1362-9c2f-4cd8-81d9-face77ed4dc6"}
-
-
-In the resulting zip, add a customization-context.yaml file that sum-up : date of the template generation, base template url, selected labels
-
-
-Matching rules:
-- If all or none label is selected, resulting template = the full base template
-- The first level sections (single '#') are always kept
-- If a parent section doesn't match, drop all sub-sections recusivelly
-- If a parent section matches, evaluate each sub-section and keep it only if it matches
-- If the base template is annotated with a wilcard multi-value label like project_size::* , it means that any selected label (project_size::small, project_size::large...) matches
