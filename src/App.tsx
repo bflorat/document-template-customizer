@@ -74,6 +74,8 @@ const App = () => {
   const loadFilteredParts = async (baseUrl: string, labelsToInclude: string[]) => {
     setTemplateLoadInfo({ state: 'loading' })
     const start = performance.now()
+    setAvailableLabels([])
+    setPreviewParts([])
     try {
       const result = await fetchTemplateAndParts(baseUrl, { strict: false })
       const knownSet = buildKnownLabelSet(result)
