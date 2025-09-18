@@ -272,7 +272,7 @@ header h1 {
   padding: 0.75rem;
   overflow-x: auto;
   overflow-y: auto;
-  max-height: 50lh;
+  max-height: 30lh;
   white-space: pre-wrap;
 }
 
