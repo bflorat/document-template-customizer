@@ -3,6 +3,7 @@ import { writeFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
+import { stringify } from "yaml";
 import { fetchTemplateAndParts } from "../fetchTemplateMetadata.js";
 import { filterPartContent } from "../filterPartContent.js";
 import type { TemplateLabelDefinition, TemplateWithParts } from "../model/index.js";
@@ -163,7 +164,7 @@ async function run() {
     }
 
     if (result.readme?.content) {
-      zip.file(result.readme.file, result.readme.content);
+      zip.file(`template/${result.readme.file}`, result.readme.content);
     }
 
     if (includedParts === 0) {

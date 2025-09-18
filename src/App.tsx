@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import JSZip from 'jszip'
+import { stringify } from 'yaml'
 import './App.css'
 import { fetchTemplateAndParts } from './fetchTemplateMetadata'
 import { filterPartContent } from './filterPartContent'
@@ -133,8 +134,17 @@ const App = () => {
       }
 
       if (fetchedReadme?.content) {
-        zip.file(fetchedReadme.file, fetchedReadme.content)
+        zip.file(`template/${fetchedReadme.file}`, fetchedReadme.content)
       }
+
+      zip.file(
+        'customization-context.yaml',
+        stringify({
+          generated_at: new Date().toISOString(),
+          base_template_url: baseUrl,
+          selected_labels: labelsToInclude,
+        })
+      )
 
       const blob = await zip.generateAsync({ type: 'blob' })
       const url = URL.createObjectURL(blob)

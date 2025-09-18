@@ -78,51 +78,19 @@ The generated archive contains two folders:
 
 If none `--include` labels are provided, the resulting template contains every base template sections. The base template **must** expose a `README.adoc` (case-insensitive) alongside `base-template-metadata.yaml`.
 
-## History
 
-I want to write a small project in react.js 19 that allow to compute asciidoc documents from a base asciidoc document template. It contains an url selector to select an URL that contain a 'base-template-metadata.yaml' file like https://github.com/bflorat/architecture-document-template/tree/feat/add-medadata/ .
+## Tips
+* Produced template contains it the zip a `customization-context.yaml` file containing every information used to create it : date of the template generation, base template url, selected labels.
 
-
-
-Sample  base-template-metadata.yaml : 
-
-```
-author: Bertrand Florat
-license: CC BY-SA 4.0
-parts:
-  - name: Application
-    file: view-application.adoc
-  - name: Development
-    file: view-development.adoc
-  - name: infrastructure
-    file: view-infrastructure.adoc
-  - name: Security
-    file: security.adoc
-  - name: sizing
-    file: view-sizing.adoc
-```
-
-https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/base-template-metadata.yaml
-
-
-```
-🏷{"id":"5a5f3bc5-7a1d-4f68-8385-8e1a19faf288", 
-   "labels":["stockage_persistent", "niveau::avancé", "taille_projet::moyen", "taille_projet::grand"]}
-# Gestion des transactions
-[...]
-
-🏷{"id":"a1e81580-8a2d-4d4d-8f99-6c9ae9ace122", 
-   "labels":["greenit", "niveau::avancé"], 
-   "link_to":"51bc1362-9c2f-4cd8-81d9-face77ed4dc6"}
-   
-# Écoconception
-[...]
-```
 
 ## Others features ?
 
 * Ability to remove / add a specified section by number (2, 4.5...)
-* Store configs (ex: set of selected labels...) so I can reopen it later
-* Done: Keep all sections from the base template : just select none label
+
 
 ## TODO
+
+   "link_to":"51bc1362-9c2f-4cd8-81d9-face77ed4dc6"}
+
+
+In the resulting zip, add a customization-context.yaml file that sum-up : date of the template generation, base template url, selected labels
