@@ -28,9 +28,7 @@ describe("filterViewContent", () => {
     expect(result.templateContent).toContain("## Included Section");
     expect(result.templateContent).toContain("🏷");
     expect(result.templateContent).not.toContain('"exclude-me"');
-    expect(result.blankContent.trim()).toBe(
-      ["# Application", ":sectnums: 4", ":toc: left", "", "## Included Section"].join("\n")
-    );
+    expect(result.blankContent.trim()).toBe("## Included Section");
     expect(result.keptSections).toBeGreaterThan(0);
   });
 

@@ -5,7 +5,7 @@ interface FilterOptions {
 }
 
 /**
- * Keep only sections whose labels match any of the provided values, retaining parents of matches.
+ * Keep only sections whose labels match any of the provided values.
  */
 export function filterSectionsByLabels(
   sections: ViewSection[],
@@ -13,21 +13,18 @@ export function filterSectionsByLabels(
 ): ViewSection[] {
   const labelSet = new Set(labels);
 
-  const prune = (section: ViewSection): ViewSection | null => {
+  const prune = (section: ViewSection): ViewSection[] => {
     const matches = section.metadata?.labels?.some(label => labelSet.has(label)) ?? false;
 
-    const filteredChildren = section.children
-      .map(prune)
-      .filter((child): child is ViewSection => child !== null);
+    const filteredChildren = section.children.flatMap(prune);
 
-    if (!matches && filteredChildren.length === 0) {
-      return null;
+    if (matches) {
+      return [{ ...section, children: filteredChildren }];
     }
 
-    return { ...section, children: filteredChildren };
+    return filteredChildren;
   };
 
   return sections
-    .map(prune)
-    .filter((section): section is ViewSection => section !== null);
+    .flatMap(prune);
 }

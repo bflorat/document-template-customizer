@@ -41,14 +41,12 @@ const tree: ViewSection[] = [
 ];
 
 describe("filterSectionsByLabels", () => {
-  it("keeps only sections that match labels (or have matching descendants)", () => {
+  it("keeps only sections that match labels", () => {
     const filtered = filterSectionsByLabels(tree, { labels: ["keep"] });
 
     expect(filtered).toHaveLength(1);
-    expect(filtered[0].title).toBe("Introduction");
-    expect(filtered[0].children).toHaveLength(1);
-    expect(filtered[0].children[0].title).toBe("Context");
-    expect(filtered[0].children[0].children).toHaveLength(0); // History removed because it doesn't match
+    expect(filtered[0].title).toBe("Context");
+    expect(filtered[0].children).toHaveLength(0);
   });
 
   it("drops unrelated sections when no label matches", () => {

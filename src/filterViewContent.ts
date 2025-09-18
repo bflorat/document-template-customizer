@@ -36,17 +36,14 @@ export function filterViewContent(
     }) as SectionNode[];
   }
 
-  const keptStartLines = new Set<number>();
-  collectStartLines(filteredSections, keptStartLines);
-
-  const dropMask = createDropMask(lines.length, sections, keptStartLines);
+  const keepMask = createKeepMask(lines.length, filteredSections);
 
   const templateLines: string[] = [];
   const blankLines: string[] = [];
   const hadTrailingNewline = rawContent.endsWith("\n") || rawContent.endsWith("\r\n");
 
   for (let i = 0; i < lines.length; i++) {
-    if (dropMask[i]) continue;
+    if (!keepMask[i]) continue;
     const line = lines[i];
     const trimmed = line.trim();
     templateLines.push(line);
@@ -60,51 +57,39 @@ export function filterViewContent(
 
   const templateContent = finalizeContent(templateLines, hadTrailingNewline);
   const blankContent = finalizeContent(insertBlankLines(blankLines), hadTrailingNewline);
+  const keptCount = countSections(filteredSections);
 
   return {
     templateContent,
     blankContent,
-    keptSections: keptStartLines.size,
+    keptSections: keptCount,
   };
 }
 
-function collectStartLines(sections: SectionNode[], target: Set<number>) {
-  for (const section of sections) {
-    target.add(section.startLine);
-    if (section.children.length) {
-      collectStartLines(section.children as SectionNode[], target);
-    }
-  }
-}
-
-function createDropMask(
-  lineCount: number,
-  originalSections: SectionNode[],
-  keptStartLines: Set<number>
-): boolean[] {
+function createKeepMask(lineCount: number, keptSections: SectionNode[]): boolean[] {
   const mask = new Array<boolean>(lineCount).fill(false);
 
-  const markRange = (start: number, end: number) => {
-    const upper = Math.min(end, lineCount - 1);
-    for (let index = Math.max(0, start); index <= upper; index++) {
+  const markKeep = (section: SectionNode) => {
+    const start = Math.max(0, section.startLine);
+    const end = Math.min(lineCount - 1, section.endLine);
+    for (let index = start; index <= end; index++) {
       mask[index] = true;
     }
-  };
-
-  const visit = (sections: SectionNode[]) => {
-    for (const section of sections) {
-      if (!keptStartLines.has(section.startLine)) {
-        markRange(section.startLine, section.endLine);
-        continue;
-      }
-      if (section.children.length) {
-        visit(section.children as SectionNode[]);
-      }
+    if (section.children.length) {
+      section.children.forEach(child => markKeep(child as SectionNode));
     }
   };
 
-  visit(originalSections);
+  keptSections.forEach(markKeep);
   return mask;
+}
+
+function countSections(sections: SectionNode[]): number {
+  let total = 0;
+  for (const section of sections) {
+    total += 1 + countSections(section.children as SectionNode[]);
+  }
+  return total;
 }
 
 function removeTrailingEmptyLines(lines: string[]) {

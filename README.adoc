@@ -23,7 +23,7 @@ DTC can work not only with my own templates, but also with any base document tem
 Build the CLI once, then generate a filtered archive:
 
 ```
-npm run cli -- --base-url https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata  --include level::basic,persistence
+npm run cli -- --base-url https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata  --include level::basic,persistence 
 ```
 
 Options:
@@ -38,6 +38,7 @@ The generated archive contains two folders:
 * `template/` keeps the filtered views with their metadata marker lines intact.
 * `blank-template/` contains the same views reduced to section titles and AsciiDoc attributes (body text removed).
 
+If none `--include` labels are provided, the resulting template contains every base template sections.
 
 ## History
 
@@ -85,3 +86,4 @@ https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/he
 * Ability to remove / add a specified section by number (2, 4.5...)
 * Preview the resulting template per view (blank mode)
 * Store configs (ex: set of selected labels...) so I can reopen it later
+* Keep all sections from the base template : just select none label

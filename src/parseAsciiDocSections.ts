@@ -40,22 +40,24 @@ export function parseAsciiDocSections(content: string): ViewSection[] {
     const title = titleRaw.trim();
     if (!title) continue;
 
+    const nodeStartLine = pendingMetadataLine ?? index;
+
+    while (stack.length && stack[stack.length - 1].level >= level) {
+      const popped = stack.pop()!;
+      popped.endLine = Math.max(popped.startLine, nodeStartLine - 1);
+    }
+
     const node: ViewSectionWithLocation = {
       level,
       title,
       children: [],
       metadata: pendingMetadata,
-      startLine: pendingMetadataLine ?? index,
+      startLine: nodeStartLine,
       endLine: lines.length - 1,
     };
 
     pendingMetadata = undefined;
     pendingMetadataLine = undefined;
-
-    while (stack.length && stack[stack.length - 1].level >= level) {
-      const popped = stack.pop()!;
-      popped.endLine = Math.max(popped.startLine, index - 1);
-    }
 
     if (!stack.length) {
       roots.push(node);
