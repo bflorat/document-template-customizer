@@ -48,6 +48,14 @@ describe("filterPartContent", () => {
     expect(result.templateContent).toContain("Small Section");
   });
 
+  it("supports markdown HTML comment metadata markers", () => {
+    const md = `# Doc\n\n<!--🏷{"labels":["keep-me"]}-->\n## Kept\nY\n\n<!--  🏷 {"labels":["drop-me"]}  -->\n## Dropped\nN`;
+    const result = filterPartContent(md, { includeLabels: ["keep-me"] });
+    expect(result.templateContent).toContain("## Kept");
+    expect(result.templateContent).not.toContain("## Dropped");
+    expect(result.templateContent).not.toContain("<!--🏷");
+  });
+
   it("keeps the top-level heading when nothing else matches", () => {
     const result = filterPartContent(SAMPLE_VIEW, { includeLabels: ["other"] });
     expect(result.templateContent.trim()).toBe("# Application");

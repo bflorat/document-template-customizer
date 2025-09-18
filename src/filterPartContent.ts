@@ -2,8 +2,8 @@ import { parseAsciiDocSections, type PartSectionWithLocation } from "./parseAsci
 
 const HEADING_REGEX = /^\s*#{1,6}\s+.+$/;
 const ATTRIBUTE_REGEX = /^\s*:[^:]+:.*$/;
-// Comment-style metadata markers `//🏷{...}`
-const METADATA_REGEX = /^\s*\/\/\s*🏷\s*(\{.*\})\s*$/;
+// Metadata markers to strip: AsciiDoc `//🏷{...}` and Markdown `<!--🏷{...}-->`
+const METADATA_REGEX = /^(?:\s*\/\/\s*🏷\s*\{.*\}\s*$|\s*<!--\s*🏷\s*\{.*\}\s*-->\s*$)/;
 
 export interface FilterPartContentOptions {
   includeLabels?: string[];

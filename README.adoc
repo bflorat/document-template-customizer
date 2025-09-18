@@ -44,8 +44,10 @@ labels:
   - name: green-IT
 ```
 
-* Every section of each part file of the base template should be annotated with a metadata line like : `//🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract","introduction"]}`
-  ** First level section (with a single) is always kept and should not be annotated.
+* Every section of each part file of the base template should be annotated with a metadata line just above the section title. Supported syntaxes:
+  ** AsciiDoc comment: `//🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract","context"]}`
+  ** Markdown HTML comment: `<!--🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract","context"]}-->`
+  ** First level section (with a single `#`) is always kept and should not be annotated.
   ** Used labels must be listed in the `base-template-metadata.yaml` file to be token into account.
   ** Labels can be simple flag (like `performance`)
   ** Some others are multi-values (like: `project_size` that supports three values in this example: `project_size::large`, `project_size::medium` and `project_size::small`). All available values must be listed in `base-template-metadata.yaml` file.
@@ -102,4 +104,3 @@ Matching rules:
 - If a parent section doesn't match, drop all sub-sections recusivelly
 - If a parent section matches, evaluate each sub-section and keep it only if it matches
 - If the base template is annotated with a wilcard multi-value label like project_size::* , it means that any selected label (project_size::small, project_size::large...) matches
-
