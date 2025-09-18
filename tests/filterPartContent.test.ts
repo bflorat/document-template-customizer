@@ -48,4 +48,15 @@ describe("filterPartContent", () => {
     expect(result.blankContent).toBe("");
     expect(result.keptSections).toBe(0);
   });
+
+  it("excludes non matching subsections even when parent matches", () => {
+    const nestedView = `# Root\n\n🏷{"labels":["keep-parent"]}\n## Matching Parent\nIntro that stays.\n\n🏷{"labels":["drop-me"]}\n### Child Removed\nRemove me.\n\n### Child Without Labels\nAlso removed.`;
+
+    const result = filterPartContent(nestedView, { includeLabels: ["keep-parent"] });
+
+    expect(result.templateContent).toContain("## Matching Parent");
+    expect(result.templateContent).toContain("Intro that stays.");
+    expect(result.templateContent).not.toContain("Child Removed");
+    expect(result.templateContent).not.toContain("Child Without Labels");
+  });
 });

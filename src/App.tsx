@@ -82,9 +82,10 @@ const App = () => {
     try {
       const result = await fetchTemplateAndParts(baseUrl, { strict: false })
       const knownSet = buildKnownLabelSet(result)
+      const { order: labelOrder, multiValueNames } = buildLabelOrder(result.metadata.data.labels)
       const selectableLabels = Array.from(knownSet)
-        .filter(label => !label.endsWith('::*'))
-        .sort((a, b) => a.localeCompare(b))
+        .filter(label => !label.endsWith('::*') && !multiValueNames.has(label))
+        .sort((a, b) => compareLabels(a, b, labelOrder))
       setAvailableLabels(selectableLabels)
       const filteredParts = buildFilteredPartsFromResult(result, labelsToInclude, knownSet)
       setExpandedParts(prev => {
@@ -440,12 +441,79 @@ function buildKnownLabelSet(result: TemplateWithParts): Set<string> {
 
 function addDefinitions(set: Set<string>, definitions: TemplateLabelDefinition[] | undefined) {
   definitions?.forEach(def => {
-    set.add(def.name)
-    def.available_values?.forEach(value => set.add(`${def.name}::${value}`))
+    const name = def.name.trim()
+    if (!name) return
+    const values = def.available_values ?? []
+    if (!values.length) {
+      set.add(name)
+      return
+    }
+    values.forEach(value => {
+      const trimmed = value.trim()
+      if (!trimmed) return
+      set.add(`${name}::${trimmed}`)
+    })
   })
 }
 
 function addSectionLabels(set: Set<string>, section: PartSection) {
   section.metadata?.labels?.forEach(label => set.add(label))
   section.children.forEach(child => addSectionLabels(set, child))
+}
+
+function buildLabelOrder(definitions: TemplateLabelDefinition[] | undefined): {
+  order: Map<string, number>
+  multiValueNames: Set<string>
+} {
+  const order = new Map<string, number>()
+  const multiValueNames = new Set<string>()
+  if (!definitions?.length) return { order, multiValueNames }
+
+  let priority = 0
+  definitions.forEach(def => {
+    const name = def.name.trim()
+    if (!name) return
+    const values = def.available_values
+    if (!values?.length) return
+    multiValueNames.add(name)
+    values.forEach(value => {
+      const trimmed = value.trim()
+      if (!trimmed) return
+      const key = `${name}::${trimmed}`
+      if (!order.has(key)) {
+        order.set(key, priority++)
+      }
+    })
+  })
+
+  return { order, multiValueNames }
+}
+
+function compareLabels(a: string, b: string, order: Map<string, number>): number {
+  const [aGroup, aValue] = a.split('::', 2)
+  const [bGroup, bValue] = b.split('::', 2)
+
+  // Primary: group by base label name alphabetically
+  const groupCmp = aGroup.localeCompare(bGroup)
+  if (groupCmp !== 0) return groupCmp
+
+  // Within the same group, honor metadata order for multi-value labels
+  const aKey = aValue !== undefined ? a : undefined
+  const bKey = bValue !== undefined ? b : undefined
+  const aPriority = aKey ? order.get(aKey) : undefined
+  const bPriority = bKey ? order.get(bKey) : undefined
+
+  if (aPriority !== undefined || bPriority !== undefined) {
+    if (aPriority === undefined) return 1
+    if (bPriority === undefined) return -1
+    if (aPriority !== bPriority) return aPriority - bPriority
+  }
+
+  // Fallbacks
+  if (aValue !== undefined && bValue !== undefined) {
+    return aValue.localeCompare(bValue)
+  }
+  if (aValue !== undefined) return 1
+  if (bValue !== undefined) return -1
+  return a.localeCompare(b)
 }

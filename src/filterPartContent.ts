@@ -1,4 +1,3 @@
-import { filterSectionsByLabels } from "./filterSectionsByLabels.js";
 import { parseAsciiDocSections, type PartSectionWithLocation } from "./parseAsciiDocSections.js";
 
 const HEADING_REGEX = /^\s*#{1,6}\s+.+$/;
@@ -15,6 +14,13 @@ function normalizeLabels(labels?: string[]): string[] {
 }
 
 type SectionNode = PartSectionWithLocation & { children: SectionNode[] };
+
+type SectionDecision = {
+  node: SectionNode;
+  matches: boolean;
+  keep: boolean;
+  children: SectionDecision[];
+};
 
 export interface FilterPartContentResult {
   templateContent: string;
@@ -33,14 +39,15 @@ export function filterPartContent(
   const sections = parseAsciiDocSections(rawContent) as SectionNode[];
 
   let filteredSections: SectionNode[] = sections;
-  if (includeLabels.length) {
-    filteredSections = filterSectionsByLabels(filteredSections, {
-      labels: includeLabels,
-      wildcard,
-    }) as SectionNode[];
-  }
+  let keepMask: boolean[];
 
-  const keepMask = createKeepMask(lines.length, filteredSections);
+  if (includeLabels.length) {
+    const decisions = buildSectionDecisions(sections, includeLabels, wildcard);
+    filteredSections = collectMatchedSections(decisions);
+    keepMask = createKeepMask(lines.length, decisions);
+  } else {
+    keepMask = new Array<boolean>(lines.length).fill(true);
+  }
 
   const templateLines: string[] = [];
   const blankLines: string[] = [];
@@ -71,21 +78,62 @@ export function filterPartContent(
   };
 }
 
-function createKeepMask(lineCount: number, keptSections: SectionNode[]): boolean[] {
+function createKeepMask(lineCount: number, decisions: SectionDecision[]): boolean[] {
+  if (lineCount === 0) return [];
+
   const mask = new Array<boolean>(lineCount).fill(false);
 
-  const markKeep = (section: SectionNode) => {
-    const start = Math.max(0, section.startLine);
-    const end = Math.min(lineCount - 1, section.endLine);
+  const clampLine = (value: number) => Math.min(Math.max(value, 0), lineCount - 1);
+  const markRange = (start: number, end: number) => {
+    if (start > end) return;
     for (let index = start; index <= end; index++) {
       mask[index] = true;
     }
-    if (section.children.length) {
-      section.children.forEach(child => markKeep(child as SectionNode));
+  };
+
+  const process = (decision: SectionDecision) => {
+    if (!decision.keep) return;
+
+    if (!decision.matches) {
+      decision.children.forEach(process);
+      return;
+    }
+
+    const section = decision.node;
+    const sectionStart = clampLine(section.startLine);
+    const sectionEnd = clampLine(section.endLine);
+    if (sectionStart > sectionEnd) return;
+
+    const sortedChildren = [...decision.children].sort(
+      (a, b) => a.node.startLine - b.node.startLine
+    );
+
+    let cursor = sectionStart;
+
+    for (const child of sortedChildren) {
+      const childStart = clampLine(child.node.startLine);
+      const childEnd = clampLine(child.node.endLine);
+
+      if (childStart > sectionEnd) break;
+
+      if (childStart > cursor) {
+        markRange(cursor, Math.min(childStart - 1, sectionEnd));
+      }
+
+      if (child.keep) {
+        process(child);
+      }
+
+      cursor = Math.max(cursor, childEnd + 1);
+      if (cursor > sectionEnd) break;
+    }
+
+    if (cursor <= sectionEnd) {
+      markRange(cursor, sectionEnd);
     }
   };
 
-  keptSections.forEach(markKeep);
+  decisions.forEach(process);
   return mask;
 }
 
@@ -95,6 +143,57 @@ function countSections(sections: SectionNode[]): number {
     total += 1 + countSections(section.children as SectionNode[]);
   }
   return total;
+}
+
+function buildSectionDecisions(
+  sections: SectionNode[],
+  labels: string[],
+  wildcard: boolean
+): SectionDecision[] {
+  const candidateSet = new Set(labels);
+
+  const evaluate = (section: SectionNode): SectionDecision => {
+    const matches = matchesAnyLabel(section.metadata?.labels, candidateSet, wildcard);
+    const children = section.children.map(evaluate);
+    const keep = matches || children.some(child => child.keep);
+    return {
+      node: section,
+      matches,
+      keep,
+      children,
+    };
+  };
+
+  return sections.map(evaluate);
+}
+
+function collectMatchedSections(decisions: SectionDecision[]): SectionNode[] {
+  const result: SectionNode[] = [];
+  for (const decision of decisions) {
+    if (!decision.keep) continue;
+    const keptChildren = collectMatchedSections(decision.children);
+    if (decision.matches) {
+      result.push({ ...decision.node, children: keptChildren });
+    } else {
+      result.push(...keptChildren);
+    }
+  }
+  return result;
+}
+
+function matchesAnyLabel(
+  labels: string[] | undefined,
+  candidates: Set<string>,
+  wildcard: boolean
+): boolean {
+  if (!labels?.length) return false;
+  return labels.some(label => {
+    if (candidates.has(label)) return true;
+    if (!wildcard) return false;
+    const [namespace = "", value = ""] = label.split("::", 2);
+    if (!namespace || !value) return false;
+    return candidates.has(`${namespace}::*`);
+  });
 }
 
 function removeTrailingEmptyLines(lines: string[]) {

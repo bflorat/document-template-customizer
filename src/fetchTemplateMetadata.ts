@@ -57,14 +57,40 @@ export async function fetchTemplateMetadata(
     const labelDefs = Array.isArray(parsed.labels)
       ? parsed.labels
           .map((label: any): TemplateLabelDefinition | null => {
-            const name = typeof label?.name === "string" ? label.name : undefined;
+            // Support both forms:
+            // - { name: "level", available_values: ["basic", ...] }
+            // - { level: ["basic", ...] }
+            let name: string | undefined;
+            let values: string[] | undefined;
+
+            if (label && typeof label === "object") {
+              if (typeof label.name === "string") {
+                name = label.name.trim();
+                if (Array.isArray(label.available_values)) {
+                  values = label.available_values
+                    .filter((v: unknown): v is string => typeof v === "string")
+                    .map(v => v.trim())
+                    .filter(Boolean);
+                }
+              } else {
+                const keys = Object.keys(label);
+                if (keys.length === 1) {
+                  const k = keys[0];
+                  const rawVals = (label as any)[k];
+                  if (Array.isArray(rawVals)) {
+                    name = String(k).trim();
+                    values = rawVals
+                      .filter((v: unknown): v is string => typeof v === "string")
+                      .map(v => v.trim())
+                      .filter(Boolean);
+                  }
+                }
+              }
+            }
+
             if (!name) return null;
-            const values = Array.isArray(label?.available_values)
-              ? label.available_values.filter((val: unknown): val is string => typeof val === "string")
-              : undefined;
-            return values && values.length
-              ? { name, available_values: values }
-              : { name };
+            if (values && values.length) return { name, available_values: values };
+            return { name };
           })
           .filter((label: TemplateLabelDefinition | null): label is TemplateLabelDefinition => label !== null)
       : undefined;
