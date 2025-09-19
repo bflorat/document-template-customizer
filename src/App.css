@@ -226,6 +226,45 @@ header h1 {
   list-style: none;
 }
 
+.drop-rules-panel {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.drop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drop-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.drop-rules-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.drop-rules-table th,
+.drop-rules-table td {
+  border-top: 1px solid #e5e7eb;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.drop-rules-table th {
+  font-weight: 600;
+  color: #374151;
+}
+
 .preview-panel {
   width: 100%;
   border: 1px solid #e0e0e0;

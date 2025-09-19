@@ -36,6 +36,9 @@ const App = () => {
   const [previewParts, setPreviewParts] = useState<FilteredPart[]>([])
   const [templateLoadInfo, setTemplateLoadInfo] = useState<TemplateLoadInfo>({ state: 'idle' })
   const [didAutoSelectAll, setDidAutoSelectAll] = useState(false)
+  const [availableSectionsByPart, setAvailableSectionsByPart] = useState<Record<string, string[]>>({})
+  const [dropRules, setDropRules] = useState<Array<{ id: string; partFile: string; sectionTitle: string }>>([])
+  const [partNamesByFile, setPartNamesByFile] = useState<Record<string, string>>({})
 
   const handleTemplateUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTemplateUrl(event.target.value)
@@ -88,6 +91,8 @@ const App = () => {
         .filter(label => !label.endsWith('::*') && !multiValueNames.has(label))
         .sort((a, b) => compareLabels(a, b, labelOrder))
       setAvailableLabels(selectableLabels)
+      setAvailableSectionsByPart(buildAvailableSections(result))
+      setPartNamesByFile(Object.fromEntries(result.metadata.data.parts.map(p => [p.file, p.name])))
 
       // Select all available labels by default on first load (UI only)
       if (!didAutoSelectAll && includingLabels.length === 0) {
@@ -101,7 +106,12 @@ const App = () => {
         labelsToInclude.length === selectableLabels.length &&
         selectableLabels.every(l => selectedSet.has(l))
       const effectiveLabels = (labelsToInclude.length === 0 || isAllSelected) ? [] : labelsToInclude
-      const filteredParts = buildFilteredPartsFromResult(result, effectiveLabels, knownSet)
+      const filteredParts = buildFilteredPartsFromResult(
+        result,
+        effectiveLabels,
+        knownSet,
+        toDropMap(dropRules)
+      )
       setExpandedParts(prev => {
         const nextState: Record<string, { blank: boolean; full: boolean }> = {}
         filteredParts.forEach(part => {
@@ -216,6 +226,28 @@ const App = () => {
     await refreshPreview()
   }
 
+  const handleAddDropRule = async () => {
+    const firstPart = Object.keys(availableSectionsByPart)[0] ?? ''
+    const newRule = { id: String(Date.now() + Math.random()), partFile: firstPart, sectionTitle: '' }
+    setDropRules(prev => [...prev, newRule])
+    if (previewOpen) await refreshPreview()
+  }
+
+  const handleRemoveDropRule = async (id: string) => {
+    setDropRules(prev => prev.filter(r => r.id !== id))
+    if (previewOpen) await refreshPreview()
+  }
+
+  const handleChangeRulePart = async (id: string, partFile: string) => {
+    setDropRules(prev => prev.map(r => (r.id === id ? { ...r, partFile, sectionTitle: '' } : r)))
+    if (previewOpen) await refreshPreview()
+  }
+
+  const handleChangeRuleTitle = async (id: string, title: string) => {
+    setDropRules(prev => prev.map(r => (r.id === id ? { ...r, sectionTitle: title } : r)))
+    if (previewOpen) await refreshPreview()
+  }
+
   const handleSectionToggle = (file: string, section: 'blank' | 'full', open: boolean) => {
     setExpandedParts(prev => {
       const current = prev[file] ?? { blank: true, full: false }
@@ -278,6 +310,70 @@ const App = () => {
                 })
               )}
             </ul>            
+          </div>
+        </section>
+
+        <section className="drop-rules-panel">
+          <div className="drop-header">
+            <h3>🧹 Drop specific sections</h3>
+            <button type="button" className="secondary-action" onClick={handleAddDropRule}>Add row</button>
+          </div>
+          <div className="drop-table-wrapper">
+            {dropRules.length === 0 ? (
+              <p className="empty-row">No drop rules. Add one to remove specific sections.</p>
+            ) : (
+              <table className="drop-rules-table">
+                <thead>
+                  <tr>
+                    <th>Part</th>
+                    <th>Section title</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dropRules.map(rule => {
+                    const parts = Object.keys(availableSectionsByPart)
+                    const options = availableSectionsByPart[rule.partFile] ?? []
+                    const datalistId = `dl-${rule.id}`
+                    return (
+                      <tr key={rule.id}>
+                        <td>
+                          <select
+                            value={rule.partFile}
+                            onChange={e => handleChangeRulePart(rule.id, e.target.value)}
+                          >
+                            {parts.map(file => (
+                              <option key={file} value={file}>
+                                {partNamesByFile[file] ?? file}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            value={rule.sectionTitle}
+                            onChange={e => handleChangeRuleTitle(rule.id, e.target.value)}
+                            list={datalistId}
+                            placeholder="Type or pick a section title"
+                          />
+                          <datalist id={datalistId}>
+                            {options.map(title => (
+                              <option key={title} value={title} />
+                            ))}
+                          </datalist>
+                        </td>
+                        <td>
+                          <button type="button" className="secondary-action icon-only" onClick={() => handleRemoveDropRule(rule.id)} title="Remove">
+                            ✖
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
         </section>
 
@@ -398,7 +494,8 @@ function formatDuration(ms: number): string {
 function buildFilteredPartsFromResult(
   result: TemplateWithParts,
   labelsToInclude: string[],
-  knownSet?: Set<string>
+  knownSet?: Set<string>,
+  dropByPart?: Record<string, string[]>
 ): FilteredPart[] {
   const knownLabels = knownSet ?? buildKnownLabelSet(result)
 
@@ -425,6 +522,7 @@ function buildFilteredPartsFromResult(
     if (!part.content) continue
     const filtered = filterPartContent(part.content, {
       includeLabels: labelsToInclude,
+      dropTitles: (dropByPart?.[part.file] ?? []),
     })
 
     const hasTemplate = filtered.templateContent.trim().length > 0
@@ -470,6 +568,32 @@ function addDefinitions(set: Set<string>, definitions: TemplateLabelDefinition[]
 function addSectionLabels(set: Set<string>, section: PartSection) {
   section.metadata?.labels?.forEach(label => set.add(label))
   section.children.forEach(child => addSectionLabels(set, child))
+}
+
+function buildAvailableSections(result: TemplateWithParts): Record<string, string[]> {
+  const map: Record<string, string[]> = {}
+  const collect = (acc: Set<string>, section: PartSection) => {
+    acc.add(section.title)
+    section.children.forEach(child => collect(acc, child))
+  }
+  result.parts.forEach(part => {
+    const set = new Set<string>()
+    part.sections?.forEach(section => collect(set, section))
+    const titles = Array.from(set.values()).sort((a, b) => a.localeCompare(b))
+    map[part.file] = titles
+  })
+  return map
+}
+
+function toDropMap(rules: Array<{ partFile: string; sectionTitle: string }>): Record<string, string[]> {
+  const map: Record<string, string[]> = {}
+  for (const r of rules) {
+    const title = r.sectionTitle?.trim()
+    if (!r.partFile || !title) continue
+    if (!map[r.partFile]) map[r.partFile] = []
+    if (!map[r.partFile].includes(title)) map[r.partFile].push(title)
+  }
+  return map
 }
 
 function buildLabelOrder(definitions: TemplateLabelDefinition[] | undefined): {

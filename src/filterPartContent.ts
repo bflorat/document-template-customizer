@@ -8,6 +8,7 @@ const METADATA_REGEX = /^(?:\s*\/\/\s*🏷\s*\{.*\}\s*$|\s*<!--\s*🏷\s*\{.*\}\
 export interface FilterPartContentOptions {
   includeLabels?: string[];
   wildcard?: boolean;
+  dropTitles?: string[]; // section titles to drop (case-insensitive), level >= 2 only
 }
 
 function normalizeLabels(labels?: string[]): string[] {
@@ -35,6 +36,7 @@ export function filterPartContent(
 ): FilterPartContentResult {
   const includeLabels = normalizeLabels(options.includeLabels);
   const wildcard = options.wildcard ?? true;
+  const dropTitles = new Set((options.dropTitles ?? []).map(v => v.trim().toLowerCase()).filter(Boolean));
   const lines = rawContent.split(/\r?\n/);
 
   const sections = parseAsciiDocSections(rawContent) as SectionNode[];
@@ -52,6 +54,24 @@ export function filterPartContent(
     if (h1Index !== -1) keepMask[h1Index] = true;
   } else {
     keepMask = new Array<boolean>(lines.length).fill(true);
+  }
+
+  // Apply explicit drop rules by title (case-insensitive), excluding level 1 sections
+  if (dropTitles.size) {
+    const dropByNode = (node: SectionNode) => {
+      const shouldDrop = node.level >= 2 && dropTitles.has(node.title.trim().toLowerCase());
+      if (shouldDrop) {
+        const start = Math.max(0, node.startLine);
+        const end = Math.min(lines.length - 1, node.endLine);
+        for (let i = start; i <= end; i++) keepMask[i] = false;
+      } else {
+        node.children.forEach(child => dropByNode(child as SectionNode));
+      }
+    };
+    (sections as SectionNode[]).forEach(dropByNode);
+    // ensure H1 remains kept
+    const h1Index = findFirstLevelOneHeadingIndex(lines);
+    if (h1Index !== -1) keepMask[h1Index] = true;
   }
 
   const templateLines: string[] = [];
