@@ -282,7 +282,6 @@ const App = () => {
             onChange={handleTemplateUrlChange}
           />
         </label>
-        <TemplateLoadIndicator info={templateLoadInfo} />
         <button
           type="button"
           className="secondary-action load-template"
@@ -291,6 +290,7 @@ const App = () => {
         >
           {templateLoadInfo.state === 'loading' ? 'Loading…' : 'Load base template'}
         </button>
+        <TemplateLoadIndicator info={templateLoadInfo} />
 
         <section className="labels-panel">
           <div className="available-labels">
@@ -325,7 +325,7 @@ const App = () => {
           </div>
           <div className="drop-table-wrapper">
             {dropRules.length === 0 ? (
-              <p className="empty-row">No drop rules. Add one to remove specific sections.</p>
+              <p className="empty-row">No drop rules. Add one to remove specific sections in addition to labels matching.</p>
             ) : (
               <table className="drop-rules-table">
                 <thead>
