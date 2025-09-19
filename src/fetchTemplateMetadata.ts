@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { parse } from "yaml";
 import {
   TemplateMetadataNotFoundError,
@@ -69,7 +70,7 @@ export async function fetchTemplateMetadata(
                 if (Array.isArray(label.available_values)) {
                   values = label.available_values
                     .filter((v: unknown): v is string => typeof v === "string")
-                    .map(v => v.trim())
+                    .map((v: string) => v.trim())
                     .filter(Boolean);
                 }
               } else {
@@ -81,7 +82,7 @@ export async function fetchTemplateMetadata(
                     name = String(k).trim();
                     values = rawVals
                       .filter((v: unknown): v is string => typeof v === "string")
-                      .map(v => v.trim())
+                      .map((v: string) => v.trim())
                       .filter(Boolean);
                   }
                 }

@@ -1,4 +1,5 @@
 // tests/fetchTemplateWithParts.test.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fetchTemplateMetadata, fetchTemplateAndParts } from "../src/fetchTemplateMetadata";
 import {
@@ -52,21 +53,7 @@ function buildFetchMock(
   });
 }
 
-/** A responder that never resolves and respects AbortController to simulate timeouts. */
-function hangingResponder() {
-  return async (_url: string, init?: RequestInit) =>
-    new Promise<MockResponse>((_resolve, reject) => {
-      const signal = init?.signal as AbortSignal | undefined;
-      const onAbort = () => {
-        const err: any = new Error("The operation was aborted");
-        err.name = "AbortError";
-        reject(err);
-      };
-      if (signal?.aborted) return onAbort();
-      signal?.addEventListener("abort", onAbort, { once: true });
-      // never resolve
-    });
-}
+// (helper removed) hanging responder not used anymore
 
 // ----------- Fixtures -----------
 

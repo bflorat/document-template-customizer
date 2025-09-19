@@ -3,7 +3,6 @@ import { writeFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
-import { stringify } from "yaml";
 import { fetchTemplateAndParts } from "../fetchTemplateMetadata.js";
 import { filterPartContent } from "../filterPartContent.js";
 import type { TemplateLabelDefinition, TemplateWithParts } from "../model/index.js";
@@ -179,8 +178,9 @@ async function run() {
     await writeFile(targetPath, buffer);
 
     console.log(`Generated ${targetPath} with ${includedParts} part(s).`);
-  } catch (error: any) {
-    console.error(error?.message ?? String(error));
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(message);
     process.exitCode = 1;
   }
 }
@@ -193,7 +193,7 @@ const isMainModule = (() => {
 })();
 
 if (isMainModule) {
-  run();
+  void run();
 }
 
 function createFetch(baseUrl: string): typeof fetch {

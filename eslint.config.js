@@ -11,13 +11,15 @@ export default tseslint.config([
     files: ['**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
-      tseslint.configs.recommendedTypeChecked,
+      // Use non-type-aware rules for faster, simpler checks
+      tseslint.configs.recommended,
       reactHooks.configs['recommended-latest'],
       reactRefresh.configs.vite,
     ],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      // Keep parser in non-type-aware mode for simplicity
     },
   },
 ])

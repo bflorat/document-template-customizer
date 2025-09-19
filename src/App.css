@@ -61,33 +61,8 @@ header h1 {
   border-radius: 4px;
 }
 
-.labels-layout {
-  display: flex;
-  gap: 2rem;
-  width: 100%;
-}
-
-
 .labels-panel {
   flex: 1;
-}
-
-.labels-panel h2 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0 0 0.75rem;
-}
-
-.selected-labels {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.selected-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .empty-row {
@@ -96,18 +71,6 @@ header h1 {
   font-style: italic;
 }
 
-.label-input {
-  width: 100%;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.95rem;
-  border: 1px solid #bcbcbc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.remove-label {
-  white-space: nowrap;
-}
 
 .secondary-action {
   padding: 0.35rem 0.9rem;
@@ -137,10 +100,6 @@ header h1 {
   align-self: flex-start;
 }
 
-.add-label {
-  margin-top: 0.75rem;
-  align-self: flex-start;
-}
 
 .alert {
   margin-top: 0.75rem;
@@ -333,22 +292,6 @@ header h1 {
   outline: none;
 }
 
-.or-text {
-  margin: 0;
-  color: #616161;
-}
-
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.95rem;
-}
-
-.checkbox-row input {
-  width: 1rem;
-  height: 1rem;
-}
 
 .primary-action {
   padding: 0.55rem 1.6rem;

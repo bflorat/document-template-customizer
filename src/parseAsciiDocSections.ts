@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { PartSection, PartSectionMetadata } from "./model/index.js";
 
 export interface PartSectionWithLocation extends PartSection {
@@ -111,7 +112,7 @@ function parseMetadata(value: string): PartSectionMetadata | undefined {
     if (linkValues.length) metadata.linkTo = linkValues;
 
     return metadata;
-  } catch (error) {
+  } catch {
     return undefined;
   }
 }

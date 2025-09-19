@@ -251,7 +251,7 @@ const App = () => {
   useEffect(() => {
     if (!previewOpen) return
     void refreshPreview()
-  }, [dropRules])
+  }, [dropRules, previewOpen, refreshPreview])
 
   const handleSectionToggle = (file: string, section: 'blank' | 'full', open: boolean) => {
     setExpandedParts(prev => {
@@ -272,7 +272,7 @@ const App = () => {
         <h1>📐 Document Template Customizer</h1>
         <p>Produce a personalized curated document template from a larger base template</p>
       </header>
-      <form className="template-form" onSubmit={handleFormSubmit}>
+      <form className="template-form" onSubmit={e => { void handleFormSubmit(e) }}>
         <label className="input-group">
           <span>Base template URL:</span>
           <input
@@ -285,7 +285,7 @@ const App = () => {
         <button
           type="button"
           className="secondary-action load-template"
-          onClick={handleLoadTemplate}
+          onClick={() => { void handleLoadTemplate() }}
           disabled={templateLoadInfo.state === 'loading'}
         >
           {templateLoadInfo.state === 'loading' ? 'Loading…' : 'Load base template'}
@@ -306,7 +306,7 @@ const App = () => {
                   return (
                     <li
                       key={label}
-                      onClick={() => handleAvailableLabelClick(label)}
+                      onClick={() => { void handleAvailableLabelClick(label) }}
                       className={isSelected ? 'label-chip selected' : 'label-chip'}
                     >
                       {label}
@@ -384,14 +384,14 @@ const App = () => {
 
         <section className="preview-panel">
           <div className="preview-header">
-            <button type="button" className="secondary-action" onClick={handleTogglePreview}>
+            <button type="button" className="secondary-action" onClick={() => { void handleTogglePreview() }}>
               {previewOpen ? 'Hide preview' : 'Show preview'}
             </button>
             {previewOpen ? (
               <button
                 type="button"
                 className="secondary-action"
-                onClick={handleRefreshPreview}
+                onClick={() => { void handleRefreshPreview() }}
                 disabled={previewLoading}
               >
                 Refresh preview
@@ -443,7 +443,7 @@ const App = () => {
           ) : null}
         </section>
 
-        <button type="button" className="primary-action" onClick={handleGenerate} disabled={isGenerating}>
+        <button type="button" className="primary-action" onClick={() => { void handleGenerate() }} disabled={isGenerating}>
           {isGenerating ? '⏳ Generating…' : '🚀 Generate your template'}
         </button>
         {errorMessage ? (
@@ -570,10 +570,7 @@ function addDefinitions(set: Set<string>, definitions: TemplateLabelDefinition[]
   })
 }
 
-function addSectionLabels(set: Set<string>, section: PartSection) {
-  section.metadata?.labels?.forEach(label => set.add(label))
-  section.children.forEach(child => addSectionLabels(set, child))
-}
+// addSectionLabels removed: labels now sourced solely from base-template-metadata.yaml
 
 function buildAvailableSections(result: TemplateWithParts): Record<string, string[]> {
   const map: Record<string, string[]> = {}
