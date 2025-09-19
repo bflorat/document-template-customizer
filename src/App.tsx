@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react'
 import JSZip from 'jszip'
 import { stringify } from 'yaml'
 import './App.css'
@@ -163,12 +163,15 @@ const App = () => {
         zip.file(`template/${fetchedReadme.file}`, fetchedReadme.content)
       }
 
+      const droppedSections = toDropMap(dropRules)
+
       zip.file(
         'customization-context.yaml',
         stringify({
           generated_at: new Date().toISOString(),
           base_template_url: baseUrl,
           selected_labels: labelsToInclude,
+          dropped_sections: droppedSections,
         })
       )
 
@@ -226,27 +229,29 @@ const App = () => {
     await refreshPreview()
   }
 
-  const handleAddDropRule = async () => {
+  const handleAddDropRule = () => {
     const firstPart = Object.keys(availableSectionsByPart)[0] ?? ''
     const newRule = { id: String(Date.now() + Math.random()), partFile: firstPart, sectionTitle: '' }
     setDropRules(prev => [...prev, newRule])
-    if (previewOpen) await refreshPreview()
   }
 
-  const handleRemoveDropRule = async (id: string) => {
+  const handleRemoveDropRule = (id: string) => {
     setDropRules(prev => prev.filter(r => r.id !== id))
-    if (previewOpen) await refreshPreview()
   }
 
-  const handleChangeRulePart = async (id: string, partFile: string) => {
+  const handleChangeRulePart = (id: string, partFile: string) => {
     setDropRules(prev => prev.map(r => (r.id === id ? { ...r, partFile, sectionTitle: '' } : r)))
-    if (previewOpen) await refreshPreview()
   }
 
-  const handleChangeRuleTitle = async (id: string, title: string) => {
+  const handleChangeRuleTitle = (id: string, title: string) => {
     setDropRules(prev => prev.map(r => (r.id === id ? { ...r, sectionTitle: title } : r)))
-    if (previewOpen) await refreshPreview()
   }
+
+  // Auto-refresh preview when drop rules change
+  useEffect(() => {
+    if (!previewOpen) return
+    void refreshPreview()
+  }, [dropRules])
 
   const handleSectionToggle = (file: string, section: 'blank' | 'full', open: boolean) => {
     setExpandedParts(prev => {
@@ -316,7 +321,7 @@ const App = () => {
         <section className="drop-rules-panel">
           <div className="drop-header">
             <h3>🧹 Drop specific sections</h3>
-            <button type="button" className="secondary-action" onClick={handleAddDropRule}>Add row</button>
+            <button type="button" className="secondary-action" onClick={handleAddDropRule}>Add item</button>
           </div>
           <div className="drop-table-wrapper">
             {dropRules.length === 0 ? (
