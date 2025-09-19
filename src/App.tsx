@@ -446,9 +446,6 @@ function buildKnownLabelSet(result: TemplateWithParts): Set<string> {
   const known = new Set<string>()
 
   addDefinitions(known, result.metadata.data.labels)
-  result.parts.forEach(part => {
-    part.sections?.forEach(section => addSectionLabels(known, section))
-  })
 
   return known
 }
