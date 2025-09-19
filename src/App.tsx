@@ -320,12 +320,12 @@ const App = () => {
 
         <section className="drop-rules-panel">
           <div className="drop-header">
-            <h3>🧹 Drop specific sections</h3>
+            <h3>🧹 Drop specific sections (optional)</h3>
             <button type="button" className="secondary-action" onClick={handleAddDropRule}>Add item</button>
           </div>
           <div className="drop-table-wrapper">
             {dropRules.length === 0 ? (
-              <p className="empty-row">No drop rules. Add one to remove specific sections in addition to labels matching.</p>
+              <p className="empty-row">No drop rules. Add one to remove specific sections in addition to labels matching</p>
             ) : (
               <table className="drop-rules-table">
                 <thead>
