@@ -1,10 +1,10 @@
-# Document Template Customizer (DTC)
+# Document Template Customizer
 
 This tool lets you produce *personalized document templates* from a larger base template repository, such as https://github.com/bflorat/architecture-document-template[this one].
 
 While I’ve received good feedback on my previous document templates, a recurring criticism was that the *templates were too large*, leaving many sections unused. With DTC, you can *prepare smaller, tailored templates* filtered from a larger one.
 
-DTC works with my templates and with any base document template (self‑hosted or not), as long as it follows a simple metamodel.
+Any template following a simple metamodel is supported, not only my own templates.
 
 ## Common use cases
 
