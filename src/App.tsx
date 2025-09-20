@@ -1,6 +1,6 @@
-import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react'
+import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from 'react'
 import JSZip from 'jszip'
-import { stringify } from 'yaml'
+import { stringify, parse as parseYaml } from 'yaml'
 import './App.css'
 import { fetchTemplateAndParts } from './fetchTemplateMetadata'
 import { filterPartContent } from './filterPartContent'
@@ -39,6 +39,7 @@ const App = () => {
   const [availableSectionsByPart, setAvailableSectionsByPart] = useState<Record<string, string[]>>({})
   const [dropRules, setDropRules] = useState<Array<{ id: string; partFile: string; sectionTitle: string }>>([])
   const [partNamesByFile, setPartNamesByFile] = useState<Record<string, string>>({})
+  const contextFileInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleTemplateUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTemplateUrl(event.target.value)
@@ -77,7 +78,8 @@ const App = () => {
 
   const loadFilteredParts = async (
     baseUrl: string,
-    labelsToInclude: string[]
+    labelsToInclude: string[],
+    opts?: { skipAutoSelect?: boolean }
   ): Promise<{ filteredParts: FilteredPart[]; readme: { file: string; content: string } }> => {
     setTemplateLoadInfo({ state: 'loading' })
     const start = performance.now()
@@ -95,7 +97,7 @@ const App = () => {
       setPartNamesByFile(Object.fromEntries(result.metadata.data.parts.map(p => [p.file, p.name])))
 
       // Select all available labels by default on first load (UI only)
-      if (!didAutoSelectAll && includingLabels.length === 0) {
+      if (!opts?.skipAutoSelect && !didAutoSelectAll && includingLabels.length === 0) {
         setIncludingLabels(selectableLabels)
         setDidAutoSelectAll(true)
       }
@@ -229,6 +231,55 @@ const App = () => {
     await refreshPreview()
   }
 
+  type CustomizationContext = {
+    generated_at?: string
+    base_template_url?: string
+    selected_labels?: string[]
+    dropped_sections?: Record<string, string[]>
+  }
+
+  const openContextFilePicker = () => {
+    contextFileInputRef.current?.click()
+  }
+
+  const handleContextFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    try {
+      const text = await file.text()
+      const ctx = parseYaml(text) as CustomizationContext
+      const baseUrl = (ctx.base_template_url ?? '').trim()
+      const loadedLabels = (ctx.selected_labels ?? []).map(v => v.trim()).filter(Boolean)
+      const dropped = ctx.dropped_sections ?? {}
+
+      if (baseUrl) setTemplateUrl(baseUrl)
+      setIncludingLabels(loadedLabels)
+      setDidAutoSelectAll(true)
+
+      // Build drop rules from context map
+      const rules: Array<{ id: string; partFile: string; sectionTitle: string }> = []
+      Object.entries(dropped).forEach(([partFile, titles]) => {
+        (titles ?? []).forEach(title => {
+          if (!title) return
+          rules.push({ id: `${partFile}:${title}:${Math.random()}`, partFile, sectionTitle: title })
+        })
+      })
+      setDropRules(rules)
+
+      // Load template and preview with loaded labels
+      const effectiveBase = baseUrl || resolveBaseUrl()
+      await loadFilteredParts(effectiveBase, loadedLabels, { skipAutoSelect: true })
+      if (previewOpen) await refreshPreview()
+      setSuccessMessage('Customization context loaded.')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      setErrorMessage(`Failed to load customization-context.yaml: ${msg}`)
+    } finally {
+      // reset input value so the same file can be selected again if needed
+      if (contextFileInputRef.current) contextFileInputRef.current.value = ''
+    }
+  }
+
   const handleAddDropRule = () => {
     const firstPart = Object.keys(availableSectionsByPart)[0] ?? ''
     const newRule = { id: String(Date.now() + Math.random()), partFile: firstPart, sectionTitle: '' }
@@ -284,14 +335,28 @@ const App = () => {
             onChange={handleTemplateUrlChange}
           />
         </label>
-        <button
-          type="button"
-          className="secondary-action load-template"
-          onClick={() => { void handleLoadTemplate() }}
-          disabled={templateLoadInfo.state === 'loading'}
-        >
-          {templateLoadInfo.state === 'loading' ? 'Loading…' : 'Load base template'}
-        </button>
+        <div className="load-actions">
+          <button
+            type="button"
+            className="secondary-action load-template"
+            onClick={() => { void handleLoadTemplate() }}
+            disabled={templateLoadInfo.state === 'loading'}
+          >
+            {templateLoadInfo.state === 'loading' ? 'Loading…' : 'Load base template'}
+          </button>
+          <div className="config-loader">
+            <input
+              ref={contextFileInputRef}
+              type="file"
+              accept=".yaml,.yml,text/yaml,application/x-yaml,application/yaml"
+              style={{ display: 'none' }}
+              onChange={e => { void handleContextFileChange(e) }}
+            />
+            <button type="button" className="secondary-action" onClick={openContextFilePicker}>
+              Load customization file…
+            </button>
+          </div>
+        </div>
         <TemplateLoadIndicator info={templateLoadInfo} />
 
         <section className="labels-panel">
@@ -469,7 +534,7 @@ function TemplateLoadIndicator({ info }: { info: TemplateLoadInfo }) {
   if (info.state === 'idle') {
     return (
       <p className="template-load-status alert alert--info">
-        Tip — load the base template to start.
+        Tip — load the base template to start or reload a past customization from a <span className="mono">customization-context.yaml</span> file located in a previous generated template.
       </p>
     )
   }
