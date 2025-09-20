@@ -7,10 +7,8 @@ export interface PartSectionWithLocation extends PartSection {
 }
 
 const HEADING_REGEX = /^\s*(#{1,6})\s+(.*)$/;
-// Matches metadata marker above a heading:
-// - AsciiDoc comment: `//🏷{...}`
-// - Markdown HTML comment: `<!--🏷{...}-->`
-const METADATA_REGEX = /^(?:\s*\/\/\s*🏷\s*(\{.*\})\s*$|\s*<!--\s*🏷\s*(\{.*\})\s*-->\s*$)/;
+// Matches metadata marker above a heading (AsciiDoc comment): `//🏷{...}`
+const METADATA_REGEX = /^\s*\/\/\s*🏷\s*(\{.*\})\s*$/;
 
 export function parseAsciiDocSections(content: string): PartSection[] {
   const lines = content.split(/\r?\n/);
@@ -26,8 +24,7 @@ export function parseAsciiDocSections(content: string): PartSection[] {
 
     const metadataMatch = METADATA_REGEX.exec(trimmed);
     if (metadataMatch) {
-      const json = metadataMatch[1] ?? metadataMatch[2];
-      const parsed = parseMetadata(json!);
+      const parsed = parseMetadata(metadataMatch[1]);
       if (parsed) pendingMetadata = parsed;
       pendingMetadataLine = index;
       continue;

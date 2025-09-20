@@ -44,9 +44,8 @@ labels:
   - name: green-IT
 ```
 
-* Every section of each part file of the base template should be annotated with a metadata line directly above the section title (no blank line). Supported syntaxes:
-  ** AsciiDoc comment: `//🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract", "context"]}`
-  ** Markdown HTML comment: `<!--🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract", "context"]}-->`
+* Every section of each part file of the base template should be annotated with a metadata line directly above the section title (no blank line), using an AsciiDoc comment:
+  ** `//🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract", "context"]}`
   ** Level‑1 sections (single `#`) are always kept and should not be annotated.
   ** All labels used in sections must be listed in `base-template-metadata.yaml` to be taken into account.
   ** Labels can be a simple flag (e.g., `performance`).
@@ -89,5 +88,4 @@ If no `--include` labels are provided, the resulting template contains every sec
 
 ## Tips
 * The generated zip contains a `customization-context.yaml` file with the generation date, base template URL, and selected labels.
-
 

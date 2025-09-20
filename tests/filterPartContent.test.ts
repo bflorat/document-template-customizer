@@ -48,13 +48,6 @@ describe("filterPartContent", () => {
     expect(result.templateContent).toContain("Small Section");
   });
 
-  it("supports markdown HTML comment metadata markers", () => {
-    const md = `# Doc\n\n<!--🏷{"labels":["keep-me"]}-->\n## Kept\nY\n\n<!--  🏷 {"labels":["drop-me"]}  -->\n## Dropped\nN`;
-    const result = filterPartContent(md, { includeLabels: ["keep-me"] });
-    expect(result.templateContent).toContain("## Kept");
-    expect(result.templateContent).not.toContain("## Dropped");
-    expect(result.templateContent).not.toContain("<!--🏷");
-  });
 
   it("keeps the top-level heading when nothing else matches", () => {
     const result = filterPartContent(SAMPLE_VIEW, { includeLabels: ["other"] });
@@ -94,6 +87,18 @@ describe("filterPartContent", () => {
     const both = filterPartContent(view, { includeLabels: ["include-me","other"] });
     expect(both.templateContent).toContain("## Only Include");
     expect(both.templateContent).toContain("## Both");
+  });
+
+  it("inserts 'See also' paragraph with cross-ref links for sections with link_to", () => {
+    const view = `# Root\n\n//🏷{"id":"s1"}\n## First\nA\n\n//🏷{"id":"s2","link_to":["s1"]}\n## Second\nB`;
+    const result = filterPartContent(view, {
+      includeLabels: [],
+      linkIndex: { s1: "First", s2: "Second" },
+    });
+    expect(result.templateContent).toContain("[[s1]]");
+    expect(result.templateContent).toContain("See also <<s1,First>>.");
+    expect(result.blankContent).toContain("[[s1]]");
+    expect(result.blankContent).toContain("See also <<s1,First>>.");
   });
 
   it("unlabeled parent does not block matching children", () => {

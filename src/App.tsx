@@ -589,11 +589,15 @@ function buildFilteredPartsFromResult(
 
   const filteredParts: FilteredPart[] = []
 
+  // Build a link index (id -> title) across all parts to resolve See also
+  const linkIndex = buildLinkIndex(result)
+
   for (const part of orderedParts) {
     if (!part.content) continue
     const filtered = filterPartContent(part.content, {
       includeLabels: labelsToInclude,
       dropTitles: (dropByPart?.[part.file] ?? []),
+      linkIndex,
     })
 
     const hasTemplate = filtered.templateContent.trim().length > 0
@@ -662,6 +666,19 @@ function toDropMap(rules: Array<{ partFile: string; sectionTitle: string }>): Re
     if (!map[r.partFile].includes(title)) map[r.partFile].push(title)
   }
   return map
+}
+
+function buildLinkIndex(result: TemplateWithParts): Record<string, string> {
+  const index: Record<string, string> = {}
+
+  const visit = (section: PartSection) => {
+    const id = section.metadata?.id?.trim()
+    if (id) index[id] = section.title
+    section.children.forEach(child => visit(child))
+  }
+
+  result.parts.forEach(part => part.sections?.forEach(sec => visit(sec)))
+  return index
 }
 
 function buildLabelOrder(definitions: TemplateLabelDefinition[] | undefined): {

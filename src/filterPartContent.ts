@@ -2,13 +2,14 @@ import { parseAsciiDocSections, type PartSectionWithLocation } from "./parseAsci
 
 const HEADING_REGEX = /^\s*#{1,6}\s+.+$/;
 const ATTRIBUTE_REGEX = /^\s*:[^:]+:.*$/;
-// Metadata markers to strip: AsciiDoc `//🏷{...}` and Markdown `<!--🏷{...}-->`
-const METADATA_REGEX = /^(?:\s*\/\/\s*🏷\s*\{.*\}\s*$|\s*<!--\s*🏷\s*\{.*\}\s*-->\s*$)/;
+// Metadata markers to strip: AsciiDoc `//🏷{...}`
+const METADATA_REGEX = /^\s*\/\/\s*🏷\s*\{.*\}\s*$/;
 
 export interface FilterPartContentOptions {
   includeLabels?: string[];
   wildcard?: boolean;
   dropTitles?: string[]; // section titles to drop (case-insensitive), level >= 2 only
+  linkIndex?: Record<string, string>; // id -> title map for See also
 }
 
 function normalizeLabels(labels?: string[]): string[] {
@@ -78,14 +79,34 @@ export function filterPartContent(
   const blankLines: string[] = [];
   const hadTrailingNewline = rawContent.endsWith("\n") || rawContent.endsWith("\r\n");
 
+  // Precompute anchor and "See also" insertions by heading line index
+  const insertions = buildInsertions(sections, lines, keepMask, options.linkIndex);
+
   for (let i = 0; i < lines.length; i++) {
     if (!keepMask[i]) continue;
     const line = lines[i];
     const trimmed = line.trim();
     if (METADATA_REGEX.test(trimmed)) continue;
-    templateLines.push(line);
-    if (HEADING_REGEX.test(trimmed) || ATTRIBUTE_REGEX.test(trimmed)) {
+    if (HEADING_REGEX.test(trimmed)) {
+      // Insert anchor (if any) before the heading line
+      const anchor = insertions.anchors.get(i);
+      if (anchor) {
+        templateLines.push(anchor);
+        blankLines.push(anchor);
+      }
+      templateLines.push(line);
       blankLines.push(line);
+      // Insert See also (if any) after heading
+      const seeAlso = insertions.seeAlso.get(i);
+      if (seeAlso) {
+        templateLines.push(seeAlso);
+        blankLines.push(seeAlso);
+      }
+    } else if (ATTRIBUTE_REGEX.test(trimmed)) {
+      templateLines.push(line);
+      blankLines.push(line);
+    } else {
+      templateLines.push(line);
     }
   }
 
@@ -101,6 +122,64 @@ export function filterPartContent(
     blankContent,
     keptSections: keptCount,
   };
+}
+
+function buildInsertions(
+  sections: SectionNode[],
+  lines: string[],
+  keepMask: boolean[],
+  linkIndex?: Record<string, string>
+): { anchors: Map<number, string>; seeAlso: Map<number, string> } {
+  const anchors = new Map<number, string>();
+  const seeAlso = new Map<number, string>();
+  const hasLinks = !!linkIndex && Object.keys(linkIndex).length > 0;
+
+  const resolveHeadingLine = (node: SectionNode): number => {
+    let idx = Math.max(0, node.startLine);
+    const last = Math.min(lines.length - 1, node.endLine);
+    // skip metadata comment if present
+    while (idx <= last) {
+      const t = lines[idx]?.trim() ?? '';
+      if (METADATA_REGEX.test(t)) {
+        idx += 1; // continue to next line (likely the heading)
+        continue;
+      }
+      // first heading line encountered
+      if (HEADING_REGEX.test(t)) return idx;
+      // if any other non-empty content before heading, break to avoid infinite
+      if (t) break;
+      idx += 1;
+    }
+    return Math.max(0, node.startLine);
+  };
+
+  const visit = (node: SectionNode) => {
+    const headingLine = resolveHeadingLine(node);
+    if (keepMask[headingLine]) {
+      const id = node.metadata?.id?.trim();
+      if (id) {
+        // AsciiDoc anchor for cross-references
+        anchors.set(headingLine, `[[${id}]]`);
+      }
+      if (hasLinks) {
+        const links = node.metadata?.linkTo ?? [];
+        if (links.length) {
+          const refs: string[] = [];
+          for (const linkId of links) {
+            const title = linkIndex![linkId];
+            if (title) refs.push(`<<${linkId},${title}>>`);
+          }
+          if (refs.length) {
+            seeAlso.set(headingLine, `See also ${refs.join(', ')}.`);
+          }
+        }
+      }
+    }
+    node.children.forEach(child => visit(child as SectionNode));
+  };
+
+  sections.forEach(visit);
+  return { anchors, seeAlso };
 }
 
 function createKeepMask(lineCount: number, decisions: SectionDecision[]): boolean[] {
