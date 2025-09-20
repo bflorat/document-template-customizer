@@ -79,7 +79,7 @@ const App = () => {
   const loadFilteredParts = async (
     baseUrl: string,
     labelsToInclude: string[],
-    opts?: { skipAutoSelect?: boolean }
+    opts?: { skipAutoSelect?: boolean; includeAnchors?: boolean }
   ): Promise<{ filteredParts: FilteredPart[]; readme: { file: string; content: string } }> => {
     setTemplateLoadInfo({ state: 'loading' })
     const start = performance.now()
@@ -112,7 +112,8 @@ const App = () => {
         result,
         effectiveLabels,
         knownSet,
-        toDropMap(dropRules)
+        toDropMap(dropRules),
+        { includeAnchors: opts?.includeAnchors ?? true }
       )
       setExpandedParts(prev => {
         const nextState: Record<string, { blank: boolean; full: boolean }> = {}
@@ -204,7 +205,7 @@ const App = () => {
     setPreviewLoading(true)
     setPreviewError(null)
     try {
-      const { filteredParts } = await loadFilteredParts(baseUrl, labelsToInclude)
+      const { filteredParts } = await loadFilteredParts(baseUrl, labelsToInclude, { includeAnchors: false })
       setPreviewParts(filteredParts)
       if (!filteredParts.length) {
         setPreviewError('No parts left after applying label filters.')
@@ -566,7 +567,8 @@ function buildFilteredPartsFromResult(
   result: TemplateWithParts,
   labelsToInclude: string[],
   knownSet?: Set<string>,
-  dropByPart?: Record<string, string[]>
+  dropByPart?: Record<string, string[]>,
+  opts?: { includeAnchors?: boolean }
 ): FilteredPart[] {
   const knownLabels = knownSet ?? buildKnownLabelSet(result)
 
@@ -598,6 +600,7 @@ function buildFilteredPartsFromResult(
       includeLabels: labelsToInclude,
       dropTitles: (dropByPart?.[part.file] ?? []),
       linkIndex,
+      includeAnchors: opts?.includeAnchors ?? true,
     })
 
     const hasTemplate = filtered.templateContent.trim().length > 0

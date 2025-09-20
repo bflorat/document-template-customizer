@@ -229,5 +229,20 @@ describe("fetchTemplateAndParts", () => {
     ).rejects.toThrow(/README \(adoc\/md\) is required/);
   });
 
+  it("rejects base templates with duplicate section ids", async () => {
+    const PART_SEC_DUP = `# Security Part\n\n//🏷{"id":"intro"}\n## Duplicate Intro\nS\n`;
+    const fetchMock = buildFetchMock([
+      [METADATA_URL, ok(YAML_OK)],
+      [`${BASE}/view-application.adoc`, ok(PART_APP)],
+      [`${BASE}/view-development.adoc`, ok(PART_DEV)],
+      [`${BASE}/security.adoc`, ok(PART_SEC_DUP)],
+      [`${BASE}/README.adoc`, ok(README_BODY)],
+    ]);
+
+    await expect(
+      fetchTemplateAndParts(BASE, { fetchImpl: fetchMock, strict: false })
+    ).rejects.toThrow(/Duplicate section id/);
+  });
+
   
 });

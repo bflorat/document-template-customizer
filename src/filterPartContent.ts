@@ -10,6 +10,7 @@ export interface FilterPartContentOptions {
   wildcard?: boolean;
   dropTitles?: string[]; // section titles to drop (case-insensitive), level >= 2 only
   linkIndex?: Record<string, string>; // id -> title map for See also
+  includeAnchors?: boolean; // include AsciiDoc anchors [[id]] in outputs (default true)
 }
 
 function normalizeLabels(labels?: string[]): string[] {
@@ -39,6 +40,7 @@ export function filterPartContent(
   const wildcard = options.wildcard ?? true;
   const dropTitles = new Set((options.dropTitles ?? []).map(v => v.trim().toLowerCase()).filter(Boolean));
   const lines = rawContent.split(/\r?\n/);
+  const includeAnchors = options.includeAnchors ?? true;
 
   const sections = parseAsciiDocSections(rawContent) as SectionNode[];
 
@@ -90,7 +92,7 @@ export function filterPartContent(
     if (HEADING_REGEX.test(trimmed)) {
       // Insert anchor (if any) before the heading line
       const anchor = insertions.anchors.get(i);
-      if (anchor) {
+      if (anchor && includeAnchors) {
         templateLines.push(anchor);
         blankLines.push(anchor);
       }

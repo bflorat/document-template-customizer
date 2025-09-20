@@ -204,6 +204,15 @@ export async function fetchTemplateAndParts(
     throw new PartFetchError(failures);
   }
 
+  // Validate uniqueness of section ids across the whole base template
+  const dupErrors = findDuplicateSectionIds(successes);
+  if (dupErrors.length) {
+    const details = dupErrors
+      .map(d => `id '${d.id}' used in ${d.locations.map(l => `${l.file} -> ${l.title}`).join("; ")}`)
+      .join(" | ");
+    throw new Error(`Duplicate section id(s) detected: ${details}`);
+  }
+
   return {
     metadata,
     parts: successes,
@@ -254,4 +263,31 @@ async function fetchReadme(
   throw new Error(
     `README (adoc/md) is required in the base template. Tried: ${README_CANDIDATES.join(", ")}`
   );
+}
+
+function findDuplicateSectionIds(parts: Required<Part>[]): Array<{
+  id: string;
+  locations: Array<{ file: string; title: string }>;
+}> {
+  const map = new Map<string, Array<{ file: string; title: string }>>();
+
+  const visit = (file: string, section: NonNullable<Required<Part>["sections"]>[number]) => {
+    const id = section.metadata?.id?.trim();
+    if (id) {
+      const arr = map.get(id) ?? [];
+      arr.push({ file, title: section.title });
+      map.set(id, arr);
+    }
+    section.children.forEach(child => visit(file, child));
+  };
+
+  for (const part of parts) {
+    part.sections?.forEach(sec => visit(part.file, sec));
+  }
+
+  const dups: Array<{ id: string; locations: Array<{ file: string; title: string }> }> = [];
+  for (const [id, locations] of map.entries()) {
+    if (locations.length > 1) dups.push({ id, locations });
+  }
+  return dups;
 }
