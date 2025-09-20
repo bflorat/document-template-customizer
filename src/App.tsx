@@ -270,7 +270,6 @@ const App = () => {
       const effectiveBase = baseUrl || resolveBaseUrl()
       await loadFilteredParts(effectiveBase, loadedLabels, { skipAutoSelect: true })
       if (previewOpen) await refreshPreview()
-      setSuccessMessage('Customization context loaded.')
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
       setErrorMessage(`Failed to load customization-context.yaml: ${msg}`)
@@ -323,7 +322,7 @@ const App = () => {
     <div className="app">
       <header>
         <h1>📐 Document Template Customizer</h1>
-        <p>Produce a personalized curated document template from a larger base template</p>
+        <p>Produce a personalized curated document template from a larger base template.</p>
       </header>
       <form className="template-form" onSubmit={e => { void handleFormSubmit(e) }}>
         <label className="input-group">
@@ -353,7 +352,7 @@ const App = () => {
               onChange={e => { void handleContextFileChange(e) }}
             />
             <button type="button" className="secondary-action" onClick={openContextFilePicker}>
-              Load customization file…
+              Reload previous customization
             </button>
           </div>
         </div>

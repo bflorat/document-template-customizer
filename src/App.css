@@ -218,6 +218,22 @@ header h1 {
   display: block;
 }
 
+.config-loader {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.load-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .available-labels {
   margin-top: 1rem;
   background: var(--panel-bg);
