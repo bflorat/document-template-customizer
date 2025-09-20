@@ -14,12 +14,8 @@ Any template following a simple metamodel is supported, not only my own template
 
 ## Prerequisites for a Base Template
 
-* The template must be written in **AsciiDoc (Asciidoctor flavor)** — with sections starting with `#` characters, not `=` — or in **Markdown**.
-* A **`README.adoc`** or **`README.md`** file must be present at the root of the base template URL, providing an introduction.
-
-[TIP]  
-We strongly recommend using **AsciiDoc** rather than Markdown for important documents, as it provides richer features such as admonitions, better tables, and an automatic table of contents.
-
+* The template must be written in **AsciiDoc (Asciidoctor flavor)** — with sections starting with `#` characters, not `=`.
+* A **`README.adoc`** file must be present at the root of the base template URL, providing an introduction.
 * A **`base-template-metadata.yaml`** file must be present at the root of the base template URL. A sample is provided below.
 
 .Sample `base-template-metadata.yaml` :

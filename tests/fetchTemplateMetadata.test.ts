@@ -229,17 +229,5 @@ describe("fetchTemplateAndParts", () => {
     ).rejects.toThrow(/README \(adoc\/md\) is required/);
   });
 
-  it("accepts README.md in addition to README.adoc", async () => {
-    const fetchMock = buildFetchMock([
-      [METADATA_URL, ok(YAML_OK)],
-      [`${BASE}/view-application.adoc`, ok(PART_APP)],
-      [`${BASE}/view-development.adoc`, ok(PART_DEV)],
-      [`${BASE}/security.adoc`, ok(PART_SEC)],
-      [`${BASE}/README.md`, ok(README_BODY)],
-    ]);
-
-    const res = await fetchTemplateAndParts(BASE, { fetchImpl: fetchMock });
-    expect(res.readme.file).toBe("README.md");
-    expect(res.readme.content).toContain("Template");
-  });
+  
 });

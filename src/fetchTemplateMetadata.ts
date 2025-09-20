@@ -228,11 +228,7 @@ const README_CANDIDATES = [
   "README.adoc",
   "Readme.adoc",
   "readme.adoc",
-  "ReadMe.adoc",
-  "README.md",
-  "Readme.md",
-  "readme.md",
-  "ReadMe.md",
+  "ReadMe.adoc"  
 ];
 
 async function fetchReadme(
