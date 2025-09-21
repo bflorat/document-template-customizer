@@ -6,7 +6,7 @@ const BLOCK_ID_REGEX = /^\s*\#[^\s]+$/; // unused but kept for clarity
 const ANCHOR_BLOCK_ID_REGEX = /^\s*\[#(?:[^\]]+)\]\s*$/;
 // Metadata markers to strip: AsciiDoc `//🏷{...}`
 const METADATA_REGEX = /^\s*\/\/\s*🏷\s*\{.*\}\s*$/;
-const SEE_ALSO_REGEX = /^\s*\[TIP\]\s+See also\b/;
+const SEE_ALSO_REGEX = /^\s*TIP:\s+See also\b/;
 
 export interface FilterPartContentOptions {
   includeLabels?: string[];
@@ -188,7 +188,7 @@ function buildInsertions(
             }
           }
           if (refs.length) {
-            seeAlso.set(headingLine, `[TIP] See also ${refs.join(', ')}.`);
+            seeAlso.set(headingLine, `TIP: See also ${refs.join(', ')}.`);
           }
         }
       }

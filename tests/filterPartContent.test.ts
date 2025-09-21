@@ -96,9 +96,9 @@ describe("filterPartContent", () => {
       linkIndex: { s1: "First", s2: "Second" },
     });
     expect(result.templateContent).toContain("[#s1]");
-    expect(result.templateContent).toContain("[TIP] See also <<s1,First>>.");
+    expect(result.templateContent).toContain("TIP: See also <<s1,First>>.");
     expect(result.blankContent).toContain("[#s1]");
-    expect(result.blankContent).toContain("[TIP] See also <<s1,First>>.");
+    expect(result.blankContent).toContain("TIP: See also <<s1,First>>.");
   });
 
   it("omits anchors when includeAnchors=false but keeps 'See also'", () => {
@@ -109,9 +109,9 @@ describe("filterPartContent", () => {
       includeAnchors: false,
     });
     expect(result.templateContent).not.toContain("[#s1]");
-    expect(result.templateContent).toContain("[TIP] See also <<s1,First>>.");
+    expect(result.templateContent).toContain("TIP: See also <<s1,First>>.");
     expect(result.blankContent).not.toContain("[#s1]");
-    expect(result.blankContent).toContain("[TIP] See also <<s1,First>>.");
+    expect(result.blankContent).toContain("TIP: See also <<s1,First>>.");
   });
 
   it("keeps anchor directly above heading in blank output", () => {

@@ -61,7 +61,7 @@ labels:
 
 ## Links 
 
-- Use the `link_to` section metadata to automatically add a `[TIP] See also <link>` entry in the generated templates and blank templates.
+- Use the `link_to` section metadata to automatically add a `TIP: See also <link>` entry in the generated templates and blank templates.
 
 Sample: 
 
