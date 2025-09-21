@@ -12,7 +12,7 @@ Any template following a simple metamodel is supported, not only my own template
 
 * You can install this tool on premise  by download a https://github.com/bflorat/document-template-customizer/releases[release]. Just unzip it in a directory exposed by a Web server.
 
-* A Nginx-based Docker image is available https://hub.docker.com/repository/docker/bflorat/document-template-customizer/general[here].
+* A NGINX-based Docker image is available https://hub.docker.com/repository/docker/bflorat/document-template-customizer/general[here].
 
 * To use the CLI, a recent version of npm is required.
 
