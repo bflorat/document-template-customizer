@@ -2,7 +2,7 @@
 
 This tool lets you produce *personalized document templates* from a larger base template repository, such as https://github.com/bflorat/architecture-document-template[this one].
 
-While I’ve received good feedback on my previous document templates, a recurring criticism was that the *templates were too large*, leaving many sections unused. With DTC, you can *prepare smaller, tailored templates* filtered from a larger one.
+While I've received good feedback on my previous document templates, a recurring criticism was that the *templates were too large*, leaving many sections unused. With DTC, you can *prepare smaller, tailored templates* filtered from a larger one.
 
 Any template following a simple metamodel is supported, not only my own templates.
 
@@ -14,9 +14,9 @@ Any template following a simple metamodel is supported, not only my own template
 
 ## Prerequisites for a Base Template
 
-* The template must be written in **AsciiDoc (Asciidoctor flavor)** — with sections starting with `#` characters, not `=`.
+* The template must be written in **AsciiDoc (Asciidoctor flavor)** - with sections starting with `#` characters, not `=`.
 * A **`README.adoc`** file must be present at the root of the base template URL, providing an introduction.
-* A **`base-template-metadata.yaml`** file must be present at the root of the base template URL. A sample is provided below. The `labels:` section in this file is ignored — labels are automatically discovered from the parts.
+* A **`base-template-metadata.yaml`** file must be present at the root of the base template URL. A sample is provided below. The `labels:` section in this file is ignored - labels are automatically discovered from the parts.
 * All part files must be located in the same directory than the `README.adoc` file.
 
 .Sample `base-template-metadata.yaml` :
@@ -35,21 +35,21 @@ parts:
 
 * Every section of each part file of the base template should be annotated with a metadata line directly above the section title (no blank line), using an AsciiDoc comment:
   ** `//🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract", "context"]}`
-  ** Level‑1 sections (single `#`) are always kept and should not be annotated.
-  ** Labels are automatically discovered from `//🏷{...}` markers in parts; you don’t need to list them in `base-template-metadata.yaml`.
+  ** Level-1 sections (single `#`) are always kept and should not be annotated.
+  ** Labels are automatically discovered from `//🏷{...}` markers in parts; you don't need to list them in `base-template-metadata.yaml`.
   ** Labels can be a simple flag (e.g., `performance`).
-  ** Multi‑valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts; no YAML declaration is required.
-  ** You can use the `*` wildcard in multi‑valued labels to mean “any”. For instance, to always keep a section regardless of project size, use `project_size::*`.
+  ** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts; no YAML declaration is required.
+  ** You can use the `*` wildcard in multi-valued labels to mean "any". For instance, to always keep a section regardless of project size, use `project_size::*`.
   ** See many examples in https://github.com/bflorat/architecture-document-template[this base template].
 
 ## Matching rules
 
 - If all or no labels are selected, the resulting template is the full base template.
-- Level‑1 sections (single `#`) are always kept.
+- Level-1 sections (single `#`) are always kept.
 - Labels use AND semantics: a section is kept only if all its labels are satisfied by the selection.
-- If a parent section doesn’t match, all its subsections are dropped recursively.
+- If a parent section doesn't match, all its subsections are dropped recursively.
 - If a parent section matches, each subsection is evaluated and kept only if it matches.
-- If the base template uses a wildcard multi‑value label like `project_size::*`, it matches any selected label in the same namespace (e.g., `project_size::small`, `project_size::large`).
+- If the base template uses a wildcard multi-value label like `project_size::*`, it matches any selected label in the same namespace (e.g., `project_size::small`, `project_size::large`).
 
 ## Links 
 
@@ -72,18 +72,18 @@ npm run cli -- --base-url https://raw.githubusercontent.com/bflorat/architecture
 
 Options:
 
-* `--base-url` (`-b`) – required. The template root exposing `base-template-metadata.yaml`.
-* `--include` (`-i`) – comma-separated labels to keep (matching sections stay, others are pruned). Unknown labels abort the run.
-* `--no-anchors` – disable inserting Asciidoctor block IDs (`[#id]`) in both the resulting template and blank template.
-* `--output` (`-o`) – optional zip destination relative to the current directory (defaults to `custom-template.zip`).
-* `--output-file` – optional absolute or relative output path.
+* `--base-url` (`-b`) - required. The template root exposing `base-template-metadata.yaml`.
+* `--include` (`-i`) - comma-separated labels to keep (matching sections stay, others are pruned). Unknown labels abort the run.
+* `--no-anchors` - disable inserting Asciidoctor block IDs (`[#id]`) in both the resulting template and blank template.
+* `--output` (`-o`) - optional zip destination relative to the current directory (defaults to `custom-template.zip`).
+* `--output-file` - optional absolute or relative output path.
 
 The generated archive contains two folders:
 
 * `template/` keeps the filtered parts with their metadata marker lines intact.
 * `blank-template/` contains the same parts reduced to section titles and AsciiDoc attributes (body text removed).
 
-If no `--include` labels are provided, the resulting template contains every section of the base template. The base template **must** expose a `README.adoc` (case‑insensitive) alongside `base-template-metadata.yaml`.
+If no `--include` labels are provided, the resulting template contains every section of the base template. The base template **must** expose a `README.adoc` (case-insensitive) alongside `base-template-metadata.yaml`.
 
 In the web UI, you can toggle anchors via the "Include anchors [#id] in outputs" option.
 
