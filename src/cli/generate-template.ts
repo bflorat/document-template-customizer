@@ -146,11 +146,25 @@ async function run() {
     const zip = new JSZip();
     let includedParts = 0;
 
+    // Build cross-part xref index: id -> { title, file }
+    const linkIndex: Record<string, { title: string; file: string }> = {};
+    const visit = (
+      section: NonNullable<TemplateWithParts["parts"][number]["sections"]>[number],
+      file: string,
+    ) => {
+      const id = section.metadata?.id?.trim();
+      if (id) linkIndex[id] = { title: section.title, file };
+      section.children.forEach(child => visit(child, file));
+    };
+    result.parts.forEach(part => part.sections?.forEach(sec => visit(sec, part.file)));
+
     for (const part of result.parts) {
       if (!part.content) continue;
       const filtered = filterPartContent(part.content, {
         includeLabels: effectiveInclude,
         includeAnchors: options.includeAnchors,
+        linkIndex,
+        currentFile: part.file,
       });
 
       const hasTemplate = filtered.templateContent.trim().length > 0;

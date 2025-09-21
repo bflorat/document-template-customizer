@@ -612,6 +612,7 @@ function buildFilteredPartsFromResult(
       includeLabels: labelsToInclude,
       dropTitles: (dropByPart?.[part.file] ?? []),
       linkIndex,
+      currentFile: part.file,
       includeAnchors: opts?.includeAnchors ?? true,
     })
 
@@ -683,16 +684,16 @@ function toDropMap(rules: Array<{ partFile: string; sectionTitle: string }>): Re
   return map
 }
 
-function buildLinkIndex(result: TemplateWithParts): Record<string, string> {
-  const index: Record<string, string> = {}
+function buildLinkIndex(result: TemplateWithParts): Record<string, { title: string; file: string }> {
+  const index: Record<string, { title: string; file: string }> = {}
 
-  const visit = (section: PartSection) => {
+  const visit = (section: PartSection, file: string) => {
     const id = section.metadata?.id?.trim()
-    if (id) index[id] = section.title
-    section.children.forEach(child => visit(child))
+    if (id) index[id] = { title: section.title, file }
+    section.children.forEach(child => visit(child, file))
   }
 
-  result.parts.forEach(part => part.sections?.forEach(sec => visit(sec)))
+  result.parts.forEach(part => part.sections?.forEach(sec => visit(sec, part.file)))
   return index
 }
 

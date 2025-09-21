@@ -6,14 +6,15 @@ const BLOCK_ID_REGEX = /^\s*\#[^\s]+$/; // unused but kept for clarity
 const ANCHOR_BLOCK_ID_REGEX = /^\s*\[#(?:[^\]]+)\]\s*$/;
 // Metadata markers to strip: AsciiDoc `//🏷{...}`
 const METADATA_REGEX = /^\s*\/\/\s*🏷\s*\{.*\}\s*$/;
-const SEE_ALSO_REGEX = /^\s*See also\b/;
+const SEE_ALSO_REGEX = /^\s*\[TIP\]\s+See also\b/;
 
 export interface FilterPartContentOptions {
   includeLabels?: string[];
   wildcard?: boolean;
   dropTitles?: string[]; // section titles to drop (case-insensitive), level >= 2 only
-  linkIndex?: Record<string, string>; // id -> title map for See also
+  linkIndex?: Record<string, string | { title: string; file?: string }>; // id -> title or {title,file} map for See also
   includeAnchors?: boolean; // include AsciiDoc anchors [[id]] in outputs (default true)
+  currentFile?: string; // current part file (for inter-document xrefs)
 }
 
 function normalizeLabels(labels?: string[]): string[] {
@@ -85,7 +86,7 @@ export function filterPartContent(
   const hadTrailingNewline = rawContent.endsWith("\n") || rawContent.endsWith("\r\n");
 
   // Precompute anchor and "See also" insertions by heading line index
-  const insertions = buildInsertions(sections, lines, keepMask, options.linkIndex);
+  const insertions = buildInsertions(sections, lines, keepMask, options.linkIndex, options.currentFile);
 
   for (let i = 0; i < lines.length; i++) {
     if (!keepMask[i]) continue;
@@ -133,7 +134,8 @@ function buildInsertions(
   sections: SectionNode[],
   lines: string[],
   keepMask: boolean[],
-  linkIndex?: Record<string, string>
+  linkIndex?: Record<string, string | { title: string; file?: string }>,
+  currentFile?: string,
 ): { anchors: Map<number, string>; seeAlso: Map<number, string> } {
   const anchors = new Map<number, string>();
   const seeAlso = new Map<number, string>();
@@ -171,11 +173,22 @@ function buildInsertions(
         if (links.length) {
           const refs: string[] = [];
           for (const linkId of links) {
-            const title = linkIndex![linkId];
-            if (title) refs.push(`<<${linkId},${title}>>`);
+            const entry = linkIndex![linkId];
+            if (!entry) continue;
+            if (typeof entry === 'string') {
+              refs.push(`<<${linkId},${entry}>>`);
+            } else {
+              const title = entry.title;
+              const file = entry.file;
+              if (file && currentFile && file !== currentFile) {
+                refs.push(`xref:${file}#${linkId}[${title}]`);
+              } else {
+                refs.push(`<<${linkId},${title}>>`);
+              }
+            }
           }
           if (refs.length) {
-            seeAlso.set(headingLine, `See also ${refs.join(', ')}.`);
+            seeAlso.set(headingLine, `[TIP] See also ${refs.join(', ')}.`);
           }
         }
       }
