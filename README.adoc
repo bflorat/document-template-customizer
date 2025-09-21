@@ -31,14 +31,6 @@ parts:
     file: view-development.adoc
   - name: infrastructure
     file: view-infrastructure.adoc  
-labels:
-  - detail_level: 
-      - abstract      # conceptual, principles, big picture
-      - overview      # broad but slightly more concrete
-      - detailed      # technical specifics, diagrams, modules
-      - in-depth      # exhaustive detail, e.g., data models, algorithms
-  - name: persistence
-  - name: green-IT
 ```
 
 * Every section of each part file of the base template should be annotated with a metadata line directly above the section title (no blank line), using an AsciiDoc comment:
