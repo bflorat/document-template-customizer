@@ -6,7 +6,8 @@ export interface PartSectionWithLocation extends PartSection {
   endLine: number;
 }
 
-const HEADING_REGEX = /^\s*(#{1,6})\s+(.*)$/;
+// Support both Markdown-style ("#") and AsciiDoc-style ("=") headings
+const HEADING_REGEX = /^\s*((?:#{1,6}|={1,6}))\s+(.*)$/;
 // Matches metadata marker above a heading (AsciiDoc comment): `//🏷{...}`
 const METADATA_REGEX = /^\s*\/\/\s*🏷\s*(\{.*\})\s*$/;
 
@@ -37,8 +38,8 @@ export function parseAsciiDocSections(content: string): PartSection[] {
       continue;
     }
 
-    const [, hashes, titleRaw] = match;
-    const level = hashes.length;
+    const [, marks, titleRaw] = match;
+    const level = marks.length;
     const title = titleRaw.trim();
     if (!title) continue;
 

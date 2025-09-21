@@ -4,6 +4,15 @@ import { filterPartContent } from "../src/filterPartContent";
 const SAMPLE_VIEW = `# Application\n:sectnums: 4\n:toc: left\n\n//🏷{"labels":["include-me"]}\n## Included Section\nContent kept.\n\n//🏷{"labels":["exclude-me"]}\n## Removed Section\nThis should disappear.\n\n## Plain Section\nNo metadata here.\n`;
 
 describe("filterPartContent", () => {
+  it("supports AsciiDoc '=' style headings alongside '#'", () => {
+    const view = `= Root\n\n//🏷{"labels":["include-me"]}\n== Included\nBody\n\n== Plain\nText`;
+    const res = filterPartContent(view, { includeLabels: ["include-me"] });
+    expect(res.templateContent).toContain("= Root");
+    expect(res.templateContent).toContain("== Included");
+    expect(res.templateContent).not.toContain("== Plain\nText");
+    expect(res.blankContent).toContain("= Root");
+    expect(res.blankContent).toContain("== Included");
+  });
   it("removes metadata lines while keeping structure", () => {
     const result = filterPartContent(SAMPLE_VIEW, {});
     expect(result.templateContent).not.toContain("🏷");

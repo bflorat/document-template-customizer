@@ -14,7 +14,7 @@ Any template following a simple metamodel is supported, not only my own template
 
 ## Prerequisites for a Base Template
 
-* The template must be written in **AsciiDoc (https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/[Asciidoctor flavor])** - with sections starting with `#` characters, not `=`.
+* The template must be written in **(https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/[Asciidoc])** - sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style) headings.
 * A **`README.adoc`** file must be present at the root of the base template URL, providing an introduction and links to the document parts.
 * A **`base-template-metadata.yaml`** file must be present at the root of the base template URL. A sample is provided below. 
 * All part files must be located in the same directory than the `README.adoc` file.

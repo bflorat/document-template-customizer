@@ -1,6 +1,7 @@
 import { parseAsciiDocSections, type PartSectionWithLocation } from "./parseAsciiDocSections.js";
 
-const HEADING_REGEX = /^\s*#{1,6}\s+.+$/;
+// Support both Markdown-style ("#") and AsciiDoc-style ("=") headings
+const HEADING_REGEX = /^\s*(?:#{1,6}|={1,6})\s+.+$/;
 const ATTRIBUTE_REGEX = /^\s*:[^:]+:.*$/;
 const BLOCK_ID_REGEX = /^\s*\#[^\s]+$/; // unused but kept for clarity
 const ANCHOR_BLOCK_ID_REGEX = /^\s*\[#(?:[^\]]+)\]\s*$/;
@@ -263,9 +264,13 @@ function countSections(sections: SectionNode[]): number {
 function findFirstLevelOneHeadingIndex(lines: string[]): number {
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trimStart();
+    // "# Heading" form
     if (trimmed.startsWith('#') && !trimmed.startsWith('##')) {
-      // ensure it is a heading, not just a hash character word
       if (/^#\s+/.test(trimmed)) return i;
+    }
+    // "= Heading" form
+    if (trimmed.startsWith('=') && !trimmed.startsWith('==')) {
+      if (/^=\s+/.test(trimmed)) return i;
     }
   }
   return -1;
