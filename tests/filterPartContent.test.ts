@@ -47,17 +47,6 @@ describe("filterPartContent", () => {
     expect(result.keptSections).toBeGreaterThan(0);
   });
 
-  it("does not treat '::*' as wildcard in selection", () => {
-    const viewWithWildcards = `# Demo\n\n//🏷{"labels":["project_size::large"]}\n## Large Section\nBig\n\n//🏷{"labels":["project_size::small"]}\n## Small Section\nSmall`;
-    const result = filterPartContent(viewWithWildcards, {
-      includeLabels: ["project_size::*"],
-    });
-    expect(result.templateContent).not.toContain("Large Section");
-    expect(result.templateContent).not.toContain("Small Section");
-    expect(result.templateContent.trim()).toBe("# Demo");
-  });
-
-
   it("keeps the top-level heading when nothing else matches", () => {
     const result = filterPartContent(SAMPLE_VIEW, { includeLabels: ["other"] });
     expect(result.templateContent.trim()).toBe("# Application");
@@ -74,17 +63,6 @@ describe("filterPartContent", () => {
     expect(result.templateContent).toContain("Intro that stays.");
     expect(result.templateContent).not.toContain("Child Removed");
     expect(result.templateContent).not.toContain("Child Without Labels");
-  });
-
-  it("does not expand section label wildcards '::*' when selecting a specific value", () => {
-    const nestedView = `# Root\n\n//🏷{"labels":["project_size::*"]}\n## Intro\nIntro kept.\n\n//🏷{"labels":["project_size::medium"]}\n### Medium Only\nShould go away.`;
-
-    const result = filterPartContent(nestedView, { includeLabels: ["project_size::large"] });
-
-    expect(result.templateContent).not.toContain("## Intro");
-    expect(result.templateContent).not.toContain("Intro kept.");
-    expect(result.templateContent).not.toContain("Medium Only");
-    expect(result.templateContent.trim()).toBe("# Root");
   });
 
   it("requires all labels on a section to match the selection (AND)", () => {

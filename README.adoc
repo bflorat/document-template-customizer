@@ -39,17 +39,15 @@ parts:
   ** Labels are automatically discovered from `//🏷{...}` markers in parts.
   ** Labels can be a simple flag (e.g., `performance`).
   ** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts; 
-  ** Wildcards in labels are not supported. Use explicit values like `project_size::large`.
-  ** See many examples in https://github.com/bflorat/architecture-document-template[this base template].
+   ** See many examples in https://github.com/bflorat/architecture-document-template[this base template].
 
 ## Matching rules
 
 - If all or no labels are selected, the resulting template is the full base template.
-- Level-1 sections (single `#`) are always kept.
+- Level-1 sections (single `#` or `=`) are always kept.
 - Labels use AND semantics: a section is kept only if all its labels are satisfied by the selection.
 - If a parent section doesn't match, all its subsections are dropped recursively.
 - If a parent section matches, each subsection is evaluated and kept only if it matches.
-//- If the base template uses a wildcard multi-value label like `project_size::*`, it matches any selected label in the same namespace (e.g., `project_size::small`, `project_size::large`).
 
 ## Links 
 
