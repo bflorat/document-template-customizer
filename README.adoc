@@ -60,13 +60,11 @@ parts:
 
 TIP: Example: if the base template owns a section labeled `["foo","bar"]`, this section will be kept only if both `foo` and `bar` are selected.
 
-- If a section does not reference a multi-value label, it is not taken into account for matching.
-
-TIP: Example: if the base template has a section labeled `["foo"]` but not `["level::..."]`, this section will be kept if `foo` is selected even if all `level::...` labels are unselected.
-
 - If a parent section doesn't match, all its subsections are dropped recursively.
 
 - If a parent section matches, each subsection is evaluated and kept only if it matches.
+
+- A section is dropped only if one of its labels is unselected or if its parent section is dropped. A section without any label is kept only if its parent is kept.
 
 TIP: Example: if the base template owns a section labeled `["foo"]` and a subsection labeled `["bar"]` : if `foo` label is selected but not `bar`, only the parent section is kept.
 
