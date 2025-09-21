@@ -301,13 +301,12 @@ const App = () => {
     setDropRules(prev => prev.map(r => (r.id === id ? { ...r, sectionTitle: title } : r)))
   }
 
-  // Auto-refresh preview when drop rules change
-  // Auto-refresh preview when drop rules change and preview is open
+  // Auto-refresh preview when options affecting preview change and preview is open
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!previewOpen) return
     void refreshPreview()
-  }, [dropRules, previewOpen])
+  }, [dropRules, includeAnchors, previewOpen])
 
   const handleSectionToggle = (file: string, section: 'blank' | 'full', open: boolean) => {
     setExpandedParts(prev => {
