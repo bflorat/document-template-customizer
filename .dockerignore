@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.github
+.vscode
+npm-debug.log*
+Dockerfile
+docker-compose.yml
+tests
+.VSCodeCounter
+*.local
+*.env
+
