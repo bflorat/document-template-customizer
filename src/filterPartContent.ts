@@ -11,7 +11,6 @@ const SEE_ALSO_REGEX = /^\s*TIP:\s+See also\b/;
 
 export interface FilterPartContentOptions {
   includeLabels?: string[];
-  wildcard?: boolean;
   dropTitles?: string[]; // section titles to drop (case-insensitive), level >= 2 only
   linkIndex?: Record<string, string | { title: string; file?: string }>; // id -> title or {title,file} map for See also
   includeAnchors?: boolean; // include AsciiDoc anchors [[id]] in outputs (default true)
@@ -42,7 +41,6 @@ export function filterPartContent(
   options: FilterPartContentOptions = {}
 ): FilterPartContentResult {
   const includeLabels = normalizeLabels(options.includeLabels);
-  const wildcard = options.wildcard ?? true;
   const dropTitles = new Set((options.dropTitles ?? []).map(v => v.trim().toLowerCase()).filter(Boolean));
   const lines = rawContent.split(/\r?\n/);
   const includeAnchors = options.includeAnchors ?? true;
@@ -53,7 +51,7 @@ export function filterPartContent(
   let keepMask: boolean[];
 
   if (includeLabels.length) {
-    const decisions = buildSectionDecisions(sections, includeLabels, wildcard);
+    const decisions = buildSectionDecisions(sections, includeLabels);
     filteredSections = collectMatchedSections(decisions);
     keepMask = createKeepMask(lines.length, decisions);
     // Always keep the first level-1 heading (e.g., "# Application")
@@ -279,14 +277,13 @@ function findFirstLevelOneHeadingIndex(lines: string[]): number {
 function buildSectionDecisions(
   sections: SectionNode[],
   labels: string[],
-  wildcard: boolean
 ): SectionDecision[] {
   const candidateSet = new Set(labels);
 
   const evaluate = (section: SectionNode): SectionDecision => {
     const labels = section.metadata?.labels ?? [];
     const hasLabels = labels.length > 0;
-    const matches = hasLabels ? matchesAllLabels(labels, candidateSet, wildcard) : false;
+    const matches = hasLabels ? matchesAllLabels(labels, candidateSet) : false;
     const children = section.children.map(evaluate);
     // If the section has labels and doesn't match, drop the subtree.
     // If it has no labels, keep it only if any child is kept.
@@ -315,29 +312,13 @@ function collectMatchedSections(decisions: SectionDecision[]): SectionNode[] {
 function matchesAllLabels(
   labels: string[] | undefined,
   candidates: Set<string>,
-  wildcard: boolean
 ): boolean {
   if (!labels?.length) return false;
 
   const labelMatches = (label: string): boolean => {
     const trimmed = label.trim();
     if (!trimmed) return false;
-    if (candidates.has(trimmed)) return true;
-    if (!wildcard) return false;
-
-    const [ns = "", val = ""] = trimmed.split("::", 2);
-    if (!ns) return false;
-
-    // Candidate wildcard matches concrete label
-    if (val && candidates.has(`${ns}::*`)) return true;
-
-    // Label wildcard matches any candidate value in same namespace
-    if (val === "*") {
-      for (const cand of candidates) {
-        if (cand.startsWith(`${ns}::`)) return true;
-      }
-    }
-    return false;
+    return candidates.has(trimmed);
   };
 
   // AND semantics: every section label must be satisfied

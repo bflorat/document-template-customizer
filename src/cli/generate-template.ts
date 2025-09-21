@@ -140,8 +140,7 @@ async function run() {
       throw new Error(`Unknown label(s): ${unknownLabels.join(", ")}`);
     }
 
-    const wildcardDefaults = Array.from(knownLabels).filter(label => label.endsWith('::*'));
-    const effectiveInclude = Array.from(new Set([...options.include, ...wildcardDefaults]));
+    const effectiveInclude = Array.from(new Set(options.include));
 
     const zip = new JSZip();
     let includedParts = 0;
