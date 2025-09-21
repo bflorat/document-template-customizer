@@ -12,12 +12,14 @@ interface CliOptions {
   include: string[];
   output: string;
   outputFile?: string;
+  includeAnchors: boolean;
 }
 
 export function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
     include: [],
     output: "custom-template.zip",
+    includeAnchors: true,
   };
 
   const readList = (value: string | undefined) =>
@@ -55,6 +57,8 @@ export function parseArgs(argv: string[]): CliOptions {
       options.outputFile = readValue(arg, nextValue);
     } else if (arg.startsWith("--output-file=")) {
       options.outputFile = readValue(arg, () => undefined);
+    } else if (arg === "--no-anchors") {
+      options.includeAnchors = false;
     } else if (arg === "--help" || arg === "-h") {
       printUsage();
       process.exit(0);
@@ -110,6 +114,7 @@ function printUsage() {
     `Options:\n` +
     `  -b, --base-url   Required. URL of the base template repository.\n` +
     `  -i, --include    Comma-separated labels to include (sections matching any are kept).\n` +
+    `      --no-anchors Do not insert AsciiDoc block IDs [#id] in outputs.\n` +
     `  -o, --output     Output zip path (default: custom-template.zip).\n` +
     `  -h, --help       Show this help message.\n`;
   console.log(message);
@@ -145,6 +150,7 @@ async function run() {
       if (!part.content) continue;
       const filtered = filterPartContent(part.content, {
         includeLabels: effectiveInclude,
+        includeAnchors: options.includeAnchors,
       });
 
       const hasTemplate = filtered.templateContent.trim().length > 0;

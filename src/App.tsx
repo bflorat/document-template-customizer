@@ -39,6 +39,7 @@ const App = () => {
   const [availableSectionsByPart, setAvailableSectionsByPart] = useState<Record<string, string[]>>({})
   const [dropRules, setDropRules] = useState<Array<{ id: string; partFile: string; sectionTitle: string }>>([])
   const [partNamesByFile, setPartNamesByFile] = useState<Record<string, string>>({})
+  const [includeAnchors, setIncludeAnchors] = useState(true)
   const contextFileInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleTemplateUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -145,7 +146,7 @@ const App = () => {
     setSuccessMessage(null)
 
     try {
-      const { filteredParts, readme: fetchedReadme } = await loadFilteredParts(baseUrl, labelsToInclude)
+      const { filteredParts, readme: fetchedReadme } = await loadFilteredParts(baseUrl, labelsToInclude, { includeAnchors })
       const includedParts = filteredParts.length
       if (!includedParts) {
         throw new Error('No parts left after applying label filters.')
@@ -205,7 +206,7 @@ const App = () => {
     setPreviewLoading(true)
     setPreviewError(null)
     try {
-      const { filteredParts } = await loadFilteredParts(baseUrl, labelsToInclude, { includeAnchors: false })
+      const { filteredParts } = await loadFilteredParts(baseUrl, labelsToInclude, { includeAnchors })
       setPreviewParts(filteredParts)
       if (!filteredParts.length) {
         setPreviewError('No parts left after applying label filters.')
@@ -447,6 +448,17 @@ const App = () => {
               </table>
             )}
           </div>
+        </section>
+
+         <section className="options-panel">
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={includeAnchors}
+              onChange={(e) => { setIncludeAnchors(e.target.checked); if (previewOpen) { void refreshPreview(); } }}
+            />
+            <span>Include anchors <span className="mono">[#id]</span> in outputs so links can be included between sections</span>
+          </label>
         </section>
 
         <section className="preview-panel">

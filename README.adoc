@@ -71,6 +71,7 @@ Options:
 
 * `--base-url` (`-b`) – required. The template root exposing `base-template-metadata.yaml`.
 * `--include` (`-i`) – comma-separated labels to keep (matching sections stay, others are pruned). Unknown labels abort the run.
+* `--no-anchors` – disable inserting Asciidoctor block IDs (`[#id]`) in both the resulting template and blank template.
 * `--output` (`-o`) – optional zip destination relative to the current directory (defaults to `custom-template.zip`).
 * `--output-file` – optional absolute or relative output path.
 
@@ -81,7 +82,8 @@ The generated archive contains two folders:
 
 If no `--include` labels are provided, the resulting template contains every section of the base template. The base template **must** expose a `README.adoc` (case‑insensitive) alongside `base-template-metadata.yaml`.
 
+In the web UI, you can toggle anchors via the "Include anchors [#id] in outputs" option.
+
 
 ## Tips
 * The generated zip contains a `customization-context.yaml` file with the generation date, base template URL, and selected labels.
-

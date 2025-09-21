@@ -55,6 +55,7 @@ describe("parseArgs", () => {
     expect(parsed.baseUrl).toBe("https://example.com");
     expect(parsed.include).toEqual(["level::basic", "persistence"]);
     expect(parsed.output).toBe("result.zip");
+    expect(parsed.includeAnchors).toBe(true);
   });
 
   it("supports --opt=value format", () => {
@@ -69,5 +70,15 @@ describe("parseArgs", () => {
     expect(parsed.include).toEqual(["level::basic", "persistence"]);
     expect(parsed.output).toBe("result.zip");
     expect(parsed.outputFile).toBe("/tmp/output.zip");
+    expect(parsed.includeAnchors).toBe(true);
+  });
+
+  it("supports --no-anchors flag", () => {
+    const parsed = parseArgs([
+      "--base-url=https://example.com",
+      "--no-anchors",
+    ]);
+    expect(parsed.baseUrl).toBe("https://example.com");
+    expect(parsed.includeAnchors).toBe(false);
   });
 });

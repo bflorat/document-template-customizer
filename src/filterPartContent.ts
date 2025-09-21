@@ -2,8 +2,11 @@ import { parseAsciiDocSections, type PartSectionWithLocation } from "./parseAsci
 
 const HEADING_REGEX = /^\s*#{1,6}\s+.+$/;
 const ATTRIBUTE_REGEX = /^\s*:[^:]+:.*$/;
+const BLOCK_ID_REGEX = /^\s*\#[^\s]+$/; // unused but kept for clarity
+const ANCHOR_BLOCK_ID_REGEX = /^\s*\[#(?:[^\]]+)\]\s*$/;
 // Metadata markers to strip: AsciiDoc `//🏷{...}`
 const METADATA_REGEX = /^\s*\/\/\s*🏷\s*\{.*\}\s*$/;
+const SEE_ALSO_REGEX = /^\s*See also\b/;
 
 export interface FilterPartContentOptions {
   includeLabels?: string[];
@@ -160,8 +163,8 @@ function buildInsertions(
     if (keepMask[headingLine]) {
       const id = node.metadata?.id?.trim();
       if (id) {
-        // AsciiDoc anchor for cross-references
-        anchors.set(headingLine, `[[${id}]]`);
+        // AsciiDoc block ID anchor (more broadly supported by previewers)
+        anchors.set(headingLine, `[#${id}]`);
       }
       if (hasLinks) {
         const links = node.metadata?.linkTo ?? [];
@@ -355,9 +358,17 @@ function insertBlankLines(lines: string[]): string[] {
         result.push("");
       }
     } else if (currentType === "heading") {
-      if (nextType === "heading" || nextType === "other") {
+      // Do not separate from immediate See also line
+      if (nextType === "heading" || nextType === "anchor") {
         result.push("");
       }
+    } else if (currentType === "seeAlso") {
+      // After See also paragraph, add a blank line to separate sections
+      result.push("");
+    } else if (currentType === "anchor") {
+      // Never insert a blank line after an anchor block ID; it must be
+      // immediately adjacent to the following heading to apply.
+      // Do nothing here.
     } else if (lines[i].trim()) {
       result.push("");
     }
@@ -365,11 +376,13 @@ function insertBlankLines(lines: string[]): string[] {
   return result;
 }
 
-type LineType = "heading" | "attribute" | "other";
+type LineType = "heading" | "attribute" | "anchor" | "seeAlso" | "other";
 
 function classifyLine(line: string): LineType {
   const trimmed = line.trim();
   if (HEADING_REGEX.test(trimmed)) return "heading";
   if (ATTRIBUTE_REGEX.test(trimmed)) return "attribute";
+  if (SEE_ALSO_REGEX.test(trimmed)) return "seeAlso";
+  if (ANCHOR_BLOCK_ID_REGEX.test(trimmed)) return "anchor";
   return "other";
 }

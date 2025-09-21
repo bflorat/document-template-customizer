@@ -95,10 +95,39 @@ describe("filterPartContent", () => {
       includeLabels: [],
       linkIndex: { s1: "First", s2: "Second" },
     });
-    expect(result.templateContent).toContain("[[s1]]");
+    expect(result.templateContent).toContain("[#s1]");
     expect(result.templateContent).toContain("See also <<s1,First>>.");
-    expect(result.blankContent).toContain("[[s1]]");
+    expect(result.blankContent).toContain("[#s1]");
     expect(result.blankContent).toContain("See also <<s1,First>>.");
+  });
+
+  it("omits anchors when includeAnchors=false but keeps 'See also'", () => {
+    const view = `# Root\n\n//🏷{"id":"s1"}\n## First\nA\n\n//🏷{"id":"s2","link_to":["s1"]}\n## Second\nB`;
+    const result = filterPartContent(view, {
+      includeLabels: [],
+      linkIndex: { s1: "First", s2: "Second" },
+      includeAnchors: false,
+    });
+    expect(result.templateContent).not.toContain("[#s1]");
+    expect(result.templateContent).toContain("See also <<s1,First>>.");
+    expect(result.blankContent).not.toContain("[#s1]");
+    expect(result.blankContent).toContain("See also <<s1,First>>.");
+  });
+
+  it("keeps anchor directly above heading in blank output", () => {
+    const view = `# Root\n\n//🏷{"id":"s1"}\n## First\nA\n\n//🏷{"id":"s2"}\n### Second\nB`;
+    const result = filterPartContent(view, { includeLabels: [] });
+    expect(result.blankContent).toContain("[#s1]\n## First");
+    expect(result.blankContent).toContain("[#s2]\n### Second");
+  });
+
+  it("keeps exactly one blank line between sections in blank output", () => {
+    const view = `# Root\n\n//🏷{"id":"s1"}\n## First\nA\n\n//🏷{"id":"s2","link_to":["s1"]}\n## Second\nB`;
+    const result = filterPartContent(view, {
+      includeLabels: [],
+      linkIndex: { s1: "First", s2: "Second" },
+    });
+    expect(result.blankContent).toMatch(/\[#s1]\n## First\n\n\[#s2]\n## Second/);
   });
 
   it("unlabeled parent does not block matching children", () => {
