@@ -6,7 +6,13 @@ export class PartFetchError extends Error {
   constructor(failures: PartFetchFailure[]) {
     super(
       `Failed to fetch ${failures.length} part file(s): ` +
-        failures.map(f => `${f.name} (${f.file}) [${f.status ?? "?"}]`).join(", ")
+        failures
+          .map(f => {
+            const status = f.status ?? "?";
+            const details = f.message ? `: ${f.message}` : "";
+            return `${f.name} (${f.file}) [${status}]${details}`;
+          })
+          .join(", ")
     );
     this.name = "PartFetchError";
     this.failures = failures;

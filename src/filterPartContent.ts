@@ -3,7 +3,6 @@ import { parseAsciiDocSections, type PartSectionWithLocation } from "./parseAsci
 // Support both Markdown-style ("#") and AsciiDoc-style ("=") headings
 const HEADING_REGEX = /^\s*(?:#{1,6}|={1,6})\s+.+$/;
 const ATTRIBUTE_REGEX = /^\s*:[^:]+:.*$/;
-const BLOCK_ID_REGEX = /^\s*\#[^\s]+$/; // unused but kept for clarity
 const ANCHOR_BLOCK_ID_REGEX = /^\s*\[#(?:[^\]]+)\]\s*$/;
 // Metadata markers to strip: AsciiDoc `//🏷{...}`
 const METADATA_REGEX = /^\s*\/\/\s*🏷\s*\{.*\}\s*$/;
@@ -285,9 +284,9 @@ function buildSectionDecisions(
     const hasLabels = labels.length > 0;
     const matches = hasLabels ? matchesAllLabels(labels, candidateSet) : false;
     const children = section.children.map(evaluate);
-    // If the section has labels and doesn't match, drop the subtree.
-    // If it has no labels, keep it only if any child is kept.
-    const keep = hasLabels ? matches : children.some(child => child.keep);
+    // If labeled: keep only if matches.
+    // If unlabeled: keep (it is not considered for matching) — it will still be dropped if an ancestor is dropped.
+    const keep = hasLabels ? matches : true;
     return {
       node: section,
       matches,

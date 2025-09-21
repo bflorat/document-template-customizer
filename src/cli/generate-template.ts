@@ -130,7 +130,6 @@ async function run() {
 
     const fetchImpl = createFetch(options.baseUrl);
     const result = await fetchTemplateAndParts(options.baseUrl, {
-      strict: false,
       fetchImpl,
     });
 

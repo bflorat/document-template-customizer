@@ -123,13 +123,11 @@ export async function fetchTemplateAndParts(
   opts?: {
     timeoutMs?: number;
     fetchImpl?: FetchLike;
-    strict?: boolean;      // default true: throw if any part fails
     concurrency?: number;  // default 6
   }
 ): Promise<TemplateWithParts> {
   const fetchFn = opts?.fetchImpl ?? fetch;
   const timeoutMs = opts?.timeoutMs ?? 15_000;
-  const strict = opts?.strict ?? true;
   const concurrency = Math.max(1, opts?.concurrency ?? 6);
 
   const metadata = await fetchTemplateMetadata(baseUrl, { timeoutMs, fetchImpl: fetchFn });
@@ -200,7 +198,8 @@ export async function fetchTemplateAndParts(
     .filter((r): r is { ok: true; part: Required<Part> } => r.ok)
     .map(r => r.part);
 
-  if (failures.length && strict) {
+  // Always strict: any part failure aborts with PartFetchError
+  if (failures.length) {
     throw new PartFetchError(failures);
   }
 

@@ -187,7 +187,7 @@ describe("fetchTemplateAndParts", () => {
     }
   });
 
-  it("returns partial success when a part fails and strict=false", async () => {
+  it("throws PartFetchError when a part fails", async () => {
     const fetchMock = buildFetchMock([
       [METADATA_URL, ok(YAML_OK)],
       [`${BASE}/view-application.adoc`, ok(PART_APP)],
@@ -196,16 +196,10 @@ describe("fetchTemplateAndParts", () => {
       [`${BASE}/README.adoc`, ok(README_BODY)],
     ]);
 
-    const res = await fetchTemplateAndParts(BASE, {
+    await expect(fetchTemplateAndParts(BASE, {
       fetchImpl: fetchMock,
-      strict: false,
       concurrency: 3,
-    });
-
-    // Only 2 succeeded
-    expect(res.parts.map(v => v.file).sort()).toEqual(
-      ["security.adoc", "view-application.adoc"].sort()
-    );
+    })).rejects.toBeInstanceOf(PartFetchError);
   });
 
 
@@ -240,8 +234,21 @@ describe("fetchTemplateAndParts", () => {
     ]);
 
     await expect(
-      fetchTemplateAndParts(BASE, { fetchImpl: fetchMock, strict: false })
+      fetchTemplateAndParts(BASE, { fetchImpl: fetchMock })
     ).rejects.toThrow(/Duplicate section id/);
+  });
+
+  it("rejects parts with invalid metadata JSON", async () => {
+    const PART_BAD = `# App\n\n//🏷{"id":"bad","labels":["x"]}] }\n## Bad\nZ`;
+    const fetchMock = buildFetchMock([
+      [METADATA_URL, ok(YAML_OK)],
+      [`${BASE}/view-application.adoc`, ok(PART_BAD)],
+      [`${BASE}/view-development.adoc`, ok(PART_DEV)],
+      [`${BASE}/security.adoc`, ok(PART_SEC)],
+      [`${BASE}/README.adoc`, ok(README_BODY)],
+    ]);
+
+    await expect(fetchTemplateAndParts(BASE, { fetchImpl: fetchMock })).rejects.toBeInstanceOf(PartFetchError);
   });
 
   

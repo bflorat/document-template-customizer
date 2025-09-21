@@ -25,8 +25,7 @@ export function parseAsciiDocSections(content: string): PartSection[] {
 
     const metadataMatch = METADATA_REGEX.exec(trimmed);
     if (metadataMatch) {
-      const parsed = parseMetadata(metadataMatch[1]);
-      if (parsed) pendingMetadata = parsed;
+      pendingMetadata = parseMetadata(metadataMatch[1], index + 1); // 1-based line number for messages
       pendingMetadataLine = index;
       continue;
     }
@@ -85,10 +84,13 @@ export function parseAsciiDocSections(content: string): PartSection[] {
   return roots;
 }
 
-function parseMetadata(value: string): PartSectionMetadata | undefined {
+function parseMetadata(value: string, line: number): PartSectionMetadata {
+  let parsed: any;
   try {
-    const parsed = JSON.parse(value);
-    if (!parsed || typeof parsed !== "object") return undefined;
+    parsed = JSON.parse(value);
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("metadata is not an object");
+    }
     const metadata: PartSectionMetadata = { raw: parsed as Record<string, unknown> };
 
     if (typeof (parsed as any).id === "string") {
@@ -110,7 +112,8 @@ function parseMetadata(value: string): PartSectionMetadata | undefined {
     if (linkValues.length) metadata.linkTo = linkValues;
 
     return metadata;
-  } catch {
-    return undefined;
+  } catch (e: any) {
+    const msg = e?.message ?? String(e);
+    throw new Error(`Invalid metadata JSON at line ${line}: ${msg}`);
   }
 }

@@ -41,6 +41,20 @@ const App = () => {
   const [partNamesByFile, setPartNamesByFile] = useState<Record<string, string>>({})
   const [includeAnchors, setIncludeAnchors] = useState(true)
   const contextFileInputRef = useRef<HTMLInputElement | null>(null)
+  const lastLoadedBaseUrlRef = useRef<string | null>(null)
+
+  const resetStateForNewBase = () => {
+    setIncludingLabels([])
+    setDidAutoSelectAll(false)
+    setAvailableLabels([])
+    setAvailableSectionsByPart({})
+    setPartNamesByFile({})
+    setDropRules([])
+    setExpandedParts({})
+    setPreviewParts([])
+    setErrorMessage(null)
+    setSuccessMessage(null)
+  }
 
   const handleTemplateUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTemplateUrl(event.target.value)
@@ -64,9 +78,16 @@ const App = () => {
 
   const handleLoadTemplate = async () => {
     const baseUrl = resolveBaseUrl()
-    const labelsToInclude = computeLabelsToInclude()
+    const baseChanged = !!lastLoadedBaseUrlRef.current && lastLoadedBaseUrlRef.current !== baseUrl
+    if (baseChanged) {
+      // Base URL changed: clear cached selections and derived state
+      resetStateForNewBase()
+    }
+    // Important: do not rely on state immediately after reset; use [] when base changed
+    const labelsToInclude = baseChanged ? [] : computeLabelsToInclude()
     try {
       await loadFilteredParts(baseUrl, labelsToInclude)
+      lastLoadedBaseUrlRef.current = baseUrl
     } catch {
       // loadFilteredParts already updates templateLoadInfo with the error
     }
@@ -87,7 +108,7 @@ const App = () => {
     setAvailableLabels([])
     setPreviewParts([])
     try {
-      const result = await fetchTemplateAndParts(baseUrl, { strict: false })
+      const result = await fetchTemplateAndParts(baseUrl)
       const knownSet = buildKnownLabelSet(result)
       const { order: labelOrder, multiValueNames } = buildLabelOrder(result.metadata.data.labels)
       const discoveredMulti = computeMultiValueNamesFromKnown(knownSet)
@@ -272,7 +293,11 @@ const App = () => {
 
       // Load template and preview with loaded labels
       const effectiveBase = baseUrl || resolveBaseUrl()
+      if (lastLoadedBaseUrlRef.current && lastLoadedBaseUrlRef.current !== effectiveBase) {
+        resetStateForNewBase()
+      }
       await loadFilteredParts(effectiveBase, loadedLabels, { skipAutoSelect: true })
+      lastLoadedBaseUrlRef.current = effectiveBase
       if (previewOpen) await refreshPreview()
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
@@ -644,10 +669,6 @@ function buildKnownLabelSet(result: TemplateWithParts): Set<string> {
   }
   result.parts.forEach(part => part.sections?.forEach(sec => visit(sec)))
   return known
-}
-
-function addDefinitions(_set: Set<string>, _definitions: TemplateLabelDefinition[] | undefined) {
-  // YAML label definitions are ignored for discovery; kept for backward compatibility only.
 }
 
 function computeMultiValueNamesFromKnown(known: Set<string>): Set<string> {

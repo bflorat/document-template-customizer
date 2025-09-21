@@ -4,12 +4,12 @@ import { filterPartContent } from "../src/filterPartContent";
 const SAMPLE_VIEW = `# Application\n:sectnums: 4\n:toc: left\n\n//🏷{"labels":["include-me"]}\n## Included Section\nContent kept.\n\n//🏷{"labels":["exclude-me"]}\n## Removed Section\nThis should disappear.\n\n## Plain Section\nNo metadata here.\n`;
 
 describe("filterPartContent", () => {
-  it("supports AsciiDoc '=' style headings alongside '#'", () => {
+  it("supports AsciiDoc '=' style headings alongside '#' (keeps unlabeled)", () => {
     const view = `= Root\n\n//🏷{"labels":["include-me"]}\n== Included\nBody\n\n== Plain\nText`;
     const res = filterPartContent(view, { includeLabels: ["include-me"] });
     expect(res.templateContent).toContain("= Root");
     expect(res.templateContent).toContain("== Included");
-    expect(res.templateContent).not.toContain("== Plain\nText");
+    expect(res.templateContent).toContain("== Plain\nText");
     expect(res.blankContent).toContain("= Root");
     expect(res.blankContent).toContain("== Included");
   });
@@ -32,7 +32,7 @@ describe("filterPartContent", () => {
     );
   });
 
-  it("keeps only sections matching include labels", () => {
+  it("keeps only sections matching include labels (keeps unlabeled)", () => {
     const result = filterPartContent(SAMPLE_VIEW, { includeLabels: ["include-me"] });
     expect(result.templateContent).toContain("## Included Section");
     expect(result.templateContent).not.toContain("🏷");
@@ -43,18 +43,22 @@ describe("filterPartContent", () => {
       ":toc: left",
       "",
       "## Included Section",
+      "",
+      "## Plain Section",
     ].join("\n"));
     expect(result.keptSections).toBeGreaterThan(0);
   });
 
-  it("keeps the top-level heading when nothing else matches", () => {
+  it("keeps the top-level heading and unlabeled sections when nothing else matches", () => {
     const result = filterPartContent(SAMPLE_VIEW, { includeLabels: ["other"] });
-    expect(result.templateContent.trim()).toBe("# Application");
-    expect(result.blankContent.trim()).toBe("# Application");
-    expect(result.keptSections).toBe(0);
+    expect(result.templateContent).toContain("# Application");
+    expect(result.blankContent).toContain("# Application");
+    expect(result.templateContent).toContain("## Plain Section");
+    expect(result.blankContent).toContain("## Plain Section");
+    expect(result.keptSections).toBeGreaterThan(0);
   });
 
-  it("excludes non matching subsections even when parent matches", () => {
+  it("keeps unlabeled subsections even when parent matches", () => {
     const nestedView = `# Root\n\n//🏷{"labels":["keep-parent"]}\n## Matching Parent\nIntro that stays.\n\n//🏷{"labels":["drop-me"]}\n### Child Removed\nRemove me.\n\n### Child Without Labels\nAlso removed.`;
 
     const result = filterPartContent(nestedView, { includeLabels: ["keep-parent"] });
@@ -62,7 +66,28 @@ describe("filterPartContent", () => {
     expect(result.templateContent).toContain("## Matching Parent");
     expect(result.templateContent).toContain("Intro that stays.");
     expect(result.templateContent).not.toContain("Child Removed");
-    expect(result.templateContent).not.toContain("Child Without Labels");
+    expect(result.templateContent).toContain("Child Without Labels");
+  });
+
+  it("drops unlabeled subsections when labeled parent does not match", () => {
+    const view = `# Root\n\n//🏷{"labels":["foo"]}\n## Parent Foo\nIntro\n\n### Unlabeled Child\nBody`;
+    const res = filterPartContent(view, { includeLabels: ["bar"] });
+    expect(res.templateContent).toContain("# Root");
+    expect(res.templateContent).not.toContain("## Parent Foo");
+    expect(res.templateContent).not.toContain("### Unlabeled Child");
+  });
+
+  it("drops a labeled section when its label is not selected", () => {
+    const view = `# Root\n\n//🏷{"labels":["context"]}\n## Introduction\nBody`;
+    const result = filterPartContent(view, { includeLabels: ["other"] });
+    expect(result.templateContent).toContain("# Root");
+    expect(result.templateContent).not.toContain("## Introduction");
+  });
+
+  it("keeps an unlabeled section when no labels are selected (full template)", () => {
+    const view = `# Root\n\n## Unlabeled\nBody`;
+    const result = filterPartContent(view, { includeLabels: [] });
+    expect(result.templateContent).toContain("## Unlabeled");
   });
 
   it("requires all labels on a section to match the selection (AND)", () => {
