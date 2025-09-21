@@ -240,12 +240,7 @@ function createFetch(baseUrl: string): typeof fetch {
 
 function collectKnownLabels(template: TemplateWithParts): Set<string> {
   const known = new Set<string>();
-
-  template.metadata.data.labels?.forEach(def => {
-    known.add(def.name);
-    def.available_values?.forEach(value => known.add(`${def.name}::${value}`));
-  });
-
+  // Discover labels from sections only; ignore YAML label definitions
   const visit = (
     section: NonNullable<TemplateWithParts["parts"][number]["sections"]>[number]
   ) => {

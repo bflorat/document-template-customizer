@@ -90,8 +90,10 @@ const App = () => {
       const result = await fetchTemplateAndParts(baseUrl, { strict: false })
       const knownSet = buildKnownLabelSet(result)
       const { order: labelOrder, multiValueNames } = buildLabelOrder(result.metadata.data.labels)
+      const discoveredMulti = computeMultiValueNamesFromKnown(knownSet)
+      const allMulti = new Set<string>([...multiValueNames, ...discoveredMulti])
       const selectableLabels = Array.from(knownSet)
-        .filter(label => !label.endsWith('::*') && !multiValueNames.has(label))
+        .filter(label => !label.endsWith('::*') && !allMulti.has(label))
         .sort((a, b) => compareLabels(a, b, labelOrder))
       setAvailableLabels(selectableLabels)
       setAvailableSectionsByPart(buildAvailableSections(result))
@@ -633,30 +635,32 @@ function buildFilteredPartsFromResult(
 
 function buildKnownLabelSet(result: TemplateWithParts): Set<string> {
   const known = new Set<string>()
-
-  addDefinitions(known, result.metadata.data.labels)
-
+  // Discover labels from sections across all parts; ignore YAML label definitions
+  const visit = (section: PartSection) => {
+    section.metadata?.labels?.forEach(label => {
+      const trimmed = label.trim()
+      if (trimmed) known.add(trimmed)
+    })
+    section.children.forEach(child => visit(child))
+  }
+  result.parts.forEach(part => part.sections?.forEach(sec => visit(sec)))
   return known
 }
 
-function addDefinitions(set: Set<string>, definitions: TemplateLabelDefinition[] | undefined) {
-  definitions?.forEach(def => {
-    const name = def.name.trim()
-    if (!name) return
-    const values = def.available_values ?? []
-    if (!values.length) {
-      set.add(name)
-      return
-    }
-    values.forEach(value => {
-      const trimmed = value.trim()
-      if (!trimmed) return
-      set.add(`${name}::${trimmed}`)
-    })
-  })
+function addDefinitions(_set: Set<string>, _definitions: TemplateLabelDefinition[] | undefined) {
+  // YAML label definitions are ignored for discovery; kept for backward compatibility only.
 }
 
-// addSectionLabels removed: labels now sourced solely from base-template-metadata.yaml
+function computeMultiValueNamesFromKnown(known: Set<string>): Set<string> {
+  const names = new Set<string>()
+  for (const label of known) {
+    const parts = label.split('::', 2)
+    if (parts.length === 2 && parts[0]) names.add(parts[0])
+  }
+  return names
+}
+
+// Labels are discovered from part sections; YAML label definitions are ignored for discovery
 
 function buildAvailableSections(result: TemplateWithParts): Record<string, string[]> {
   const map: Record<string, string[]> = {}

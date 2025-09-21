@@ -16,7 +16,7 @@ Any template following a simple metamodel is supported, not only my own template
 
 * The template must be written in **AsciiDoc (Asciidoctor flavor)** — with sections starting with `#` characters, not `=`.
 * A **`README.adoc`** file must be present at the root of the base template URL, providing an introduction.
-* A **`base-template-metadata.yaml`** file must be present at the root of the base template URL. A sample is provided below.
+* A **`base-template-metadata.yaml`** file must be present at the root of the base template URL. A sample is provided below. The `labels:` section in this file is ignored — labels are automatically discovered from the parts.
 * All part files must be located in the same directory than the `README.adoc` file.
 
 .Sample `base-template-metadata.yaml` :
@@ -44,9 +44,9 @@ labels:
 * Every section of each part file of the base template should be annotated with a metadata line directly above the section title (no blank line), using an AsciiDoc comment:
   ** `//🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::*", "detail_level::abstract", "context"]}`
   ** Level‑1 sections (single `#`) are always kept and should not be annotated.
-  ** All labels used in sections must be listed in `base-template-metadata.yaml` to be taken into account.
+  ** Labels are automatically discovered from `//🏷{...}` markers in parts; you don’t need to list them in `base-template-metadata.yaml`.
   ** Labels can be a simple flag (e.g., `performance`).
-  ** Others are multi‑valued (e.g., `project_size` supporting: `project_size::large`, `project_size::medium`, `project_size::small`). All available values must be listed in `base-template-metadata.yaml`.
+  ** Multi‑valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts; no YAML declaration is required.
   ** You can use the `*` wildcard in multi‑valued labels to mean “any”. For instance, to always keep a section regardless of project size, use `project_size::*`.
   ** See many examples in https://github.com/bflorat/architecture-document-template[this base template].
 
