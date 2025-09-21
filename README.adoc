@@ -6,6 +6,17 @@ While I've received good feedback on my previous document templates, a recurring
 
 Any template following a simple metamodel is supported, not only my own templates.
 
+## Installation
+
+* A running up-to-date version is available online https://document-template-customizer.florat.net/[here], nothing to install, you just need a browser with JavaScript enabled.
+
+* You can install this tool on premise  by download a https://github.com/bflorat/document-template-customizer/releases[release]. Just unzip it in a directory exposed by a Web server.
+
+* A Nginx-based Docker image is available https://hub.docker.com/repository/docker/bflorat/document-template-customizer/general[here].
+
+* To use the CLI, a recent version of npm is required.
+
+
 ## Common use cases
 
 . An expert (typically an *Enterprise Architect*) selects or writes a base template. This base template is usually organization-wide.
