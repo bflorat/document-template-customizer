@@ -45,9 +45,20 @@ parts:
 
 - If all or no labels are selected, the resulting template is the full base template.
 - Level-1 sections (single `#` or `=`) are always kept.
-- Labels use AND semantics: a section is kept only if all its labels are satisfied by the selection.
+- Labels use AND semantics: a section is kept only if all its labels are satisfied by the selection. 
+
+TIP: Example: if the base template owns a section labeled `["foo","bar"]`, this section will be kept only if both `foo` and `bar` are selected.
+
+- If a section does not reference a multi-value label, it is not token into account for matching.
+
+TIP: Example: if the base template has a section labeled `["foo"]` but not `["level::..."]`, this section will be kept if `foo` is selected but even if all `level::...` labels are unselected.
+
 - If a parent section doesn't match, all its subsections are dropped recursively.
+
 - If a parent section matches, each subsection is evaluated and kept only if it matches.
+
+TIP: Example: if the base template owns a section labeled `["foo"]` and a subsection labeled `["bar"]` : if `foo` label is selected but not `bar`, only the parent section is kept.
+
 
 ## Links 
 
