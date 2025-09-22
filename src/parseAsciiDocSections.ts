@@ -17,6 +17,7 @@ export function parseAsciiDocSections(content: string): PartSection[] {
   const stack: PartSectionWithLocation[] = [];
   let pendingMetadata: PartSectionMetadata | undefined;
   let pendingMetadataLine: number | undefined;
+  const metadataErrors: Array<{ line: number; message: string }> = [];
 
   for (let index = 0; index < lines.length; index++) {
     const rawLine = lines[index];
@@ -25,8 +26,15 @@ export function parseAsciiDocSections(content: string): PartSection[] {
 
     const metadataMatch = METADATA_REGEX.exec(trimmed);
     if (metadataMatch) {
-      pendingMetadata = parseMetadata(metadataMatch[1], index + 1); // 1-based line number for messages
-      pendingMetadataLine = index;
+      const parsed = safeParseMetadata(metadataMatch[1], index + 1, metadataErrors);
+      if (parsed) {
+        pendingMetadata = parsed; // valid metadata applies to next heading
+        pendingMetadataLine = index;
+      } else {
+        // invalid metadata: do not attach to next heading, but still skip this line
+        pendingMetadata = undefined;
+        pendingMetadataLine = undefined;
+      }
       continue;
     }
 
@@ -81,10 +89,18 @@ export function parseAsciiDocSections(content: string): PartSection[] {
     }
   }
 
+  // If any metadata parsing error occurred, throw an aggregated error listing them all
+  if (metadataErrors.length) {
+    const summary = metadataErrors
+      .map(e => `${e.line}: ${e.message}`)
+      .join("; ");
+    throw new Error(`Invalid metadata JSON at line(s) ${summary}`);
+  }
+
   return roots;
 }
 
-function parseMetadata(value: string, line: number): PartSectionMetadata {
+function safeParseMetadata(value: string, line: number, errors: Array<{ line: number; message: string }>): PartSectionMetadata | undefined {
   let parsed: any;
   try {
     parsed = JSON.parse(value);
@@ -114,6 +130,7 @@ function parseMetadata(value: string, line: number): PartSectionMetadata {
     return metadata;
   } catch (e: any) {
     const msg = e?.message ?? String(e);
-    throw new Error(`Invalid metadata JSON at line ${line}: ${msg}`);
+    errors.push({ line, message: msg });
+    return undefined;
   }
 }
