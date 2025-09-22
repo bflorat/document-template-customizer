@@ -563,6 +563,7 @@ const App = () => {
         CLI, full documentation and more in the <a href="https://github.com/bflorat/document-template-customizer" target="_blank" rel="noreferrer">
           project repository
         </a>
+        {' '}— v{__APP_VERSION__}
       </footer>
     </div>
   )
