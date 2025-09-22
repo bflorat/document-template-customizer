@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from 'react'
+import { useState, useEffect, useRef, useCallback, type ChangeEvent, type FormEvent } from 'react'
 import JSZip from 'jszip'
 import { stringify, parse as parseYaml } from 'yaml'
 import './App.css'
@@ -98,7 +98,7 @@ const App = () => {
     await handleLoadTemplate()
   }
 
-  const loadFilteredParts = async (
+  const loadFilteredParts = useCallback(async (
     baseUrl: string,
     labelsToInclude: string[],
     opts?: { skipAutoSelect?: boolean; includeAnchors?: boolean }
@@ -155,7 +155,7 @@ const App = () => {
       setTemplateLoadInfo({ state: 'error', message })
       throw error
     }
-  }
+  }, [didAutoSelectAll, includingLabels, dropRules])
 
   const handleGenerate = async () => {
     if (isGenerating) return
@@ -222,9 +222,9 @@ const App = () => {
     }
   }
 
-  const refreshPreview = async (overrideLabels?: string[]) => {
-    const baseUrl = resolveBaseUrl()
-    const labelsToInclude = overrideLabels ?? computeLabelsToInclude()
+  const refreshPreview = useCallback(async (overrideLabels?: string[]) => {
+    const baseUrl = (templateUrl || DEFAULT_TEMPLATE_URL).trim()
+    const labelsToInclude = overrideLabels ?? includingLabels.map(label => label.trim()).filter(Boolean)
 
     setPreviewLoading(true)
     setPreviewError(null)
@@ -241,7 +241,7 @@ const App = () => {
     } finally {
       setPreviewLoading(false)
     }
-  }
+  }, [templateUrl, includingLabels, includeAnchors, loadFilteredParts])
 
   const handleTogglePreview = async () => {
     const next = !previewOpen
@@ -330,8 +330,7 @@ const App = () => {
   useEffect(() => {
     if (!previewOpen) return
     void refreshPreview()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dropRules, includeAnchors, previewOpen])
+  }, [previewOpen, refreshPreview])
 
   const handleSectionToggle = (file: string, section: 'blank' | 'full', open: boolean) => {
     setExpandedParts(prev => {
