@@ -567,9 +567,6 @@ const App = () => {
         >
           {isGenerating ? '⏳ Generating…' : '🚀 Generate your template'}
         </button>
-        {templateLoadInfo.state !== 'loaded' ? (
-          <p className="disabled-hint">Load a base template to enable generation</p>
-        ) : null}
         {errorMessage ? (
           <p className="alert alert--error">{errorMessage}</p>
         ) : null}
