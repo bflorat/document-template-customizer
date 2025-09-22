@@ -489,7 +489,13 @@ const App = () => {
 
         <section className="preview-panel">
           <div className="preview-header">
-            <button type="button" className="secondary-action" onClick={() => { void handleTogglePreview() }}>
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() => { void handleTogglePreview() }}
+              disabled={templateLoadInfo.state !== 'loaded' && !previewOpen}
+              title={templateLoadInfo.state !== 'loaded' && !previewOpen ? 'Load a base template first' : undefined}
+            >
               {previewOpen ? 'Hide preview' : 'Show preview'}
             </button>
             {previewOpen ? (
@@ -497,7 +503,8 @@ const App = () => {
                 type="button"
                 className="secondary-action"
                 onClick={() => { void handleRefreshPreview() }}
-                disabled={previewLoading}
+                disabled={templateLoadInfo.state !== 'loaded' || previewLoading}
+                title={templateLoadInfo.state !== 'loaded' ? 'Load a base template first' : undefined}
               >
                 Refresh preview
               </button>
@@ -548,7 +555,13 @@ const App = () => {
           ) : null}
         </section>
 
-        <button type="button" className="primary-action" onClick={() => { void handleGenerate() }} disabled={isGenerating}>
+        <button
+          type="button"
+          className="primary-action"
+          onClick={() => { void handleGenerate() }}
+          disabled={templateLoadInfo.state !== 'loaded' || isGenerating}
+          title={templateLoadInfo.state !== 'loaded' ? 'Load a base template first' : undefined}
+        >
           {isGenerating ? '⏳ Generating…' : '🚀 Generate your template'}
         </button>
         {errorMessage ? (
