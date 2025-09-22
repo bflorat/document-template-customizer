@@ -1,4 +1,4 @@
-import type { TemplateMetadata } from "./TemplateMetadata.js";
+import type { TemplateMetadata } from "./TemplateMetadata";
 
 export interface TemplateFetchResult {
   url: string;

@@ -9,8 +9,8 @@ import {
   type Part,
   type PartFetchFailure,
   type TemplateLabelDefinition,
-} from "./model/index.js";
-import { parseAsciiDocSections } from "./parseAsciiDocSections.js";
+} from "./model";
+import { parseAsciiDocSections } from "./parseAsciiDocSections";
 
 /* ================== Core ================== */
 
@@ -222,7 +222,7 @@ export async function fetchTemplateAndParts(
 export {
   TemplateMetadataNotFoundError,
   PartFetchError,
-} from "./model/index.js";
+} from "./model";
 
 export type {
   TemplateFetchResult,
@@ -230,7 +230,7 @@ export type {
   TemplateWithParts,
   Part,
   PartFetchFailure,
-} from "./model/index.js";
+} from "./model";
 
 const README_CANDIDATES = [
   "README.adoc",

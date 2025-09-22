@@ -1,4 +1,4 @@
-import { parseAsciiDocSections, type PartSectionWithLocation } from "./parseAsciiDocSections.js";
+import { parseAsciiDocSections, type PartSectionWithLocation } from "./parseAsciiDocSections";
 
 // Support both Markdown-style ("#") and AsciiDoc-style ("=") headings
 const HEADING_REGEX = /^\s*(?:#{1,6}|={1,6})\s+.+$/;

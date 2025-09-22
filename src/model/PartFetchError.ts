@@ -1,4 +1,4 @@
-import type { PartFetchFailure } from "./PartFetchFailure.js";
+import type { PartFetchFailure } from "./PartFetchFailure";
 
 export class PartFetchError extends Error {
   public readonly failures: PartFetchFailure[];

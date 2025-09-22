@@ -1,4 +1,4 @@
-import type { PartSection } from "./PartSection.js";
+import type { PartSection } from "./PartSection";
 
 export interface Part {
   name: string;

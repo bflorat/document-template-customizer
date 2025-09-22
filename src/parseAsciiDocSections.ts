@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { PartSection, PartSectionMetadata } from "./model/index.js";
+import type { PartSection, PartSectionMetadata } from "./model";
 
 export interface PartSectionWithLocation extends PartSection {
   startLine: number;

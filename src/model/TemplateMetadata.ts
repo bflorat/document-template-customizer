@@ -1,5 +1,5 @@
-import type { TemplateLabelDefinition } from "./TemplateLabelDefinition.js";
-import type { Part } from "./Part.js";
+import type { TemplateLabelDefinition } from "./TemplateLabelDefinition";
+import type { Part } from "./Part";
 
 export interface TemplateMetadata {
   author: string;

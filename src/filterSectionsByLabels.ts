@@ -1,4 +1,4 @@
-import type { PartSection } from "./model/index.js";
+import type { PartSection } from "./model";
 
 interface FilterOptions {
   labels: string[];

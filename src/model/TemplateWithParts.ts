@@ -1,5 +1,5 @@
-import type { TemplateFetchResult } from "./TemplateFetchResult.js";
-import type { Part } from "./Part.js";
+import type { TemplateFetchResult } from "./TemplateFetchResult";
+import type { Part } from "./Part";
 
 export interface TemplateWithParts {
   metadata: TemplateFetchResult;
