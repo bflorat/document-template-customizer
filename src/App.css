@@ -177,6 +177,24 @@ header h1 {
   background: var(--secondary-bg-active);
 }
 
+/* Make disabled buttons visually obvious */
+.primary-action[disabled],
+.secondary-action[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+}
+
+.primary-action[disabled]:hover,
+.primary-action[disabled]:active {
+  background: linear-gradient(180deg, var(--primary-grad-start), var(--primary-grad-end));
+}
+
+.secondary-action[disabled]:hover,
+.secondary-action[disabled]:active {
+  background: var(--secondary-bg);
+}
+
 .load-template {
   align-self: flex-start;
 }
@@ -336,6 +354,12 @@ header h1 {
 .preview-header {
   display: flex;
   gap: 0.5rem;
+}
+
+.disabled-hint {
+  align-self: center;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .preview-body {

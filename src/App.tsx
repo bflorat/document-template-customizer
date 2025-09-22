@@ -498,6 +498,9 @@ const App = () => {
             >
               {previewOpen ? 'Hide preview' : 'Show preview'}
             </button>
+            {templateLoadInfo.state !== 'loaded' && !previewOpen ? (
+              <span className="disabled-hint">Load a base template to enable preview</span>
+            ) : null}
             {previewOpen ? (
               <button
                 type="button"
@@ -564,6 +567,9 @@ const App = () => {
         >
           {isGenerating ? '⏳ Generating…' : '🚀 Generate your template'}
         </button>
+        {templateLoadInfo.state !== 'loaded' ? (
+          <p className="disabled-hint">Load a base template to enable generation</p>
+        ) : null}
         {errorMessage ? (
           <p className="alert alert--error">{errorMessage}</p>
         ) : null}
