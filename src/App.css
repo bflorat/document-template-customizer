@@ -143,6 +143,7 @@ header h1 {
 
 .labels-panel {
   flex: 1;
+  width: 100%;
 }
 
 .empty-row {
@@ -240,6 +241,7 @@ header h1 {
   border: 1px solid var(--panel-border);
   border-radius: 6px;
   padding: 0.75rem 1rem;
+  width: 100%;
 }
 
 .available-labels h3 {
