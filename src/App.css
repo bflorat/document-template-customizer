@@ -13,9 +13,10 @@
   --card-border: #e2e8f0;
   --pre-bg: #f7f9ff;
 
-  --chip-bg: #eef2ff;
-  --chip-bg-hover: #dbe4ff;
-  --chip-selected-bg: #4f46e5;
+  /* Labels (modern blue) */
+  --chip-bg: #eff6ff;           /* blue-50 */
+  --chip-bg-hover: #dbeafe;     /* blue-100 */
+  --chip-selected-bg: #2563eb;  /* blue-600 */
   --chip-selected-fg: #ffffff;
 
   --input-border: #bcbcbc;
@@ -52,9 +53,10 @@
     --card-border: #374151;
     --pre-bg: #0b1220;
 
-    --chip-bg: #1f2937; /* gray-800 */
-    --chip-bg-hover: #374151; /* gray-700 */
-    --chip-selected-bg: #6366f1; /* indigo-500 */
+    /* Labels (modern blue) */
+    --chip-bg: #1e40af;       /* blue-800 */
+    --chip-bg-hover: #1d4ed8; /* blue-700 */
+    --chip-selected-bg: #3b82f6; /* blue-500 */
     --chip-selected-fg: #ffffff;
 
     --input-border: #4b5563; /* gray-600 */
