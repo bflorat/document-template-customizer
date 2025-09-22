@@ -327,10 +327,10 @@ const App = () => {
   }
 
   // Auto-refresh preview when options affecting preview change and preview is open
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!previewOpen) return
     void refreshPreview()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dropRules, includeAnchors, previewOpen])
 
   const handleSectionToggle = (file: string, section: 'blank' | 'full', open: boolean) => {
