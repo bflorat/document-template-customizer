@@ -576,7 +576,7 @@ const App = () => {
       </form>
       <footer className="app-footer">
         © 2025 Bertrand Florat — <a href='https://www.gnu.org/licenses/agpl-3.0.en.html'>AGPL V3.0</a> —{' '}
-        CLI, full documentation and more in the <a href="https://github.com/bflorat/document-template-customizer" target="_blank" rel="noreferrer">
+        Full documentation and more in the <a href="https://github.com/bflorat/document-template-customizer" target="_blank" rel="noreferrer">
           project repository
         </a>
         {' '}— v{__APP_VERSION__}

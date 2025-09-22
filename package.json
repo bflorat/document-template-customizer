@@ -11,8 +11,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "build:cli": "tsc --project tsconfig.cli.json",
-    "cli": "npm run build:cli --silent && node dist/cli/generate-template.js"
+    
   },
   "dependencies": {
     "react": "^19.1.1",
