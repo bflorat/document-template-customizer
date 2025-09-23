@@ -81,20 +81,5 @@ TIP: Example: if the base template owns a section labeled `["foo","bar"]`, this 
 
 TIP: Example: if the base template owns a section labeled `["foo"]` and a subsection labeled `["bar"]` : if `foo` label is selected but not `bar`, only the parent section is kept.
 
-
-## Links 
-
-- Use the `link_to` section metadata to automatically add a `TIP: See also <link>` entry in the generated templates and blank templates.
-
-Sample: 
-
-//🏷{"id": "6ff8aacb-5020-4ade-a10d-3dce3898276b", "labels": [...],"link_to": ["c8e58371-6bea-48e2-ab0e-989fec63e0ee","53b2f98c-11d9-4aa0-b762-b8f31db0c30f"]}
-
-- You can add links to another parts of the template (others documents). An asciidoc `xref` cross document would be generated.
-
-
- 
-
-
 ## Tips
 * The generated zip contains a `customization-context.yaml` file with the generation date, base template URL, and selected labels.
