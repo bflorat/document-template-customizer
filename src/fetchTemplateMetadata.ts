@@ -38,14 +38,14 @@ export async function fetchTemplateMetadata(
   const timeoutMs = opts?.timeoutMs ?? 15_000;
 
   const normalized = baseUrl.replace(/\/+$/, "");
-  const target = `${normalized}/base-template-metadata.yaml`;
+  const target = `${normalized}/base-template-manifest.yaml`;
 
   try {
     const res = await fetchWithTimeout(fetchFn, target, timeoutMs);
     if (!res.ok) throw new TemplateMetadataNotFoundError(target, res.status);
 
     const raw = await res.text();
-    if (!raw.trim()) throw new Error(`Empty base-template-metadata.yaml at ${target}.`);
+    if (!raw.trim()) throw new Error(`Empty base-template-manifest.yaml at ${target}.`);
 
     let parsed: any;
     try {
@@ -107,7 +107,7 @@ export async function fetchTemplateMetadata(
   } catch (err: any) {
     if (err instanceof TemplateMetadataNotFoundError) throw err;
     if (err?.name === "AbortError") {
-      throw new Error(`Timed out fetching base-template-metadata.yaml from ${target} after ${timeoutMs} ms.`);
+      throw new Error(`Timed out fetching base-template-manifest.yaml from ${target} after ${timeoutMs} ms.`);
     }
     throw new Error(`Failed to fetch ${target}: ${err?.message ?? String(err)}`);
   }

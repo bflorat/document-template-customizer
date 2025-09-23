@@ -58,7 +58,7 @@ function buildFetchMock(
 // ----------- Fixtures -----------
 
 const BASE = "https://example.com/tpl";
-const METADATA_URL = `${BASE}/base-template-metadata.yaml`;
+const METADATA_URL = `${BASE}/base-template-manifest.yaml`;
 
 const YAML_OK = `
 author: Bertrand Florat
@@ -207,7 +207,7 @@ describe("fetchTemplateAndParts", () => {
     const fetchMock = buildFetchMock([[METADATA_URL, ok("   \n  ")]]);
     await expect(
       fetchTemplateAndParts(BASE, { fetchImpl: fetchMock })
-    ).rejects.toThrow(/Empty base-template-metadata\.yaml/);
+    ).rejects.toThrow(/Empty base-template-manifest\.yaml/);
   });
 
   it("fails when README.adoc is missing", async () => {
