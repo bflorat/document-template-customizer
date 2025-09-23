@@ -7,6 +7,8 @@ const ANCHOR_BLOCK_ID_REGEX = /^\s*\[#(?:[^\]]+)\]\s*$/;
 // Metadata markers to strip: AsciiDoc `//🏷{...}`
 const METADATA_REGEX = /^\s*\/\/\s*🏷\s*\{.*\}\s*$/;
 const SEE_ALSO_REGEX = /^\s*TIP:\s+See also\b/;
+const KEEP_ATTR_REGEX = /^\s*\[(?i:KEEP)(?:[^\]]*)\]\s*$/; // [KEEP] optional roles
+const EXAMPLE_DELIM_REGEX = /^\s*={4}\s*$/; // AsciiDoc example block delimiter (====)
 
 export interface FilterPartContentOptions {
   includeLabels?: string[];
@@ -86,6 +88,10 @@ export function filterPartContent(
   // Precompute anchor and "See also" insertions by heading line index
   const insertions = buildInsertions(sections, lines, keepMask, options.linkIndex, options.currentFile);
 
+  // Track [KEEP] example blocks to include in blank output
+  type KeepMode = 'none' | 'attrPending' | 'delimited';
+  let keepMode: KeepMode = 'none';
+
   for (let i = 0; i < lines.length; i++) {
     if (!keepMask[i]) continue;
     const line = lines[i];
@@ -106,11 +112,36 @@ export function filterPartContent(
         templateLines.push(seeAlso);
         blankLines.push(seeAlso);
       }
+      // Reset any pending [KEEP] mode on new section
+      keepMode = 'none';
     } else if (ATTRIBUTE_REGEX.test(trimmed)) {
       templateLines.push(line);
       blankLines.push(line);
     } else {
       templateLines.push(line);
+      // For blank output, include only [KEEP] blocks from body content
+      if (keepMode === 'none') {
+        if (KEEP_ATTR_REGEX.test(trimmed)) {
+          blankLines.push(line); // include the [KEEP] attribute line itself
+          keepMode = 'attrPending';
+        }
+      } else if (keepMode === 'attrPending') {
+        if (EXAMPLE_DELIM_REGEX.test(trimmed)) {
+          blankLines.push(line); // opening delimiter
+          keepMode = 'delimited';
+        } else if (trimmed) {
+          // Unexpected content after [KEEP] not starting an example block => cancel keep mode
+          keepMode = 'none';
+        } else {
+          // blank line, continue waiting for delimiter
+        }
+      } else if (keepMode === 'delimited') {
+        blankLines.push(line);
+        if (EXAMPLE_DELIM_REGEX.test(trimmed)) {
+          // closing delimiter reached
+          keepMode = 'none';
+        }
+      }
     }
   }
 

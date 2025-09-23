@@ -143,6 +143,17 @@ describe("filterPartContent", () => {
     expect(result.blankContent).toMatch(/\[#s1]\n## First\n\n\[#s2]\n## Second/);
   });
 
+  it("keeps only [KEEP] example blocks from body content in blank output", () => {
+    const view = `# Root\n\n## With Keep\n[KEEP]\n====\nGuidance for blank\n====\n\n## Without Keep\nRegular body that should not appear`;
+    const result = filterPartContent(view, { includeLabels: [] });
+    // Template has everything
+    expect(result.templateContent).toContain("Guidance for blank");
+    expect(result.templateContent).toContain("Regular body");
+    // Blank keeps only the [KEEP] block content (including markers)
+    expect(result.blankContent).toContain("[KEEP]\n====\nGuidance for blank\n====");
+    expect(result.blankContent).not.toContain("Regular body");
+  });
+
   it("unlabeled parent does not block matching children", () => {
     const view = `# Root\n\n//🏷{"labels":["a"]}\n## Child A\nA\n\n//🏷{"labels":["b"]}\n## Child B\nB`;
 
