@@ -116,9 +116,6 @@ function safeParseMetadata(value: string, line: number, errors: Array<{ line: nu
       const labels = (parsed as any).labels.filter((label: unknown): label is string => typeof label === "string");
       if (labels.length) metadata.labels = labels;
     }
-    if (typeof (parsed as any).keep_content === "boolean") {
-      metadata.keepContent = Boolean((parsed as any).keep_content);
-    }
     const linkValues: string[] = [];
     const rawLink = (parsed as any).link_to ?? (parsed as any).links;
     if (typeof rawLink === "string") {

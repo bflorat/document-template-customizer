@@ -61,9 +61,6 @@ export function filterPartContent(
     keepMask = new Array<boolean>(lines.length).fill(true);
   }
 
-  // Build a mask of lines whose section content must be kept in blank output
-  const keepContentMask = buildKeepContentMask(sections, lines, keepMask);
-
   // Apply explicit drop rules by title (case-insensitive), excluding level 1 sections
   if (dropTitles.size) {
     const dropByNode = (node: SectionNode) => {
@@ -72,8 +69,6 @@ export function filterPartContent(
         const start = Math.max(0, node.startLine);
         const end = Math.min(lines.length - 1, node.endLine);
         for (let i = start; i <= end; i++) keepMask[i] = false;
-        // Also ensure we don't keep content for dropped sections
-        for (let i = start; i <= end; i++) keepContentMask[i] = false;
       } else {
         node.children.forEach(child => dropByNode(child as SectionNode));
       }
@@ -116,7 +111,6 @@ export function filterPartContent(
       blankLines.push(line);
     } else {
       templateLines.push(line);
-      if (keepContentMask[i]) blankLines.push(line);
     }
   }
 
@@ -396,42 +390,4 @@ function classifyLine(line: string): LineType {
   return "other";
 }
 
-function buildKeepContentMask(
-  sections: SectionNode[],
-  lines: string[],
-  keepMask: boolean[],
-): boolean[] {
-  const mask = new Array<boolean>(lines.length).fill(false);
-
-  const resolveHeadingLine = (node: SectionNode): number => {
-    let idx = Math.max(0, node.startLine);
-    const last = Math.min(lines.length - 1, node.endLine);
-    while (idx <= last) {
-      const t = (lines[idx] ?? '').trim();
-      if (METADATA_REGEX.test(t)) { idx += 1; continue; }
-      if (HEADING_REGEX.test(t)) return idx;
-      if (t) break;
-      idx += 1;
-    }
-    return Math.max(0, node.startLine);
-  };
-
-  const clamp = (v: number) => Math.min(Math.max(v, 0), lines.length - 1);
-  const mark = (start: number, end: number) => {
-    const s = clamp(start), e = clamp(end);
-    for (let i = s; i <= e; i++) mask[i] = true;
-  };
-
-  const visit = (node: SectionNode) => {
-    // Only consider nodes that are kept according to keepMask (heading kept)
-    const heading = resolveHeadingLine(node);
-    if (!keepMask[heading]) return;
-    if (node.metadata?.keepContent) {
-      mark(node.startLine, node.endLine);
-    }
-    node.children.forEach(ch => visit(ch as SectionNode));
-  };
-
-  sections.forEach(visit);
-  return mask;
-}
+// keep_content has been removed; blank output only keeps headings, anchors, attributes, and 'See also' lines
