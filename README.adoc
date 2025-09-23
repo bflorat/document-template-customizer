@@ -14,7 +14,6 @@ Any template following a simple metamodel is supported, not only my own template
 
 * A NGINX-based Docker image is available https://hub.docker.com/repository/docker/bflorat/document-template-customizer/general[here].
 
- 
 
 
 ## Common use cases
@@ -44,13 +43,27 @@ parts:
     file: view-infrastructure.adoc  
 ```
 
-* Every section of each part file of the base template should be annotated with a metadata line directly above the section title (no blank line), using an AsciiDoc comment:
-  ** `//🏷{"id": "74c82505-5f47-4342-8f1b-f6951d603062", "labels": ["level::basic", "project_size::large", "detail_level::abstract", "context"]}`
-  ** Level-1 sections (single `#`) are always kept and should not be annotated.
-  ** Labels are automatically discovered from `//🏷{...}` markers in parts.
-  ** Labels can be a simple flag (e.g., `performance`).
-  ** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts; 
-   ** See many examples in https://github.com/bflorat/architecture-document-template[this base template].
+## Sections metadata
+
+Every section of each part file of the base template should be annotated with a metadata line directly above the section title (no blank line), using an AsciiDoc comment like:
+
+//🏷{"id":"74c82505-5f47-4342-8f1b-f6951d603062","labels":["level::basic","project_size::large","detail_level::abstract","context"]}
+
+Metadata fields:
+
+* `id`: Unique section identifier. Enables anchors and cross-references; must be unique across all parts.
+* `labels`: Filtering tags used to include/exclude sections.
+** Discovered automatically from `//🏷{...}` markers.
+** Can be a simple flag (e.g., `performance`).
+** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts.
+* `keep_content`: When `true`, keeps this section's body content in the generated blank template (default is `false`).
+* `link_to`: One or more target section ids to reference. Automatically inserts a `TIP: See also …` line after the heading in both template and blank outputs. Use a single id string or an array. Cross-document `xref:` links are generated when the target id belongs to another part.
+
+Notes:
+
+* Level-1 sections (single `#` or `=`) are always kept and should not be annotated.
+
+TIP: See many examples in https://github.com/bflorat/architecture-document-template[this base template].
 
 ## Matching rules
 

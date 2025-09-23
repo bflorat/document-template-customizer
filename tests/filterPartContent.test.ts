@@ -143,6 +143,31 @@ describe("filterPartContent", () => {
     expect(result.blankContent).toMatch(/\[#s1]\n## First\n\n\[#s2]\n## Second/);
   });
 
+  it("keeps section body when keep_content=true", () => {
+    const view = `# Root\n\n//🏷{"keep_content":true}\n## Keep Body\nThis body must be kept in blank.\nStill here.\n\n## Next Section\nNext body`;
+    const res = filterPartContent(view, { includeLabels: [] });
+    // In template content, full body is present
+    expect(res.templateContent).toContain("This body must be kept in blank.");
+    // In blank content, body of the marked section is preserved
+    expect(res.blankContent).toContain("## Keep Body\nThis body must be kept in blank.\nStill here.");
+    // Body of unmarked sections should not be kept
+    expect(res.blankContent).toContain("## Next Section");
+    expect(res.blankContent).not.toContain("Next body");
+  });
+
+  it("respects label filtering and drop rules with keep_content", () => {
+    const view = `# Root\n\n//🏷{"labels":["l"],"keep_content":true}\n## Labeled Keep\nBodyL\n\n//🏷{"labels":["x"],"keep_content":true}\n## Labeled Drop by labels\nBodyX\n\n## Unrelated\nBodyU`;
+    const res = filterPartContent(view, { includeLabels: ["l"] });
+    // Kept labeled section keeps body in blank
+    expect(res.blankContent).toContain("## Labeled Keep\nBodyL");
+    // Non-matching labeled section is removed entirely
+    expect(res.blankContent).not.toContain("Labeled Drop by labels");
+    expect(res.templateContent).not.toContain("Labeled Drop by labels");
+    // Unlabeled still present but without body
+    expect(res.blankContent).toContain("## Unrelated");
+    expect(res.blankContent).not.toContain("BodyU");
+  });
+
   it("unlabeled parent does not block matching children", () => {
     const view = `# Root\n\n//🏷{"labels":["a"]}\n## Child A\nA\n\n//🏷{"labels":["b"]}\n## Child B\nB`;
 
