@@ -6,6 +6,13 @@ While I've received good feedback on my previous document templates, a recurring
 
 Any template following a simple metamodel is supported, not only my own templates.
 
+
+## Common use cases
+
+. An expert (typically an *Enterprise Architect*) selects or writes a base template. This base template is usually organization-wide.
+. Another expert (typically a *Senior Solution Architect*) creates a customized, curated template for one or several similar projects. This includes both a *full template with explanations* and *blank documents* to be filled.
+. The **single project architect** or skilled team member then fills the *blank documents*, guided by the explanations in the customized template.
+
 ## Installation
 
 * A running up-to-date version is available online https://document-template-customizer.florat.net/[here], nothing to install, you just need a browser with JavaScript enabled.
@@ -13,14 +20,6 @@ Any template following a simple metamodel is supported, not only my own template
 * You can install this tool on premise  by download a https://github.com/bflorat/document-template-customizer/releases[release]. Just unzip it in a directory exposed by a Web server.
 
 * A NGINX-based Docker image is available https://hub.docker.com/repository/docker/bflorat/document-template-customizer/general[here].
-
-
-
-## Common use cases
-
-. An expert (typically an *Enterprise Architect*) selects or writes a base template. This base template is usually organization-wide.
-. Another expert (typically a *Senior Solution Architect*) creates a customized, curated template for one or several similar projects. This includes both a *full template with explanations* and *blank documents* to be filled.
-. The **single project architect** or skilled team member then fills the *blank documents*, guided by the explanations in the customized template.
 
 ## Prerequisites for a Base Template
 
@@ -83,11 +82,11 @@ TIP: Example: if the base template owns a section labeled `["foo"]` and a subsec
 ## Blank template content
 
 - The blank template preserves structure (headings, anchors, attributes) and the automatic `TIP: See also …` added by `link_to`.
-- Body text is omitted by default. To include guidance in the blank template, wrap it in a `[KEEP]` example block:
+- Body text is omitted by default. To include pre-filled text in the blank template, wrap it in a `[PRE-FILLED]` example block:
 
-[KEEP]
+[PRE-FILLED]
 ====
-This guidance will appear in the blank template.
+This text will appear in the blank template.
 You can write multiple lines here.
 ====
 
