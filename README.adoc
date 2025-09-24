@@ -93,3 +93,16 @@ You can write multiple lines here.
 
 ## Tips
 * The generated zip contains a `customization-context.yaml` file with the generation date, base template URL, and selected labels.
+* Referenced base templates URLs : 
+** [English, by Bertrand Florat and contributors] https://github.com/bflorat/architecture-document-template[Architecture Document Template]:  
+```
+https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/`
+```
+
+** [French, by Bertrand Florat and contributors] https://github.com/bflorat/modele-da[Modèle de dossier d'Architecture]:
+```
+https://raw.githubusercontent.com/bflorat/modele-da/refs/heads/feat/ajout-labels/
+```
+
+TIP: Contact us if you want to be listed here, new base templates contributions welcomed !
+
