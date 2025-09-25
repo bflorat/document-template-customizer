@@ -83,7 +83,7 @@ const App = () => {
     // Important: do not rely on state immediately after reset; use [] when base changed
     const labelsToInclude = baseChanged ? [] : computeLabelsToInclude()
     try {
-      await loadFilteredParts(baseUrl, labelsToInclude)
+      await loadFilteredParts(baseUrl, labelsToInclude, { forceAutoSelect: baseChanged })
       lastLoadedBaseUrlRef.current = baseUrl
     } catch {
       // loadFilteredParts already updates templateLoadInfo with the error
@@ -98,7 +98,7 @@ const App = () => {
   const loadFilteredParts = useCallback(async (
     baseUrl: string,
     labelsToInclude: string[],
-    opts?: { skipAutoSelect?: boolean; includeAnchors?: boolean }
+    opts?: { skipAutoSelect?: boolean; includeAnchors?: boolean; forceAutoSelect?: boolean }
   ): Promise<{ filteredParts: FilteredPart[]; readme: { file: string; content: string } }> => {
     setTemplateLoadInfo({ state: 'loading' })
     const start = performance.now()
@@ -118,7 +118,8 @@ const App = () => {
       setPartNamesByFile(Object.fromEntries(result.metadata.data.parts.map(p => [p.file, p.name])))
 
       // Select all available labels by default on first load (UI only)
-      if (!opts?.skipAutoSelect && !didAutoSelectAll && includingLabels.length === 0) {
+      const shouldAutoSelect = (opts?.forceAutoSelect === true || (!opts?.skipAutoSelect && !didAutoSelectAll)) && labelsToInclude.length === 0
+      if (shouldAutoSelect) {
         setIncludingLabels(selectableLabels)
         setDidAutoSelectAll(true)
       }

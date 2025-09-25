@@ -119,7 +119,7 @@ describe("filterPartContent", () => {
     const result = filterPartContent(view, {
       includeLabels: [],
       linkIndex: { s1: "Intro" },
-      lang: 'fr',
+      manifestLang: 'fr',
     });
     expect(result.templateContent).toContain("TIP: Voir aussi <<s1,Intro>>.");
     expect(result.blankContent).toContain("TIP: Voir aussi <<s1,Intro>>.");

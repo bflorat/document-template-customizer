@@ -27,7 +27,7 @@ export interface FilterPartContentOptions {
   linkIndex?: Record<string, string | { title: string; file?: string }>; // id -> title or {title,file} map for See also
   includeAnchors?: boolean; // include AsciiDoc anchors [[id]] in outputs (default true)
   currentFile?: string; // current part file (for inter-document xrefs)
-  lang?: string; // language hint for See also text (default 'en')
+  manifestLang?: string; // language from global manifest for See also text (default 'en')
 }
 
 function normalizeLabels(labels?: string[]): string[] {
@@ -104,7 +104,7 @@ export function filterPartContent(
     keepMask,
     options.linkIndex,
     options.currentFile,
-    options.lang ?? 'en',
+    options.manifestLang ?? 'en',
   );
 
   // Track [PRE-FILLED] example blocks to include in blank output

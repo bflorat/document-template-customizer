@@ -15,6 +15,8 @@ export function buildFilteredPartsFromResult(
   dropByPart?: Record<string, string[]>,
   opts?: { includeAnchors?: boolean }
 ): FilteredPart[] {
+  // Language comes from the global base template manifest (not section metadata)
+  const manifestLang = result.metadata.data.language ?? 'en'
   const knownLabels = knownSet ?? buildKnownLabelSet(result)
 
   if (labelsToInclude.length) {
@@ -47,7 +49,7 @@ export function buildFilteredPartsFromResult(
       linkIndex,
       currentFile: part.file,
       includeAnchors: opts?.includeAnchors ?? true,
-      lang: result.metadata.data.language ?? 'en',
+      manifestLang: manifestLang,
     })
 
     const hasTemplate = filtered.templateContent.trim().length > 0
@@ -91,4 +93,3 @@ function buildLinkIndex(result: TemplateWithParts): Record<string, { title: stri
   result.parts.forEach(part => part.sections?.forEach(sec => visit(sec, part.file)))
   return index
 }
-
