@@ -6,4 +6,5 @@ export interface TemplateMetadata {
   license: string;
   parts: Part[];
   labels?: TemplateLabelDefinition[];
+  language?: string; // BCP-47 or 2-letter code (e.g., 'en', 'fr')
 }

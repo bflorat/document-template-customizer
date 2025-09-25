@@ -6,7 +6,18 @@ const ATTRIBUTE_REGEX = /^\s*:[^:]+:.*$/;
 const ANCHOR_BLOCK_ID_REGEX = /^\s*\[#(?:[^\]]+)\]\s*$/;
 // Metadata markers to strip: AsciiDoc `//🏷{...}`
 const METADATA_REGEX = /^\s*\/\/\s*🏷\s*\{.*\}\s*$/;
-const SEE_ALSO_REGEX = /^\s*TIP:\s+See also\b/;
+// localizable "See also" detection (for blank-line insertion)
+const SEE_ALSO_TERMS = [
+  'See also',          // en
+  'Voir aussi',        // fr
+  'Véase también',     // es
+  'Siehe auch',        // de
+  'Veja também',       // pt
+  'Vedi anche',        // it
+];
+const SEE_ALSO_REGEX = new RegExp(
+  `^\\s*TIP:\\s+(?:${SEE_ALSO_TERMS.map(t => t.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')).join('|')})\\b`
+);
 const PREFILLED_ATTR_REGEX = /^\s*\[PRE-FILLED(?:[^\]]*)\]\s*$/i; // [PRE-FILLED] optional roles (case-insensitive)
 const EXAMPLE_DELIM_REGEX = /^\s*={4}\s*$/; // AsciiDoc example block delimiter (====)
 
@@ -16,6 +27,7 @@ export interface FilterPartContentOptions {
   linkIndex?: Record<string, string | { title: string; file?: string }>; // id -> title or {title,file} map for See also
   includeAnchors?: boolean; // include AsciiDoc anchors [[id]] in outputs (default true)
   currentFile?: string; // current part file (for inter-document xrefs)
+  lang?: string; // language hint for See also text (default 'en')
 }
 
 function normalizeLabels(labels?: string[]): string[] {
@@ -86,7 +98,14 @@ export function filterPartContent(
   const hadTrailingNewline = rawContent.endsWith("\n") || rawContent.endsWith("\r\n");
 
   // Precompute anchor and "See also" insertions by heading line index
-  const insertions = buildInsertions(sections, lines, keepMask, options.linkIndex, options.currentFile);
+  const insertions = buildInsertions(
+    sections,
+    lines,
+    keepMask,
+    options.linkIndex,
+    options.currentFile,
+    options.lang ?? 'en',
+  );
 
   // Track [PRE-FILLED] example blocks to include in blank output
   type KeepMode = 'none' | 'attrPending' | 'delimited';
@@ -165,10 +184,24 @@ function buildInsertions(
   keepMask: boolean[],
   linkIndex?: Record<string, string | { title: string; file?: string }>,
   currentFile?: string,
+  lang: string = 'en',
 ): { anchors: Map<number, string>; seeAlso: Map<number, string> } {
   const anchors = new Map<number, string>();
   const seeAlso = new Map<number, string>();
   const hasLinks = !!linkIndex && Object.keys(linkIndex).length > 0;
+
+  const seeAlsoText = (l: string): string => {
+    const code = l.toLowerCase();
+    switch (code) {
+      case 'fr': return 'Voir aussi';
+      case 'es': return 'Véase también';
+      case 'de': return 'Siehe auch';
+      case 'pt': return 'Veja também';
+      case 'it': return 'Vedi anche';
+      default: return 'See also';
+    }
+  };
+  const seeAlsoLabel = seeAlsoText(lang);
 
   const resolveHeadingLine = (node: SectionNode): number => {
     let idx = Math.max(0, node.startLine);
@@ -217,7 +250,7 @@ function buildInsertions(
             }
           }
           if (refs.length) {
-            seeAlso.set(headingLine, `TIP: See also ${refs.join(', ')}.`);
+            seeAlso.set(headingLine, `TIP: ${seeAlsoLabel} ${refs.join(', ')}.`);
           }
         }
       }

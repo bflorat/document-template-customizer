@@ -101,6 +101,7 @@ export async function fetchTemplateMetadata(
       license: parsed.license,
       parts: Array.isArray(parsed.parts) ? parsed.parts : [],
       labels: labelDefs,
+      language: typeof parsed.language === 'string' ? String(parsed.language).trim() : undefined,
     };
 
     return { url: target, raw, data };

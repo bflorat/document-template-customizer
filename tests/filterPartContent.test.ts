@@ -114,6 +114,17 @@ describe("filterPartContent", () => {
     expect(result.blankContent).toContain("TIP: See also <<s1,First>>.");
   });
 
+  it("localizes 'See also' with manifest language (fr)", () => {
+    const view = `# Root\n\n//🏷{"id":"s1"}\n## Intro\nA\n\n//🏷{"id":"s2","link_to":["s1"]}\n## Suite\nB`;
+    const result = filterPartContent(view, {
+      includeLabels: [],
+      linkIndex: { s1: "Intro" },
+      lang: 'fr',
+    });
+    expect(result.templateContent).toContain("TIP: Voir aussi <<s1,Intro>>.");
+    expect(result.blankContent).toContain("TIP: Voir aussi <<s1,Intro>>.");
+  });
+
   it("omits anchors when includeAnchors=false but keeps 'See also'", () => {
     const view = `# Root\n\n//🏷{"id":"s1"}\n## First\nA\n\n//🏷{"id":"s2","link_to":["s1"]}\n## Second\nB`;
     const result = filterPartContent(view, {

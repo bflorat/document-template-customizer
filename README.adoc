@@ -33,6 +33,7 @@ Any template following a simple metamodel is supported, not only my own template
 ```
 author: ACME
 license: CC BY-SA 4.0
+language: en
 parts:
   - name: Application
     file: view-application.adoc
@@ -55,7 +56,7 @@ Metadata fields:
 ** Discovered automatically from `//🏷{...}` markers.
 ** Can be a simple flag (e.g., `performance`).
 ** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts.
-* `link_to`: One or more target section ids to reference. Automatically inserts a `TIP: See also …` line after the heading in both template and blank outputs. Use a single id string or an array. Cross-document `xref:` links are generated when the target id belongs to another part.
+* `link_to`: One or more target section ids to reference. Automatically inserts a `TIP: See also …` line after the heading in both template and blank outputs. The text is localized using `language` from the manifest (e.g., fr → `Voir aussi`). Use a single id string or an array. Cross-document `xref:` links are generated when the target id belongs to another part.
 
 Notes:
 
