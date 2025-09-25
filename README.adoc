@@ -104,4 +104,3 @@ https://raw.githubusercontent.com/bflorat/modele-da/refs/heads/feat/ajout-labels
 ```
 
 TIP: Contact us if you want to be listed here, new base templates contributions welcomed !
-
