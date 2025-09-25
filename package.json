@@ -1,11 +1,13 @@
 {
   "name": "document-template-customizer",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:watch": "vite build --watch",
+    "typecheck:watch": "tsc -b -w",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",

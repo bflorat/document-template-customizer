@@ -3,8 +3,6 @@ import JSZip from 'jszip'
 import { stringify, parse as parseYaml } from 'yaml'
 import './App.css'
 import { fetchTemplateAndParts } from './fetchTemplateManifest'
-import { filterPartContent } from './filterPartContent'
-import type { TemplateLabelDefinition, TemplateWithParts, PartSection } from './model'
 import { buildFilteredPartsFromResult, buildKnownLabelSet, type FilteredPart } from './generateFilteredParts'
 import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, computeMultiValueNamesFromKnown, compareLabels } from './utils/labels'
 
@@ -99,7 +97,7 @@ const App = () => {
     baseUrl: string,
     labelsToInclude: string[],
     opts?: { skipAutoSelect?: boolean; includeAnchors?: boolean; forceAutoSelect?: boolean }
-  ): Promise<{ filteredParts: FilteredPart[]; readme: { file: string; content: string } }> => {
+  ): Promise<{ filteredParts: FilteredPart[]; readme: { file: string; content: string }; selectableLabels: string[] }> => {
     setTemplateLoadInfo({ state: 'loading' })
     const start = performance.now()
     setAvailableLabels([])
@@ -147,7 +145,7 @@ const App = () => {
       })
       const durationMs = performance.now() - start
       setTemplateLoadInfo({ state: 'loaded', durationMs })
-      return { filteredParts, readme: result.readme }
+      return { filteredParts, readme: result.readme, selectableLabels }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       setTemplateLoadInfo({ state: 'error', message })
@@ -190,12 +188,15 @@ const App = () => {
 
       const droppedSections = toDropMap(dropRules)
 
+      // Only keep trace of disabled (unselected) labels
+      const selectedSet = new Set(labelsToInclude)
+      const disabledLabels = availableLabels.filter(l => !selectedSet.has(l))
       zip.file(
         'customization-context.yaml',
         stringify({
           generated_at: new Date().toISOString(),
           base_template_url: baseUrl,
-          selected_labels: labelsToInclude,
+          disabled_labels: disabledLabels,
           dropped_sections: droppedSections,
         })
       )
@@ -273,10 +274,11 @@ const App = () => {
       const ctx = parseYaml(text) as CustomizationContext
       const baseUrl = (ctx.base_template_url ?? '').trim()
       const loadedLabels = (ctx.selected_labels ?? []).map(v => v.trim()).filter(Boolean)
+      const disabledLabels = (ctx as any).disabled_labels ? ((ctx as any).disabled_labels as string[]).map(v => v.trim()).filter(Boolean) : []
       const dropped = ctx.dropped_sections ?? {}
 
       if (baseUrl) setTemplateUrl(baseUrl)
-      setIncludingLabels(loadedLabels)
+      // Mark we loaded from context to avoid auto-select re-triggering unexpectedly
       setDidAutoSelectAll(true)
 
       // Build drop rules from context map
@@ -294,9 +296,23 @@ const App = () => {
       if (lastLoadedBaseUrlRef.current && lastLoadedBaseUrlRef.current !== effectiveBase) {
         resetStateForNewBase()
       }
-      await loadFilteredParts(effectiveBase, loadedLabels, { skipAutoSelect: true })
-      lastLoadedBaseUrlRef.current = effectiveBase
-      if (previewOpen) await refreshPreview()
+      if (disabledLabels.length) {
+        // First load to get selectable labels, then compute included = selectable - disabled
+        const { selectableLabels } = await loadFilteredParts(effectiveBase, [], { skipAutoSelect: true, forceAutoSelect: true })
+        const disabledSet = new Set(disabledLabels)
+        const included = selectableLabels.filter(l => !disabledSet.has(l))
+        setIncludingLabels(included)
+        // Load again with the computed included labels to reflect in preview and state
+        await loadFilteredParts(effectiveBase, included, { skipAutoSelect: true })
+        lastLoadedBaseUrlRef.current = effectiveBase
+        if (previewOpen) await refreshPreview(included)
+      } else {
+        // Backward compat: context with selected_labels
+        setIncludingLabels(loadedLabels)
+        await loadFilteredParts(effectiveBase, loadedLabels, { skipAutoSelect: true })
+        lastLoadedBaseUrlRef.current = effectiveBase
+        if (previewOpen) await refreshPreview()
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
       setErrorMessage(`Failed to load customization-context.yaml: ${msg}`)
@@ -632,17 +648,6 @@ function formatDuration(ms: number): string {
 }
 
 
-function computeMultiValueNamesFromKnown(known: Set<string>): Set<string> {
-  const names = new Set<string>()
-  for (const label of known) {
-    const parts = label.split('::', 2)
-    if (parts.length === 2 && parts[0]) names.add(parts[0])
-  }
-  return names
-}
-
-// Labels are discovered from part sections; YAML label definitions are ignored for discovery
-
 function toDropMap(rules: Array<{ partFile: string; sectionTitle: string }>): Record<string, string[]> {
   const map: Record<string, string[]> = {}
   for (const r of rules) {
@@ -655,60 +660,3 @@ function toDropMap(rules: Array<{ partFile: string; sectionTitle: string }>): Re
 }
 
 // buildLinkIndex moved to generator module
-
-function buildLabelOrder(definitions: TemplateLabelDefinition[] | undefined): {
-  order: Map<string, number>
-  multiValueNames: Set<string>
-} {
-  const order = new Map<string, number>()
-  const multiValueNames = new Set<string>()
-  if (!definitions?.length) return { order, multiValueNames }
-
-  let priority = 0
-  definitions.forEach(def => {
-    const name = def.name.trim()
-    if (!name) return
-    const values = def.available_values
-    if (!values?.length) return
-    multiValueNames.add(name)
-    values.forEach(value => {
-      const trimmed = value.trim()
-      if (!trimmed) return
-      const key = `${name}::${trimmed}`
-      if (!order.has(key)) {
-        order.set(key, priority++)
-      }
-    })
-  })
-
-  return { order, multiValueNames }
-}
-
-function compareLabels(a: string, b: string, order: Map<string, number>): number {
-  const [aGroup, aValue] = a.split('::', 2)
-  const [bGroup, bValue] = b.split('::', 2)
-
-  // Primary: group by base label name alphabetically
-  const groupCmp = aGroup.localeCompare(bGroup)
-  if (groupCmp !== 0) return groupCmp
-
-  // Within the same group, honor metadata order for multi-value labels
-  const aKey = aValue !== undefined ? a : undefined
-  const bKey = bValue !== undefined ? b : undefined
-  const aPriority = aKey ? order.get(aKey) : undefined
-  const bPriority = bKey ? order.get(bKey) : undefined
-
-  if (aPriority !== undefined || bPriority !== undefined) {
-    if (aPriority === undefined) return 1
-    if (bPriority === undefined) return -1
-    if (aPriority !== bPriority) return aPriority - bPriority
-  }
-
-  // Fallbacks
-  if (aValue !== undefined && bValue !== undefined) {
-    return aValue.localeCompare(bValue)
-  }
-  if (aValue !== undefined) return 1
-  if (bValue !== undefined) return -1
-  return a.localeCompare(b)
-}
