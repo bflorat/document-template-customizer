@@ -8,12 +8,30 @@ const ANCHOR_BLOCK_ID_REGEX = /^\s*\[#(?:[^\]]+)\]\s*$/;
 const METADATA_REGEX = /^\s*\/\/\s*🏷\s*\{.*\}\s*$/;
 // localizable "See also" detection (for blank-line insertion)
 const SEE_ALSO_TERMS = [
+  // Core set
   'See also',          // en
   'Voir aussi',        // fr
   'Véase también',     // es
   'Siehe auch',        // de
-  'Veja também',       // pt
+  'Veja também',       // pt / pt-BR
   'Vedi anche',        // it
+  // Extended set
+  'Zie ook',           // nl
+  'Zobacz także',      // pl
+  'См. также',         // ru
+  'Ayrıca bakınız',    // tr
+  '另请参阅',             // zh (Simplified)
+  '另請參閱',             // zh-TW (Traditional)
+  '関連項目',              // ja
+  '또한 참조',            // ko
+  'Viz také',          // cs
+  'Pozri tiež',        // sk
+  'Vezi și',           // ro
+  'Lásd még',          // hu
+  'Se även',           // sv
+  'Se også',           // no/da
+  'Katso myös',        // fi
+  'Див. також',        // uk
 ];
 const SEE_ALSO_REGEX = new RegExp(
   `^\\s*TIP:\\s+(?:${SEE_ALSO_TERMS.map(t => t.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')).join('|')})\\b`
@@ -196,8 +214,28 @@ function buildInsertions(
       case 'fr': return 'Voir aussi';
       case 'es': return 'Véase también';
       case 'de': return 'Siehe auch';
-      case 'pt': return 'Veja também';
+      case 'pt':
+      case 'pt-br': return 'Veja também';
       case 'it': return 'Vedi anche';
+      case 'nl': return 'Zie ook';
+      case 'pl': return 'Zobacz także';
+      case 'ru': return 'См. также';
+      case 'tr': return 'Ayrıca bakınız';
+      case 'ja': return '関連項目';
+      case 'ko': return '또한 참조';
+      case 'cs': return 'Viz také';
+      case 'sk': return 'Pozri tiež';
+      case 'ro': return 'Vezi și';
+      case 'hu': return 'Lásd még';
+      case 'sv': return 'Se även';
+      case 'no':
+      case 'nb': return 'Se også';
+      case 'da': return 'Se også';
+      case 'fi': return 'Katso myös';
+      case 'uk': return 'Див. також';
+      case 'zh':
+      case 'zh-cn': return '另请参阅';
+      case 'zh-tw': return '另請參閱';
       default: return 'See also';
     }
   };
