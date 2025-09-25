@@ -6,33 +6,38 @@ const ATTRIBUTE_REGEX = /^\s*:[^:]+:.*$/;
 const ANCHOR_BLOCK_ID_REGEX = /^\s*\[#(?:[^\]]+)\]\s*$/;
 // Metadata markers to strip: AsciiDoc `//🏷{...}`
 const METADATA_REGEX = /^\s*\/\/\s*🏷\s*\{.*\}\s*$/;
-// localizable "See also" detection (for blank-line insertion)
-const SEE_ALSO_TERMS = [
-  // Core set
-  'See also',          // en
-  'Voir aussi',        // fr
-  'Véase también',     // es
-  'Siehe auch',        // de
-  'Veja também',       // pt / pt-BR
-  'Vedi anche',        // it
-  // Extended set
-  'Zie ook',           // nl
-  'Zobacz także',      // pl
-  'См. также',         // ru
-  'Ayrıca bakınız',    // tr
-  '另请参阅',             // zh (Simplified)
-  '另請參閱',             // zh-TW (Traditional)
-  '関連項目',              // ja
-  '또한 참조',            // ko
-  'Viz také',          // cs
-  'Pozri tiež',        // sk
-  'Vezi și',           // ro
-  'Lásd még',          // hu
-  'Se även',           // sv
-  'Se også',           // no/da
-  'Katso myös',        // fi
-  'Див. також',        // uk
-];
+// Localized "See also" labels by language; used for both detection and generation
+const SEE_ALSO_LABELS: Record<string, string> = {
+  en: 'See also',
+  fr: 'Voir aussi',
+  es: 'Véase también',
+  de: 'Siehe auch',
+  pt: 'Veja também',
+  'pt-br': 'Veja também',
+  it: 'Vedi anche',
+  nl: 'Zie ook',
+  pl: 'Zobacz także',
+  ru: 'См. также',
+  tr: 'Ayrıca bakınız',
+  zh: '另请参阅',
+  'zh-cn': '另请参阅',
+  'zh-tw': '另請參閱',
+  ja: '関連項目',
+  ko: '또한 참조',
+  cs: 'Viz také',
+  sk: 'Pozri tiež',
+  ro: 'Vezi și',
+  hu: 'Lásd még',
+  sv: 'Se även',
+  no: 'Se også',
+  nb: 'Se også',
+  da: 'Se også',
+  fi: 'Katso myös',
+  uk: 'Див. також',
+};
+
+// Build detection terms list from unique label values
+const SEE_ALSO_TERMS = Array.from(new Set(Object.values(SEE_ALSO_LABELS)));
 const SEE_ALSO_REGEX = new RegExp(
   `^\\s*TIP:\\s+(?:${SEE_ALSO_TERMS.map(t => t.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')).join('|')})\\b`
 );
@@ -209,35 +214,16 @@ function buildInsertions(
   const hasLinks = !!linkIndex && Object.keys(linkIndex).length > 0;
 
   const seeAlsoText = (l: string): string => {
-    const code = l.toLowerCase();
-    switch (code) {
-      case 'fr': return 'Voir aussi';
-      case 'es': return 'Véase también';
-      case 'de': return 'Siehe auch';
-      case 'pt':
-      case 'pt-br': return 'Veja também';
-      case 'it': return 'Vedi anche';
-      case 'nl': return 'Zie ook';
-      case 'pl': return 'Zobacz także';
-      case 'ru': return 'См. также';
-      case 'tr': return 'Ayrıca bakınız';
-      case 'ja': return '関連項目';
-      case 'ko': return '또한 참조';
-      case 'cs': return 'Viz také';
-      case 'sk': return 'Pozri tiež';
-      case 'ro': return 'Vezi și';
-      case 'hu': return 'Lásd még';
-      case 'sv': return 'Se även';
-      case 'no':
-      case 'nb': return 'Se også';
-      case 'da': return 'Se også';
-      case 'fi': return 'Katso myös';
-      case 'uk': return 'Див. також';
-      case 'zh':
-      case 'zh-cn': return '另请参阅';
-      case 'zh-tw': return '另請參閱';
-      default: return 'See also';
+    const norm = (l ?? '').toLowerCase().replace('_', '-');
+    // Try exact, then base language (before '-')
+    const candidates = [norm];
+    const base = norm.split('-', 1)[0];
+    if (base && base !== norm) candidates.push(base);
+    for (const c of candidates) {
+      const val = (SEE_ALSO_LABELS as Record<string, string | undefined>)[c];
+      if (val) return val;
     }
+    return SEE_ALSO_LABELS.en;
   };
   const seeAlsoLabel = seeAlsoText(lang);
 
