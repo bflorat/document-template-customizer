@@ -88,4 +88,48 @@ describe('buildFilteredPartsFromResult', () => {
     const p1 = filtered.find(p => p.file === 'p1.adoc')!
     expect(p1.templateContent).toContain('[#s1]')
   })
+
+  it('drops sections by title per part (case-insensitive) and never drops H1', () => {
+    const content1 = `# P1\n\n//🏷{"id":"sa"}\n## Keep Me\nBody A\n\n//🏷{"id":"sb"}\n## Drop Me\nBody B\n`
+    const content2 = `# P2\n\n//🏷{"id":"sc"}\n## Another Drop\nBody C\n`
+
+    const tpl2: TemplateWithParts = {
+      metadata: {
+        url: 'm', raw: 'r', data: { author: 'X', license: 'MIT', language: 'en', parts: [
+          { name: 'P1', file: 'p1.adoc' },
+          { name: 'P2', file: 'p2.adoc' },
+        ] }
+      },
+      parts: [
+        { name: 'P1', file: 'p1.adoc', url: 'u1', content: content1, sections: [
+          { level: 1, title: 'P1', children: [
+            { level: 2, title: 'Keep Me', children: [], metadata: { id: 'sa' } },
+            { level: 2, title: 'Drop Me', children: [], metadata: { id: 'sb' } },
+          ] }
+        ]},
+        { name: 'P2', file: 'p2.adoc', url: 'u2', content: content2, sections: [
+          { level: 1, title: 'P2', children: [
+            { level: 2, title: 'Another Drop', children: [], metadata: { id: 'sc' } },
+          ] }
+        ]},
+      ],
+      readme: { file: 'README.adoc', content: '= Readme' },
+    }
+
+    const known = buildKnownLabelSet(tpl2)
+    const drops = { 'p1.adoc': ['drop me'], 'p2.adoc': ['another drop', 'p2'] } // attempt to drop H1 should be ignored
+    const filtered = buildFilteredPartsFromResult(tpl2, [], known, drops, { includeAnchors: true })
+
+    const p1 = filtered.find(p => p.file === 'p1.adoc')!
+    expect(p1.templateContent).toContain('## Keep Me')
+    expect(p1.templateContent).not.toContain('## Drop Me')
+    expect(p1.blankContent).toContain('## Keep Me')
+    expect(p1.blankContent).not.toContain('## Drop Me')
+
+    const p2 = filtered.find(p => p.file === 'p2.adoc')!
+    expect(p2.templateContent).toContain('# P2') // H1 not dropped
+    expect(p2.templateContent).not.toContain('## Another Drop')
+    expect(p2.blankContent).toContain('# P2')
+    expect(p2.blankContent).not.toContain('## Another Drop')
+  })
 })
