@@ -21,11 +21,11 @@
 
   /* Multi-value label halves */
   --chip-multi-left-bg: #dbeafe;       /* blue-100 */
-  --chip-multi-right-bg: #dcfce7;      /* green-100 */
+  --chip-multi-right-bg: #ecfeff;          /* cyan-50 */
   --chip-multi-left-bg-hover: #bfdbfe; /* blue-200 */
-  --chip-multi-right-bg-hover: #bbf7d0;/* green-200 */
+  --chip-multi-right-bg-hover: #cffafe;    /* cyan-100 */
   --chip-multi-left-bg-selected: #2563eb;  /* blue-600 */
-  --chip-multi-right-bg-selected: #16a34a; /* green-600 */
+  --chip-multi-right-bg-selected: #06b6d4; /* cyan-500 */
 
   --input-border: #bcbcbc;
   --secondary-bg: #f5f5f5;
@@ -69,11 +69,11 @@
 
     /* Multi-value label halves (dark) */
     --chip-multi-left-bg: #1e40af;          /* blue-800 */
-    --chip-multi-right-bg: #064e3b;         /* emerald-950-ish */
+    --chip-multi-right-bg: #155e75;         /* cyan-800 */
     --chip-multi-left-bg-hover: #1d4ed8;    /* blue-700 */
-    --chip-multi-right-bg-hover: #065f46;   /* emerald-800 */
+    --chip-multi-right-bg-hover: #0e7490;   /* cyan-700 */
     --chip-multi-left-bg-selected: #3b82f6; /* blue-500 */
-    --chip-multi-right-bg-selected: #16a34a;/* green-600 */
+    --chip-multi-right-bg-selected: #06b6d4;/* cyan-500 */
 
     --input-border: #4b5563; /* gray-600 */
     --secondary-bg: #1f2937;
