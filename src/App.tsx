@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, type ChangeEvent, type FormEv
 import JSZip from 'jszip'
 import { stringify, parse as parseYaml } from 'yaml'
 import './App.css'
-import { fetchTemplateAndParts } from './fetchTemplateMetadata'
+import { fetchTemplateAndParts } from './fetchTemplateManifest'
 import { filterPartContent } from './filterPartContent'
 import type { TemplateLabelDefinition, TemplateWithParts, PartSection } from './model'
 

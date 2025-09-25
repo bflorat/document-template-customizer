@@ -43,6 +43,11 @@ parts:
     file: view-infrastructure.adoc  
 ```
 
+Language values:
+
+- Use a standard IETF BCP‑47 language code (e.g., `en`, `fr`, `es`, `de`, `pt`, `it`).
+- The “See also” text inserted for `link_to` is currently localized for: `en`, `fr`, `es`, `de`, `pt`, `it`. Any other value falls back to English.
+
 ## Sections metadata
 
 Every section of each part file of the base template should be annotated with a metadata line directly above the section title (no blank line), using an AsciiDoc comment like:
