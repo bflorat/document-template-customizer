@@ -19,6 +19,14 @@
   --chip-selected-bg: #2563eb;  /* blue-600 */
   --chip-selected-fg: #ffffff;
 
+  /* Multi-value label halves */
+  --chip-multi-left-bg: #dbeafe;       /* blue-100 */
+  --chip-multi-right-bg: #dcfce7;      /* green-100 */
+  --chip-multi-left-bg-hover: #bfdbfe; /* blue-200 */
+  --chip-multi-right-bg-hover: #bbf7d0;/* green-200 */
+  --chip-multi-left-bg-selected: #2563eb;  /* blue-600 */
+  --chip-multi-right-bg-selected: #16a34a; /* green-600 */
+
   --input-border: #bcbcbc;
   --secondary-bg: #f5f5f5;
   --secondary-bg-hover: #ececec;
@@ -58,6 +66,14 @@
     --chip-bg-hover: #1d4ed8; /* blue-700 */
     --chip-selected-bg: #3b82f6; /* blue-500 */
     --chip-selected-fg: #ffffff;
+
+    /* Multi-value label halves (dark) */
+    --chip-multi-left-bg: #1e40af;          /* blue-800 */
+    --chip-multi-right-bg: #064e3b;         /* emerald-950-ish */
+    --chip-multi-left-bg-hover: #1d4ed8;    /* blue-700 */
+    --chip-multi-right-bg-hover: #065f46;   /* emerald-800 */
+    --chip-multi-left-bg-selected: #3b82f6; /* blue-500 */
+    --chip-multi-right-bg-selected: #16a34a;/* green-600 */
 
     --input-border: #4b5563; /* gray-600 */
     --secondary-bg: #1f2937;
@@ -295,6 +311,47 @@ header h1 {
 
 .available-labels li:hover {
   background: var(--chip-bg-hover);
+}
+
+/* Multi value chips: two vertical halves */
+.label-chip.multi {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0; /* inner segments handle padding */
+  overflow: hidden;
+  background: none;
+}
+
+.label-chip.multi .chip-seg {
+  padding: 0.25rem 0.5rem;
+}
+
+.label-chip.multi .chip-seg--name {
+  background: var(--chip-multi-left-bg);
+}
+
+.label-chip.multi .chip-seg--value {
+  background: var(--chip-multi-right-bg);
+}
+
+.label-chip.multi:hover .chip-seg--name {
+  background: var(--chip-multi-left-bg-hover);
+}
+
+.label-chip.multi:hover .chip-seg--value {
+  background: var(--chip-multi-right-bg-hover);
+}
+
+.label-chip.multi.selected {
+  color: var(--chip-selected-fg);
+}
+
+.label-chip.multi.selected .chip-seg--name {
+  background: var(--chip-multi-left-bg-selected);
+}
+
+.label-chip.multi.selected .chip-seg--value {
+  background: var(--chip-multi-right-bg-selected);
 }
 
 .available-labels .empty-label {

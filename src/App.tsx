@@ -396,6 +396,22 @@ const App = () => {
               ) : (
                 availableLabels.map(label => {
                   const isSelected = includingLabels.includes(label)
+                  const parts = label.split('::', 2)
+                  const isMulti = parts.length === 2
+                  if (isMulti) {
+                    const [name, value] = parts
+                    return (
+                      <li
+                        key={label}
+                        onClick={() => { void handleAvailableLabelClick(label) }}
+                        className={isSelected ? 'label-chip multi selected' : 'label-chip multi'}
+                        title={label}
+                      >
+                        <span className="chip-seg chip-seg--name">{name}</span>
+                        <span className="chip-seg chip-seg--value">{value}</span>
+                      </li>
+                    )
+                  }
                   return (
                     <li
                       key={label}
