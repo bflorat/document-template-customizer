@@ -6,6 +6,7 @@ import { fetchTemplateAndParts } from './fetchTemplateManifest'
 import { filterPartContent } from './filterPartContent'
 import type { TemplateLabelDefinition, TemplateWithParts, PartSection } from './model'
 import { buildFilteredPartsFromResult, buildKnownLabelSet, type FilteredPart } from './generateFilteredParts'
+import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, computeMultiValueNamesFromKnown, compareLabels } from './utils/labels'
 
 const DEFAULT_TEMPLATE_URL = 'https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/'
 const defaultIncludingLabels: string[] = []
@@ -113,7 +114,7 @@ const App = () => {
         .filter(label => !label.endsWith('::*') && !allMulti.has(label))
         .sort((a, b) => compareLabels(a, b, labelOrder))
       setAvailableLabels(selectableLabels)
-      setAvailableSectionsByPart(buildAvailableSections(result))
+      setAvailableSectionsByPart(buildAvailableSectionsUtil(result))
       setPartNamesByFile(Object.fromEntries(result.metadata.data.parts.map(p => [p.file, p.name])))
 
       // Select all available labels by default on first load (UI only)
@@ -640,21 +641,6 @@ function computeMultiValueNamesFromKnown(known: Set<string>): Set<string> {
 }
 
 // Labels are discovered from part sections; YAML label definitions are ignored for discovery
-
-function buildAvailableSections(result: TemplateWithParts): Record<string, string[]> {
-  const map: Record<string, string[]> = {}
-  const collect = (acc: Set<string>, section: PartSection) => {
-    acc.add(section.title)
-    section.children.forEach(child => collect(acc, child))
-  }
-  result.parts.forEach(part => {
-    const set = new Set<string>()
-    part.sections?.forEach(section => collect(set, section))
-    const titles = Array.from(set.values()).sort((a, b) => a.localeCompare(b))
-    map[part.file] = titles
-  })
-  return map
-}
 
 function toDropMap(rules: Array<{ partFile: string; sectionTitle: string }>): Record<string, string[]> {
   const map: Record<string, string[]> = {}
