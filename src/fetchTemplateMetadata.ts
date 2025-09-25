@@ -30,7 +30,7 @@ async function fetchWithTimeout(
   }
 }
 
-export async function fetchTemplateMetadata(
+export async function fetchTemplateManifest(
   baseUrl: string,
   opts?: { timeoutMs?: number; fetchImpl?: FetchLike }
 ): Promise<TemplateFetchResult> {
@@ -131,7 +131,7 @@ export async function fetchTemplateAndParts(
   const timeoutMs = opts?.timeoutMs ?? 15_000;
   const concurrency = Math.max(1, opts?.concurrency ?? 6);
 
-  const metadata = await fetchTemplateMetadata(baseUrl, { timeoutMs, fetchImpl: fetchFn });
+  const metadata = await fetchTemplateManifest(baseUrl, { timeoutMs, fetchImpl: fetchFn });
 
   const normalized = baseUrl.replace(/\/+$/, "");
   const toFetch = metadata.data.parts.map(part => ({

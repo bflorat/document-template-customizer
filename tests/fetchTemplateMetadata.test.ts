@@ -1,7 +1,7 @@
 // tests/fetchTemplateWithParts.test.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { fetchTemplateMetadata, fetchTemplateAndParts } from "../src/fetchTemplateMetadata";
+import { fetchTemplateManifest, fetchTemplateAndParts } from "../src/fetchTemplateMetadata";
 import {
   TemplateMetadataNotFoundError,
   PartFetchError,
@@ -93,12 +93,12 @@ const README_BODY = `= Template
 This is the base readme.
 `;
 
-describe("fetchTemplateMetadata", () => {
+describe("fetchTemplateManifest", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("fetches and parses metadata", async () => {
     const fetchMock = buildFetchMock([[METADATA_URL, ok(YAML_OK)]]);
-    const res = await fetchTemplateMetadata(`${BASE}/`, { fetchImpl: fetchMock });
+    const res = await fetchTemplateManifest(`${BASE}/`, { fetchImpl: fetchMock });
 
     expect(fetchMock).toHaveBeenCalledWith(METADATA_URL, expect.any(Object));
     const data: TemplateMetadata = res.data;
@@ -118,7 +118,7 @@ describe("fetchTemplateMetadata", () => {
   it("throws TemplateMetadataNotFoundError on 404", async () => {
     const fetchMock = buildFetchMock([]); // no routes -> 404
     await expect(
-      fetchTemplateMetadata(BASE, { fetchImpl: fetchMock })
+      fetchTemplateManifest(BASE, { fetchImpl: fetchMock })
     ).rejects.toBeInstanceOf(TemplateMetadataNotFoundError);
   });
 });
