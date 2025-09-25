@@ -137,7 +137,7 @@ const App = () => {
         effectiveLabels,
         knownSet,
         toDropMap(dropRules),
-        { includeAnchors: opts?.includeAnchors ?? true, language: result.metadata.data.language }
+        { includeAnchors: opts?.includeAnchors ?? true }
       )
       setExpandedParts(prev => {
         const nextState: Record<string, { blank: boolean; full: boolean }> = {}
@@ -638,7 +638,7 @@ function buildFilteredPartsFromResult(
   labelsToInclude: string[],
   knownSet?: Set<string>,
   dropByPart?: Record<string, string[]>,
-  opts?: { includeAnchors?: boolean; language?: string }
+  opts?: { includeAnchors?: boolean }
 ): FilteredPart[] {
   const knownLabels = knownSet ?? buildKnownLabelSet(result)
 
@@ -672,7 +672,7 @@ function buildFilteredPartsFromResult(
       linkIndex,
       currentFile: part.file,
       includeAnchors: opts?.includeAnchors ?? true,
-      lang: opts?.language ?? 'en',
+      lang: result.metadata.data.language ?? 'en',
     })
 
     const hasTemplate = filtered.templateContent.trim().length > 0
