@@ -2,33 +2,40 @@
 
 This tool lets you produce *personalized document templates* from a larger base template repository, such as https://github.com/bflorat/architecture-document-template[this one].
 
-While I've received good feedback on my previous document templates, a recurring criticism was that the *templates were too large*, leaving many sections unused. With DTC, you can *prepare smaller, tailored templates* filtered from a larger one.
+While we have received good feedback on our previous document templates, a recurring criticism was that the *templates were too large*, leaving many sections unused. You can now *prepare smaller, tailored templates* filtered from a larger one.
 
-Any template following a simple metamodel is supported, not only my own templates.
+Any template following a simple manifest is supported, not only our owns.
 
 
 ## Common use cases
 
 . An expert (typically an *Enterprise Architect*) selects or writes a base template. This base template is usually organization-wide.
-. Another expert (typically a *Senior Solution Architect*) creates a customized, curated template for one or several similar projects. This includes both a *full template with explanations* and *blank documents* to be filled.
-. The **single project architect** or skilled team member then fills the *blank documents*, guided by the explanations in the customized template.
+. Another expert (typically a *Senior Solution Architect*) creates a customized, curated template for one or several similar projects. This includes both a *full template with explanations* and *blank documents* to be filled (can be partially pre-filled).
+. The **single project architect** or skilled team member then finishes to fill the *blank document*, guided by the explanations in the customized template.
 
 ## Installation
 
 * A running up-to-date version is available online https://document-template-customizer.florat.net/[here], nothing to install, you just need a browser with JavaScript enabled.
 
-* You can install this tool on premise  by download a https://github.com/bflorat/document-template-customizer/releases[release]. Just unzip it in a directory exposed by a Web server.
+* You can install this tool on premise by downloading a https://github.com/bflorat/document-template-customizer/releases[release]. Just unzip it and expose it by a Web server.
 
 * A NGINX-based Docker image is available https://hub.docker.com/repository/docker/bflorat/document-template-customizer/general[here].
 
 ## Prerequisites for a Base Template
 
-* The template must be written in **(https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/[Asciidoc])** - sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style) headings.
+* The template must be written in **https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/[Asciidoc]** 
+
+TIP: sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style) headings.
+
 * A **`README.adoc`** file must be present at the root of the base template URL, providing an introduction and links to the document parts.
 * A **`base-template-manifest.yaml`** file must be present at the root of the base template URL. A sample is provided below. 
 * All part files must be located in the same directory than the `README.adoc` file.
 
-.Sample `base-template-manifest.yaml` :
+* `language` : IETF BCP‑47 language code (e.g., `en`, `fr`, `es`, `de`, `pt`, `it`) used to localize the “See also” text inserted for `link_to` (default to English).
+
+* `multi_values_labels` (optional): used to define available values for multi-values labels (like `detail_level::overview`,`detail_level::in-depth`, ...).
+
+.Sample full `base-template-manifest.yaml` :
 
 ```
 author: ACME
@@ -48,55 +55,33 @@ multi_values_labels:
     available_values: [small, medium, large]
 ```
 
-Language values:
-
-- Use a standard IETF BCP‑47 language code (e.g., `en`, `fr`, `es`, `de`, `pt`, `it`).
-- The “See also” text inserted for `link_to` is currently localized for: `en`, `fr`, `es`, `de`, `pt`, `it`. Any other value falls back to English.
 
 ## Sections metadata
 
 Every section of each part file of the base template should be annotated with a metadata line directly above the section title (no blank line), using an AsciiDoc comment like:
 
-//🏷{"id":"74c82505-5f47-4342-8f1b-f6951d603062","labels":["level::basic","project_size::large","detail_level::abstract","context"]}
+```
+//🏷{"id":"74c82505-5f47-4342-8f1b-f6951d603062","labels":["level::basic","project_size::large","detail_level::abstract","context"],"link_to":["9352a89a-3f8b-4028-98d5-58fb970e01ef"]}
+```
 
 Metadata fields:
 
 * `id`: Unique section identifier. Enables anchors and cross-references; must be unique across all parts.
-* `labels`: Filtering tags used to include/exclude sections.
+* `labels`: Filtering tags used to filter sections.
 ** Discovered automatically from `//🏷{...}` markers.
 ** Can be a simple flag (e.g., `performance`).
 ** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts, and you can also define them (and their order) in the manifest under `multi_values_labels[].available_values`.
 * `link_to`: One or more target section ids to reference. Automatically inserts a `TIP: See also …` line after the heading in both template and blank outputs. The text is localized using `language` from the manifest (e.g., fr → `Voir aussi`). Use a single id string or an array. Cross-document `xref:` links are generated when the target id belongs to another part.
 
-Notes:
-
-* Level-1 sections (single `#` or `=`) are always kept and should not be annotated.
-
 TIP: See many examples in https://github.com/bflorat/architecture-document-template[this base template].
 
-## Label definitions in the manifest (optional)
-
-- Define multi-value label sets in `base-template-manifest.yaml` to:
-  - Make all values selectable in the UI even if not present in any section yet.
-  - Control the display order of values in the UI.
-- Only snake_case is supported: use `available_values`.
-- Example:
-
-```
-multi_values_labels:
-  - name: level
-    available_values: [basic, intermediate, advanced]
-  - name: project_size
-    available_values: [small, medium, large]
-```
 
 ## Matching rules
 
 - If all or no labels are selected, the resulting template is the full base template.
 - Level-1 sections (single `#` or `=`) are always kept.
-- Labels use AND semantics: a section is kept only if all its labels are satisfied by the selection. 
 
-TIP: Example: if the base template owns a section labeled `["foo","bar"]`, this section will be kept only if both `foo` and `bar` are selected.
+TIP: Example: if the base template owns a section labeled `["foo","bar"]`, this section will be kept only if both `foo` and `bar` are kept selected.
 
 - If a parent section doesn't match, all its subsections are dropped recursively.
 
@@ -104,30 +89,44 @@ TIP: Example: if the base template owns a section labeled `["foo","bar"]`, this 
 
 - A section is dropped only if one of its labels is unselected or if its parent section is dropped. A section without any label is kept only if its parent is kept.
 
-TIP: Example: if the base template owns a section labeled `["foo"]` and a subsection labeled `["bar"]` : if `foo` label is selected but not `bar`, only the parent section is kept.
+TIP: Example: if the base template owns a section labeled `foo` and a subsection labeled `bar` : if `foo` label is selected but not `bar`, only the parent section is kept.
 
 ## Blank template content
 
 - The blank template preserves structure (headings, anchors, attributes) and the automatic `TIP: See also …` added by `link_to`.
-- Body text is omitted by default. To include pre-filled text in the blank template, wrap it in a `[PRE-FILLED]` example block:
+- Body text is omitted by default. To include pre-filled text in the blank template, wrap it in a `[PRE-FILLED]`.
 
+Example block:
+
+```
 [PRE-FILLED]
 ====
 This text will appear in the blank template.
 You can write multiple lines here.
 ====
+```
 
 ## Tips
 * The generated zip contains a `customization-context.yaml` file with the generation date, base template URL, the disabled labels (`disabled_labels`) and dropped sections.
-* Referenced base templates URLs : 
-** [English, by Bertrand Florat and contributors] https://github.com/bflorat/architecture-document-template[Architecture Document Template]:  
-```
-https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/`
-```
 
-** [French, by Bertrand Florat and contributors] https://github.com/bflorat/modele-da[Modèle de dossier d'Architecture]:
-```
-https://raw.githubusercontent.com/bflorat/modele-da/refs/heads/feat/ajout-labels/
-```
+
+## List of available base templates
 
 TIP: Contact us if you want to be listed here, new base templates contributions welcomed !
+
+[cols="1,3,5,6l", options="header"]
+|===
+|Language |Title |Repository |Template URL to use
+
+|English
+|Architecture Document Template
+|https://github.com/bflorat/architecture-document-template[Architecture Document Template]
+|https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/
+
+|French
+|Modèle de dossier d'Architecture
+|https://github.com/bflorat/modele-da[Modèle de dossier d'Architecture]
+|https://raw.githubusercontent.com/bflorat/modele-da/refs/heads/feat/ajout-labels/
+|===
+
+
