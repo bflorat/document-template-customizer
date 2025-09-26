@@ -12,7 +12,7 @@ export function buildLabelOrder(definitions: TemplateLabelDefinition[] | undefin
   definitions.forEach(def => {
     const name = def.name.trim()
     if (!name) return
-    const values = def.available_values ?? (def as any).availableValues
+    const values = def.available_values
     if (!values?.length) return
     if (multiNameList.indexOf(name) === -1) {
       multiNameList.push(name)
@@ -36,7 +36,7 @@ export function definedLabelValues(definitions: TemplateLabelDefinition[] | unde
   definitions.forEach(def => {
     const name = def.name?.trim()
     if (!name) return
-    const values = (def.available_values ?? (def as any).availableValues) as string[] | undefined
+    const values = def.available_values as string[] | undefined
     values?.forEach(v => {
       const trimmed = String(v).trim()
       if (trimmed) out.push(`${name}::${trimmed}`)

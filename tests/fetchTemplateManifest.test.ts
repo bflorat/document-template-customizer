@@ -70,7 +70,7 @@ parts:
     file: view-development.adoc
   - name: Security
     file: security.adoc
-labels:
+multi_values_labels:
   - name: level
     available_values:
       - basic

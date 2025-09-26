@@ -41,13 +41,11 @@ parts:
     file: view-development.adoc
   - name: infrastructure
     file: view-infrastructure.adoc
-labels:
-  # Form 1 (snake_case): control order of values as shown in the UI
+multi_values_labels:
   - name: level
     available_values: [basic, intermediate, advanced]
-  # Form 2 (camelCase): equivalent to available_values
   - name: project_size
-    availableValues: [small, medium, large]
+    available_values: [small, medium, large]
 ```
 
 Language values:
@@ -67,7 +65,7 @@ Metadata fields:
 * `labels`: Filtering tags used to include/exclude sections.
 ** Discovered automatically from `//🏷{...}` markers.
 ** Can be a simple flag (e.g., `performance`).
-** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts, and you can also define them (and their order) in the manifest under `labels.available_values` (or `availableValues`).
+** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts, and you can also define them (and their order) in the manifest under `multi_values_labels[].available_values`.
 * `link_to`: One or more target section ids to reference. Automatically inserts a `TIP: See also …` line after the heading in both template and blank outputs. The text is localized using `language` from the manifest (e.g., fr → `Voir aussi`). Use a single id string or an array. Cross-document `xref:` links are generated when the target id belongs to another part.
 
 Notes:
@@ -78,18 +76,18 @@ TIP: See many examples in https://github.com/bflorat/architecture-document-templ
 
 ## Label definitions in the manifest (optional)
 
-- Define label value sets in `base-template-manifest.yaml` to:
+- Define multi-value label sets in `base-template-manifest.yaml` to:
   - Make all values selectable in the UI even if not present in any section yet.
   - Control the display order of values in the UI.
-- Two equivalent forms are supported for values: `available_values` (snake_case) or `availableValues` (camelCase).
+- Only snake_case is supported: use `available_values`.
 - Example:
 
 ```
-labels:
+multi_values_labels:
   - name: level
     available_values: [basic, intermediate, advanced]
   - name: project_size
-    availableValues: [small, medium, large]
+    available_values: [small, medium, large]
 ```
 
 ## Matching rules

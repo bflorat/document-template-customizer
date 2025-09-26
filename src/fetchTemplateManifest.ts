@@ -55,8 +55,8 @@ export async function fetchTemplateManifest(
       throw new Error(`YAML parse error: ${msg}`);
     }
 
-    const labelDefs = Array.isArray(parsed.labels)
-      ? parsed.labels
+    const labelDefs = Array.isArray(parsed.multi_values_labels)
+      ? parsed.multi_values_labels
           .map((label: any): TemplateLabelDefinition | null => {
             // Support both forms:
             // - { name: "level", available_values: ["basic", ...] }
@@ -67,13 +67,9 @@ export async function fetchTemplateManifest(
             if (label && typeof label === "object") {
               if (typeof label.name === "string") {
                 name = label.name.trim();
-                const av = Array.isArray((label as any).available_values)
-                  ? (label as any).available_values
-                  : Array.isArray((label as any).availableValues)
-                    ? (label as any).availableValues
-                    : undefined;
+                const av = (label as any).available_values
                 if (Array.isArray(av)) {
-                  values = av
+                  values = (av as unknown[])
                     .filter((v: unknown): v is string => typeof v === "string")
                     .map((v: string) => v.trim())
                     .filter(Boolean);
