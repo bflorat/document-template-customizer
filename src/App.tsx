@@ -4,7 +4,7 @@ import { stringify, parse as parseYaml } from 'yaml'
 import './App.css'
 import { fetchTemplateAndParts } from './fetchTemplateManifest'
 import { buildFilteredPartsFromResult, buildKnownLabelSet, type FilteredPart } from './generateFilteredParts'
-import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, computeMultiValueNamesFromKnown, compareLabels } from './utils/labels'
+import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, computeMultiValueNamesFromKnown, compareLabels, definedLabelValues } from './utils/labels'
 
 const DEFAULT_TEMPLATE_URL = 'https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/'
 const defaultIncludingLabels: string[] = []
@@ -108,7 +108,10 @@ const App = () => {
       const { order: labelOrder, multiValueNames } = buildLabelOrder(result.metadata.data.labels)
       const discoveredMulti = computeMultiValueNamesFromKnown(knownSet)
       const allMulti = new Set<string>([...multiValueNames, ...discoveredMulti])
-      const selectableLabels = Array.from(knownSet)
+      // Merge labels discovered from sections with values defined in the manifest (for multi-value labels)
+      const fromDefinitions = definedLabelValues(result.metadata.data.labels)
+      const union = new Set<string>([...knownSet, ...fromDefinitions])
+      const selectableLabels = Array.from(union)
         .filter(label => !label.endsWith('::*') && !allMulti.has(label))
         .sort((a, b) => compareLabels(a, b, labelOrder))
       setAvailableLabels(selectableLabels)

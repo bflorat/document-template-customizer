@@ -5,17 +5,19 @@ export function buildLabelOrder(definitions: TemplateLabelDefinition[] | undefin
   multiValueNames: Set<string>
 } {
   const order = new Map<string, number>()
-  const multiValueNames = new Set<string>()
-  if (!definitions?.length) return { order, multiValueNames }
+  const multiNameList: string[] = []
+  if (!definitions?.length) return { order, multiValueNames: new Set<string>() }
 
   let priority = 0
   definitions.forEach(def => {
     const name = def.name.trim()
     if (!name) return
-    const values = def.available_values
+    const values = def.available_values ?? (def as any).availableValues
     if (!values?.length) return
-    multiValueNames.add(name)
-    values.forEach(value => {
+    if (multiNameList.indexOf(name) === -1) {
+      multiNameList.push(name)
+    }
+    (values as string[]).forEach((value: string) => {
       const trimmed = value.trim()
       if (!trimmed) return
       const key = `${name}::${trimmed}`
@@ -25,7 +27,22 @@ export function buildLabelOrder(definitions: TemplateLabelDefinition[] | undefin
     })
   })
 
-  return { order, multiValueNames }
+  return { order, multiValueNames: new Set<string>(multiNameList) }
+}
+
+export function definedLabelValues(definitions: TemplateLabelDefinition[] | undefined): string[] {
+  const out: string[] = []
+  if (!definitions?.length) return out
+  definitions.forEach(def => {
+    const name = def.name?.trim()
+    if (!name) return
+    const values = (def.available_values ?? (def as any).availableValues) as string[] | undefined
+    values?.forEach(v => {
+      const trimmed = String(v).trim()
+      if (trimmed) out.push(`${name}::${trimmed}`)
+    })
+  })
+  return out
 }
 
 export function compareLabels(a: string, b: string, order: Map<string, number>): number {
@@ -81,4 +98,3 @@ export function buildAvailableSections(result: TemplateWithParts): Record<string
   })
   return map
 }
-

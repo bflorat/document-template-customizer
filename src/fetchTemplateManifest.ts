@@ -67,8 +67,13 @@ export async function fetchTemplateManifest(
             if (label && typeof label === "object") {
               if (typeof label.name === "string") {
                 name = label.name.trim();
-                if (Array.isArray(label.available_values)) {
-                  values = label.available_values
+                const av = Array.isArray((label as any).available_values)
+                  ? (label as any).available_values
+                  : Array.isArray((label as any).availableValues)
+                    ? (label as any).availableValues
+                    : undefined;
+                if (Array.isArray(av)) {
+                  values = av
                     .filter((v: unknown): v is string => typeof v === "string")
                     .map((v: string) => v.trim())
                     .filter(Boolean);
@@ -291,4 +296,3 @@ function findDuplicateSectionIds(parts: Required<Part>[]): Array<{
   }
   return dups;
 }
-
