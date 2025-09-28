@@ -35,7 +35,9 @@ TIP: sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style)
 
 * `multi_values_labels` (optional): used to define available values for multi-values labels (like `detail_level::overview`,`detail_level::in-depth`, ...).
 
-.Sample full `base-template-manifest.yaml` :
+* `files_imported_into_blank_templates` allows to import automatically static resources into the produced blank template. The `base_dir` key is mandatory for every entry. Each file path is resolved relative to `base_dir` (itself relative to the README.adoc location) and will be placed in the blank template under the same relative path.
+
+Sample full `base-template-manifest.yaml` :
 
 ```
 author: ACME
@@ -56,12 +58,12 @@ multi_values_labels:
 files_imported_into_blank_templates:
   - base_dir: blank-templates
     files:
-      - export
-      - images/logo.png
-
-NOTE: In `files_imported_into_blank_templates`, the `base_dir` key is mandatory for every entry. Each file path is resolved relative to `base_dir` (itself relative to the README.adoc location) and will be placed in the blank template under the same relative path.
+      - file
+      - README.adoc
+  - base_dir: blank-templates/resources
+    files:
+      - myimage.png
 ```
-
 
 ## Sections metadata
 
@@ -122,19 +124,20 @@ You can write multiple lines here.
 
 TIP: Contact us if you want to be listed here, new base templates contributions welcomed !
 
-[cols="1,3,5,6l,2", options="header"]
+[cols="1,3,5,2,6l", options="header"]
 |===
-|Language |Title |Repository |Template URL to use | Open directly
+|Language |Title |Repository |Open directly | Template URL to use 
 
 |English
 |Architecture Document Template
 |https://github.com/bflorat/architecture-document-template[Architecture Document Template]
-|https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/master/
-| https://document-template-customizer.florat.net/?base_template_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbflorat%2Farchitecture-document-template%2Frefs%2Fheads%2Fmaster%2F[Click here]
+|https://document-template-customizer.florat.net/?base_template_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbflorat%2Farchitecture-document-template%2Frefs%2Fheads%2Fmaster%2F[Click here]
+| https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/master/
+
 
 |French
 |Modèle de dossier d'Architecture
 |https://github.com/bflorat/modele-da[Modèle de dossier d'Architecture]
-|https://raw.githubusercontent.com/bflorat/modele-da/refs/heads/master/
 |https://document-template-customizer.florat.net/?base_template_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbflorat%2Fmodele-da%2Frefs%2Fheads%2Fmaster%2F[Click here]
+| https://raw.githubusercontent.com/bflorat/modele-da/refs/heads/master/
 |===
