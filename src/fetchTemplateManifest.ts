@@ -97,12 +97,54 @@ export async function fetchTemplateManifest(
           .filter((label: TemplateLabelDefinition | null): label is TemplateLabelDefinition => label !== null)
       : undefined;
 
+    // Parse optional files_imported_into_blank_templates section
+    // New rule: base_dir is mandatory for every entry
+    // Supported shapes:
+    // - Object: { base_dir: string, files: string[] }
+    // - Array of { base_dir, files }
+    let filesImportsGroups: Array<{ base_dir: string; files: string[] }> | undefined
+    const rawImports: any = parsed.files_imported_into_blank_templates
+    if (rawImports != null) {
+      const normalizeEntry = (entry: any, idx?: number) => {
+        const where = idx == null ? '' : ` at index ${idx}`
+        if (!entry || typeof entry !== 'object') {
+          throw new Error(`Invalid files_imported_into_blank_templates${where}: expected an object with base_dir and files`)
+        }
+        const bdRaw = (entry as any).base_dir
+        const filesRaw = (entry as any).files
+        if (typeof bdRaw !== 'string' || !bdRaw.trim()) {
+          throw new Error(`files_imported_into_blank_templates${where}: base_dir is mandatory and must be a non-empty string`)
+        }
+        if (!Array.isArray(filesRaw)) {
+          throw new Error(`files_imported_into_blank_templates${where}: files must be an array of strings`)
+        }
+        const base_dir = String(bdRaw).trim().replace(/\/+$/, '').replace(/^\/+/, '')
+        const files = (filesRaw as unknown[])
+          .filter((v: unknown): v is string => typeof v === 'string')
+          .map((v: string) => v.trim())
+          .filter(Boolean)
+        return { base_dir, files }
+      }
+      if (Array.isArray(rawImports)) {
+        // Detect legacy array of strings and reject
+        if (rawImports.every((v: any) => typeof v === 'string')) {
+          throw new Error(`files_imported_into_blank_templates must include base_dir; use object entries with { base_dir, files }`)
+        }
+        filesImportsGroups = rawImports.map((e: any, i: number) => normalizeEntry(e, i))
+      } else if (typeof rawImports === 'object') {
+        filesImportsGroups = [normalizeEntry(rawImports)]
+      } else {
+        throw new Error(`Invalid files_imported_into_blank_templates: expected object or array of objects`)
+      }
+    }
+
     const data: TemplateMetadata = {
       author: parsed.author,
       license: parsed.license,
       parts: Array.isArray(parsed.parts) ? parsed.parts : [],
       labels: labelDefs,
       language: typeof parsed.language === 'string' ? String(parsed.language).trim() : undefined,
+      files_imports: filesImportsGroups,
     };
 
     return { url: target, raw, data };

@@ -110,7 +110,7 @@ const App = () => {
     baseUrl: string,
     labelsToInclude: string[],
     opts?: { skipAutoSelect?: boolean; includeAnchors?: boolean; forceAutoSelect?: boolean }
-  ): Promise<{ filteredParts: FilteredPart[]; readme: { file: string; content: string }; selectableLabels: string[] }> => {
+  ): Promise<{ filteredParts: FilteredPart[]; readme: { file: string; content: string }; selectableLabels: string[]; importGroups: Array<{ baseDir: string; files: string[] }> }> => {
     setTemplateLoadInfo({ state: 'loading' })
     const start = performance.now()
     setAvailableLabels([])
@@ -161,7 +161,24 @@ const App = () => {
       })
       const durationMs = performance.now() - start
       setTemplateLoadInfo({ state: 'loaded', durationMs })
-      return { filteredParts, readme: result.readme, selectableLabels }
+      // Build import groups from manifest (new preferred form)
+      const importGroups: Array<{ baseDir: string; files: string[] }> = []
+      if (Array.isArray(result.metadata.data.files_imports)) {
+        result.metadata.data.files_imports.forEach(g => {
+          if (!g) return
+          const base = String(g.base_dir || '').trim()
+          const files = Array.isArray(g.files) ? g.files.filter(Boolean) : []
+          if (base && files) importGroups.push({ baseDir: base, files })
+        })
+      } else {
+        // Backward compatibility if older fields are still present
+        const files = Array.isArray(result.metadata.data.files_imported_into_blank_templates)
+          ? result.metadata.data.files_imported_into_blank_templates
+          : []
+        const base = (result.metadata.data.files_imports_base_dir ?? '').trim()
+        if (base && files.length) importGroups.push({ baseDir: base, files })
+      }
+      return { filteredParts, readme: result.readme, selectableLabels, importGroups }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       setTemplateLoadInfo({ state: 'error', message })
@@ -181,7 +198,7 @@ const App = () => {
     setSuccessMessage(null)
 
     try {
-      const { filteredParts, readme: fetchedReadme } = await loadFilteredParts(baseUrl, labelsToInclude, { includeAnchors })
+      const { filteredParts, readme: fetchedReadme, importGroups } = await loadFilteredParts(baseUrl, labelsToInclude, { includeAnchors })
       const includedParts = filteredParts.length
       if (!includedParts) {
         throw new Error('No parts left after applying label filters.')
@@ -200,6 +217,39 @@ const App = () => {
 
       if (fetchedReadme?.content) {
         zip.file(`template/${fetchedReadme.file}`, fetchedReadme.content)
+      }
+
+      // Import additional files into blank template as declared in manifest
+      if (importGroups && importGroups.length) {
+        const normalized = baseUrl.replace(/\/+$/, '')
+        const results: Array<{ path: string; ok: boolean }> = []
+        for (const group of importGroups) {
+          const base = String(group.baseDir).replace(/\/+$/, '').replace(/^\/+/, '')
+          const baseSuffix = base.split('/').filter(Boolean).slice(1).join('/')
+          for (const rel of group.files) {
+            const path = String(rel).replace(/^\/+/, '')
+            const urlPath = `${base}/${path}`
+            const url = `${normalized}/${urlPath}`
+            try {
+              const res = await fetch(url)
+              if (!res.ok) {
+                results.push({ path: urlPath, ok: false })
+                continue
+              }
+              const ab = await res.arrayBuffer()
+              // Keep directories relative to base_dir
+              const zipRel = baseSuffix ? `${baseSuffix}/${path}` : path
+              zip.file(`blank-template/${zipRel}`, ab)
+              results.push({ path: urlPath, ok: true })
+            } catch {
+              results.push({ path: urlPath, ok: false })
+            }
+          }
+        }
+        const missing = results.filter(r => !r.ok).map(r => r.path)
+        if (missing.length) {
+          throw new Error(`Missing file(s) declared in manifest: ${missing.join(', ')}`)
+        }
       }
 
       const droppedSections = toDropMap(dropRules)
