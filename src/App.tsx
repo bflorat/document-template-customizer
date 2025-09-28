@@ -39,12 +39,19 @@ const App = () => {
   const lastLoadedBaseUrlRef = useRef<string | null>(null)
 
   // Prefill base URL from ?base_template_url=... (supports legacy ?base_url=...)
+  // If provided, automatically load the template on startup.
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search)
-      const fromQuery = (params.get('base_template_url') ?? params.get('base_url') ?? '').trim()
+      const fromQuery = (
+        params.get('base_template_url') ??
+        params.get('base_url') ??
+        params.get('vase_template_url') /* tolerate typo */ ??
+        ''
+      ).trim()
       if (fromQuery) {
         setTemplateUrl(fromQuery)
+        void handleLoadTemplate(fromQuery)
       }
     } catch {
       // ignore malformed URLs or environments without window
@@ -84,8 +91,8 @@ const App = () => {
   const computeLabelsToInclude = () =>
     includingLabels.map(label => label.trim()).filter(Boolean)
 
-  const handleLoadTemplate = async () => {
-    const baseUrl = resolveBaseUrl()
+  const handleLoadTemplate = async (overrideBaseUrl?: string) => {
+    const baseUrl = (overrideBaseUrl ?? resolveBaseUrl())
     const baseChanged = !!lastLoadedBaseUrlRef.current && lastLoadedBaseUrlRef.current !== baseUrl
     if (baseChanged) {
       // Base URL changed: clear cached selections and derived state
