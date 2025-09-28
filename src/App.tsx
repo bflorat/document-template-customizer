@@ -6,7 +6,7 @@ import { fetchTemplateAndParts } from './fetchTemplateManifest'
 import { buildFilteredPartsFromResult, buildKnownLabelSet, type FilteredPart } from './generateFilteredParts'
 import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, computeMultiValueNamesFromKnown, compareLabels, definedLabelValues } from './utils/labels'
 
-const DEFAULT_TEMPLATE_URL = 'https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/'
+const DEFAULT_TEMPLATE_URL = 'https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/master/'
 const defaultIncludingLabels: string[] = []
 
 // FilteredPart type now provided by generateFilteredParts
