@@ -131,6 +131,7 @@ export function filterPartContent(
   );
 
   // Track [PRE-FILLED] example blocks to include in blank output
+  // and strip markers in both template and blank outputs
   type KeepMode = 'none' | 'attrPending' | 'delimited';
   let keepMode: KeepMode = 'none';
 
@@ -160,29 +161,46 @@ export function filterPartContent(
       templateLines.push(line);
       blankLines.push(line);
     } else {
-      templateLines.push(line);
-      // For blank output, include only [PRE-FILLED] blocks from body content
+      // Body/content line: handle [PRE-FILLED] stripping and inclusion first
+      const isPrefilledAttr = PREFILLED_ATTR_REGEX.test(trimmed);
+      const isExampleDelim = EXAMPLE_DELIM_REGEX.test(trimmed);
+      let consumed = false;
+
       if (keepMode === 'none') {
-        if (PREFILLED_ATTR_REGEX.test(trimmed)) {
-          blankLines.push(line); // include the [PRE-FILLED] attribute line itself
+        if (isPrefilledAttr) {
+          // Start of a PRE-FILLED block attribute: do not output the attribute line
           keepMode = 'attrPending';
+          consumed = true;
         }
       } else if (keepMode === 'attrPending') {
-        if (EXAMPLE_DELIM_REGEX.test(trimmed)) {
-          blankLines.push(line); // opening delimiter
+        if (isExampleDelim) {
+          // Opening delimiter: do not output it; switch to collecting content
           keepMode = 'delimited';
-        } else if (trimmed) {
-          // Unexpected content after [PRE-FILLED] not starting an example block => cancel keep mode
-          keepMode = 'none';
+          consumed = true;
+        } else if (!trimmed) {
+          // allow blank lines between attribute and opening delimiter
+          consumed = true;
         } else {
-          // blank line, continue waiting for delimiter
+          // Unexpected content: cancel PRE-FILLED mode and treat this line normally
+          keepMode = 'none';
         }
       } else if (keepMode === 'delimited') {
-        blankLines.push(line);
-        if (EXAMPLE_DELIM_REGEX.test(trimmed)) {
-          // closing delimiter reached
+        if (isExampleDelim) {
+          // Closing delimiter: do not output it, end block
           keepMode = 'none';
+          consumed = true;
+        } else {
+          // Inside PRE-FILLED block: include content in both outputs
+          templateLines.push(line);
+          blankLines.push(line);
+          consumed = true;
         }
+      }
+
+      if (!consumed) {
+        // Not part of a [PRE-FILLED] block — output to template
+        templateLines.push(line);
+        // For blank output, do not include arbitrary body content here
       }
     }
   }

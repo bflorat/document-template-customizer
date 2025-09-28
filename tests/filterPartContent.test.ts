@@ -154,14 +154,18 @@ describe("filterPartContent", () => {
     expect(result.blankContent).toMatch(/\[#s1]\n## First\n\n\[#s2]\n## Second/);
   });
 
-  it("keeps only [PRE-FILLED] example blocks from body content in blank output", () => {
+  it("keeps only PRE-FILLED block content in blank output (without markers)", () => {
     const view = `# Root\n\n## With Prefilled\n[PRE-FILLED]\n====\nGuidance for blank\n====\n\n## Without Prefilled\nRegular body that should not appear`;
     const result = filterPartContent(view, { includeLabels: [] });
-    // Template has everything
+    // Template has both regular body and prefilled content, but no PRE-FILLED markers
     expect(result.templateContent).toContain("Guidance for blank");
     expect(result.templateContent).toContain("Regular body");
-    // Blank keeps only the [PRE-FILLED] block content (including markers)
-    expect(result.blankContent).toContain("[PRE-FILLED]\n====\nGuidance for blank\n====");
+    expect(result.templateContent).not.toContain("[PRE-FILLED]");
+    expect(result.templateContent).not.toMatch(/^====\s*$/m);
+    // Blank keeps only the content from the PRE-FILLED block, without markers
+    expect(result.blankContent).toContain("Guidance for blank");
+    expect(result.blankContent).not.toContain("[PRE-FILLED]");
+    expect(result.blankContent).not.toMatch(/^====\s*$/m);
     expect(result.blankContent).not.toContain("Regular body");
   });
 
