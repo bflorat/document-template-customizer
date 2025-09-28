@@ -38,6 +38,19 @@ const App = () => {
   const contextFileInputRef = useRef<HTMLInputElement | null>(null)
   const lastLoadedBaseUrlRef = useRef<string | null>(null)
 
+  // Prefill base URL from ?base_template_url=... (supports legacy ?base_url=...)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const fromQuery = (params.get('base_template_url') ?? params.get('base_url') ?? '').trim()
+      if (fromQuery) {
+        setTemplateUrl(fromQuery)
+      }
+    } catch {
+      // ignore malformed URLs or environments without window
+    }
+  }, [])
+
   const resetStateForNewBase = () => {
     setIncludingLabels([])
     setDidAutoSelectAll(false)

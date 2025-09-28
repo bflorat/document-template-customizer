@@ -108,25 +108,27 @@ You can write multiple lines here.
 
 ## Tips
 * The generated zip contains a `customization-context.yaml` file with the generation date, base template URL, the disabled labels (`disabled_labels`) and dropped sections.
+* A base template URL can be pre-filled using the `base_template_url` query param, example: `https://document-template-customizer.florat.net/?base_template_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbflorat%2Fmodele-da%2Frefs%2Fheads%2Fmaster%2F`.
 
 
 ## List of available base templates
 
 TIP: Contact us if you want to be listed here, new base templates contributions welcomed !
 
-[cols="1,3,5,6l", options="header"]
+[cols="1,3,5,6l,2", options="header"]
 |===
-|Language |Title |Repository |Template URL to use
+|Language |Title |Repository |Template URL to use | Open directly
 
 |English
 |Architecture Document Template
 |https://github.com/bflorat/architecture-document-template[Architecture Document Template]
-|https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/feat/add-medadata/
+|https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/master/
+| https://document-template-customizer.florat.net/?base_template_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbflorat%2Farchitecture-document-template%2Frefs%2Fheads%2Fmaster%2F[Click here]
 
 |French
 |Modèle de dossier d'Architecture
 |https://github.com/bflorat/modele-da[Modèle de dossier d'Architecture]
-|https://raw.githubusercontent.com/bflorat/modele-da/refs/heads/feat/ajout-labels/
+|https://raw.githubusercontent.com/bflorat/modele-da/refs/heads/master/
+|https://document-template-customizer.florat.net/?base_template_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbflorat%2Fmodele-da%2Frefs%2Fheads%2Fmaster%2F[Click here]
 |===
-
 
