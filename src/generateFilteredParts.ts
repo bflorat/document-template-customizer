@@ -69,15 +69,36 @@ export function buildFilteredPartsFromResult(
 
 export function buildKnownLabelSet(result: TemplateWithParts): Set<string> {
   const known = new Set<string>()
-  // Discover labels from sections across all parts; YAML label definitions are ignored for discovery
+  // Multi-value labels must come from the manifest definitions only.
+  const defs = result.metadata.data.labels
+  const multiNames = new Set<string>((defs ?? []).map(d => d.name?.trim()).filter(Boolean) as string[])
+
+  // Discover only regular (non multi-value) labels from sections across all parts
   const visit = (section: PartSection) => {
     section.metadata?.labels?.forEach(label => {
       const trimmed = label.trim()
-      if (trimmed) known.add(trimmed)
+      if (!trimmed) return
+      // Ignore discovered multi-value labels (contain '::')
+      if (trimmed.includes('::')) return
+      // Also ignore any base name that is declared as multi-value in the manifest
+      if (multiNames.has(trimmed)) return
+      known.add(trimmed)
     })
     section.children.forEach(child => visit(child))
   }
   result.parts.forEach(part => part.sections?.forEach(sec => visit(sec)))
+
+  // Add manifest-defined multi-value label values (name::value)
+  defs?.forEach(def => {
+    const name = def.name?.trim()
+    if (!name) return
+    const values = def.available_values as string[] | undefined
+    values?.forEach(v => {
+      const val = String(v).trim()
+      if (val) known.add(`${name}::${val}`)
+    })
+  })
+
   return known
 }
 

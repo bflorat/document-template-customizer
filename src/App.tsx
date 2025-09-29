@@ -4,7 +4,7 @@ import { stringify, parse as parseYaml } from 'yaml'
 import './App.css'
 import { fetchTemplateAndParts } from './fetchTemplateManifest'
 import { buildFilteredPartsFromResult, buildKnownLabelSet, type FilteredPart } from './generateFilteredParts'
-import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, computeMultiValueNamesFromKnown, compareLabels, definedLabelValues } from './utils/labels'
+import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, compareLabels, definedLabelValues } from './utils/labels'
 
 const DEFAULT_TEMPLATE_URL = 'https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/master/'
 const defaultIncludingLabels: string[] = []
@@ -126,13 +126,13 @@ const App = () => {
       const result = await fetchTemplateAndParts(baseUrl)
       const knownSet = buildKnownLabelSet(result)
       const { order: labelOrder, multiValueNames } = buildLabelOrder(result.metadata.data.labels)
-      const discoveredMulti = computeMultiValueNamesFromKnown(knownSet)
-      const allMulti = new Set<string>([...multiValueNames, ...discoveredMulti])
-      // Merge labels discovered from sections with values defined in the manifest (for multi-value labels)
+      // Multi-value labels are only taken from manifest definitions
       const fromDefinitions = definedLabelValues(result.metadata.data.labels)
-      const union = new Set<string>([...knownSet, ...fromDefinitions])
+      // Keep only regular (non multi-value) discovered labels; drop any that collide with multi-value base names
+      const discoveredSingles = Array.from(knownSet).filter(l => !l.includes('::') && !multiValueNames.has(l))
+      const union = new Set<string>([...discoveredSingles, ...fromDefinitions])
       const selectableLabels = Array.from(union)
-        .filter(label => !label.endsWith('::*') && !allMulti.has(label))
+        .filter(label => !label.endsWith('::*'))
         .sort((a, b) => compareLabels(a, b, labelOrder))
       setAvailableLabels(selectableLabels)
       setAvailableSectionsByPart(buildAvailableSectionsUtil(result))
@@ -731,4 +731,3 @@ function toDropMap(rules: Array<{ partFile: string; sectionTitle: string }>): Re
   }
   return map
 }
-
