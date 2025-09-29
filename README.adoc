@@ -37,7 +37,7 @@ TIP: sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style)
 
 * `files_imported_into_blank_templates` allows to import automatically static resources into the produced blank template. The `base_dir` key is mandatory for every entry. Each file path is resolved relative to `base_dir` (itself relative to the README.adoc location) and will be placed in the blank template under the same relative path.
 
-Sample full `base-template-manifest.yaml` :
+### Sample full `base-template-manifest.yaml`
 
 ```
 author: ACME
@@ -76,10 +76,10 @@ Every section of each part file of the base template should be annotated with a 
 Metadata fields:
 
 * `id`: Unique section identifier. Enables anchors and cross-references; must be unique across all parts.
-* `labels`: Filtering tags used to filter sections.
+* `labels`: Filtering tags used to filter sections. Values are discovered from usage across parts.
 ** Discovered automatically from `//🏷{...}` markers.
 ** Can be a simple flag (e.g., `performance`).
-** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Values are discovered from usage across parts, and you can also define them (and their order) in the manifest under `multi_values_labels[].available_values`.
+** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Their finite set of available values must be defined in the manifest under `multi_values_labels[].available_values`. Only values defined in the manifest are recognized (they are not auto-discovered from sections). Their order is preserved and used for display/sorting.
 * `link_to`: One or more target section ids to reference. Automatically inserts a `TIP: See also …` line after the heading in both template and blank outputs. The text is localized using `language` from the manifest (e.g., fr → `Voir aussi`). Use a single id string or an array. Cross-document `xref:` links are generated when the target id belongs to another part.
 
 TIP: See many examples in https://github.com/bflorat/architecture-document-template[this base template].
