@@ -1,4 +1,4 @@
-export class TemplateMetadataNotFoundError extends Error {
+export class TemplateManifestNotFoundError extends Error {
   public readonly attemptedUrl: string;
   public readonly status?: number;
 
@@ -8,7 +8,7 @@ export class TemplateMetadataNotFoundError extends Error {
         ? `base-template-manifest.yaml not found at ${attemptedUrl} (HTTP ${status}).`
         : `base-template-manifest.yaml not found at ${attemptedUrl}.`
     );
-    this.name = "TemplateMetadataNotFoundError";
+    this.name = "TemplateManifestNotFoundError";
     this.attemptedUrl = attemptedUrl;
     this.status = status;
   }

@@ -495,5 +495,3 @@ function classifyLine(line: string): LineType {
   if (ANCHOR_BLOCK_ID_REGEX.test(trimmed)) return "anchor";
   return "other";
 }
-
-// keep_content has been removed; blank output only keeps headings, anchors, attributes, and 'See also' lines

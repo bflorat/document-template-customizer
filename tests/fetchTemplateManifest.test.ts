@@ -3,9 +3,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fetchTemplateManifest, fetchTemplateAndParts } from "../src/fetchTemplateManifest";
 import {
-  TemplateMetadataNotFoundError,
+  TemplateManifestNotFoundError,
   PartFetchError,
-  type TemplateMetadata,
+  type TemplateManifest,
   type TemplateLabelDefinition,
 } from "../src/model";
 
@@ -101,7 +101,7 @@ describe("fetchTemplateManifest", () => {
     const res = await fetchTemplateManifest(`${BASE}/`, { fetchImpl: fetchMock });
 
     expect(fetchMock).toHaveBeenCalledWith(METADATA_URL, expect.any(Object));
-    const data: TemplateMetadata = res.data;
+    const data: TemplateManifest = res.data;
     expect(data.author).toBe("Bertrand Florat");
     expect(data.license).toBe("CC BY-SA 4.0");
     expect(data.parts).toHaveLength(3);
@@ -115,11 +115,11 @@ describe("fetchTemplateManifest", () => {
     });
   });
 
-  it("throws TemplateMetadataNotFoundError on 404", async () => {
+  it("throws TemplateManifestNotFoundError on 404", async () => {
     const fetchMock = buildFetchMock([]); // no routes -> 404
     await expect(
       fetchTemplateManifest(BASE, { fetchImpl: fetchMock })
-    ).rejects.toBeInstanceOf(TemplateMetadataNotFoundError);
+    ).rejects.toBeInstanceOf(TemplateManifestNotFoundError);
   });
 });
 

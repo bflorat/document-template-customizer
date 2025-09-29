@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { parse } from "yaml";
 import {
-  TemplateMetadataNotFoundError,
+  TemplateManifestNotFoundError,
   PartFetchError,
   type TemplateFetchResult,
-  type TemplateMetadata,
+  type TemplateManifest,
   type TemplateWithParts,
   type Part,
   type PartFetchFailure,
@@ -42,7 +42,7 @@ export async function fetchTemplateManifest(
 
   try {
     const res = await fetchWithTimeout(fetchFn, target, timeoutMs);
-    if (!res.ok) throw new TemplateMetadataNotFoundError(target, res.status);
+    if (!res.ok) throw new TemplateManifestNotFoundError(target, res.status);
 
     const raw = await res.text();
     if (!raw.trim()) throw new Error(`Empty base-template-manifest.yaml at ${target}.`);
@@ -138,7 +138,7 @@ export async function fetchTemplateManifest(
       }
     }
 
-    const data: TemplateMetadata = {
+    const data: TemplateManifest = {
       author: parsed.author,
       license: parsed.license,
       parts: Array.isArray(parsed.parts) ? parsed.parts : [],
@@ -149,7 +149,7 @@ export async function fetchTemplateManifest(
 
     return { url: target, raw, data };
   } catch (err: any) {
-    if (err instanceof TemplateMetadataNotFoundError) throw err;
+    if (err instanceof TemplateManifestNotFoundError) throw err;
     if (err?.name === "AbortError") {
       throw new Error(`Timed out fetching base-template-manifest.yaml from ${target} after ${timeoutMs} ms.`);
     }
@@ -264,13 +264,13 @@ export async function fetchTemplateAndParts(
 }
 
 export {
-  TemplateMetadataNotFoundError,
+  TemplateManifestNotFoundError,
   PartFetchError,
 } from "./model";
 
 export type {
   TemplateFetchResult,
-  TemplateMetadata,
+  TemplateManifest,
   TemplateWithParts,
   Part,
   PartFetchFailure,

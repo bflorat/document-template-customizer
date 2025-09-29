@@ -732,4 +732,3 @@ function toDropMap(rules: Array<{ partFile: string; sectionTitle: string }>): Re
   return map
 }
 
-// buildLinkIndex moved to generator module

@@ -1,7 +1,7 @@
-import type { TemplateMetadata } from "./TemplateMetadata";
+import type { TemplateManifest } from "./TemplateManifest";
 
 export interface TemplateFetchResult {
   url: string;
   raw: string;
-  data: TemplateMetadata;
+  data: TemplateManifest;
 }
