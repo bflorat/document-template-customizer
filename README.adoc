@@ -36,13 +36,15 @@ TIP: Sections can start with either `=` (AsciiDoc-style) or `#` (Markdown-style)
 
 ## Base Template Manifest
 
+* `parts` : list and name the different file parts of your document. Path is relative and can include sub-directories.
+
 * `language` : IETF BCP‑47 language code (e.g., `en`, `fr`, `es`, `de`, `pt`, `it`) used to localize the “See also” text inserted for `link_to` (default to English).
 
 * `multi_values_labels` (optional): used to define available values for multi-values labels (like `detail_level::overview`,`detail_level::in-depth`, ...) in addition to those discovered automatically in the base model.
 
-* `files_imported_into_blank_templates` imports static resources into the produced blank template only. Each entry uses `src_dir` and `dest_dir` (both mandatory). Use `dest_dir: .` to place files at the root of `blank-template/`.
+* `files_imported_into_blank_templates`  (optional) imports static resources into the produced blank template only. Each entry uses `src_dir` and `dest_dir` (both mandatory). Use `dest_dir: .` to place files at the root of `blank-template/`.
 
-* `files_imported_into_templates` works the same way but targets the resulting filtered templates (the `template/` folder in the generated archive). Use `dest_dir: .` for the root of `template/`.
+* `files_imported_into_templates`  (optional) works the same way but targets the resulting filtered templates (the `template/` folder in the generated archive). Use `dest_dir: .` for the root of `template/`.
 
 ### Sample full `base-template-manifest.yaml`
 
