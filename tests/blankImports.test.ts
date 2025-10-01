@@ -8,16 +8,16 @@ describe('blank imports path mapping', () => {
     expect(zipRel).toBe('README.adoc')
   })
 
-  it('preserves subdirectories relative to base_dir', () => {
+  it('urlPath keeps base_dir; zipRel is relative to src_dir', () => {
     const { urlPath, zipRel } = computeZipRel('blank-template/resources', 'views.png')
     expect(urlPath).toBe('blank-template/resources/views.png')
-    expect(zipRel).toBe('resources/views.png')
+    expect(zipRel).toBe('views.png')
   })
 
-  it('handles deeper base_dir with nested files', () => {
+  it('handles deeper base_dir with nested files (zipRel keeps file path only)', () => {
     const { urlPath, zipRel } = computeZipRel('top/a/b', 'c/d.txt')
     expect(urlPath).toBe('top/a/b/c/d.txt')
-    expect(zipRel).toBe('a/b/c/d.txt')
+    expect(zipRel).toBe('c/d.txt')
   })
 
   it('treats base_dir "." as repository root', () => {

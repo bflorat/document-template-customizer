@@ -91,6 +91,9 @@ Every section of each part file of the base template should be annotated with a 
 Metadata fields:
 
 * `id`: Unique section identifier. Enables anchors and cross-references; must be unique across all parts.
+
+NOTE: IDs are optional and only needed if a section will be linked to. They can be UUIDs or any other unique string without spaces. Some AsciiDoc rendering engines have issues with linking to anchors containing special characters, so we advise sticking to ASCII characters.
+
 * `labels`: Filtering tags used to filter sections. Values are discovered from usage across parts.
 ** Discovered automatically from `//🏷{...}` markers.
 ** Can be a simple flag (e.g., `performance`).
