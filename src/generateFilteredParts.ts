@@ -69,26 +69,32 @@ export function buildFilteredPartsFromResult(
 
 export function buildKnownLabelSet(result: TemplateWithParts): Set<string> {
   const known = new Set<string>()
-  // Multi-value labels must come from the manifest definitions only.
   const defs = result.metadata.data.labels
-  const multiNames = new Set<string>((defs ?? []).map(d => d.name?.trim()).filter(Boolean) as string[])
 
-  // Discover only regular (non multi-value) labels from sections across all parts
+  // Collect multi-value base names from both manifest and discovered labels
+  const manifestMultiNames = new Set<string>((defs ?? []).map(d => d.name?.trim()).filter(Boolean) as string[])
+  const discoveredMultiNames = new Set<string>()
+
   const visit = (section: PartSection) => {
     section.metadata?.labels?.forEach(label => {
       const trimmed = label.trim()
       if (!trimmed) return
-      // Ignore discovered multi-value labels (contain '::')
-      if (trimmed.includes('::')) return
-      // Also ignore any base name that is declared as multi-value in the manifest
-      if (multiNames.has(trimmed)) return
-      known.add(trimmed)
+      if (trimmed.includes('::')) {
+        known.add(trimmed)
+        const base = trimmed.split('::', 2)[0]
+        if (base) discoveredMultiNames.add(base)
+      } else {
+        // Skip plain base names that are multi-valued (from manifest or discovery)
+        if (manifestMultiNames.has(trimmed)) return
+        if (discoveredMultiNames.has(trimmed)) return
+        known.add(trimmed)
+      }
     })
     section.children.forEach(child => visit(child))
   }
   result.parts.forEach(part => part.sections?.forEach(sec => visit(sec)))
 
-  // Add manifest-defined multi-value label values (name::value)
+  // Ensure manifest-defined multi-value label values are present even if not used in content
   defs?.forEach(def => {
     const name = def.name?.trim()
     if (!name) return

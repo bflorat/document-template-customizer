@@ -17,11 +17,12 @@ Any template following a simple manifest is supported, not only our owns.
 
 * A running up-to-date version is available online https://document-template-customizer.florat.net/[here], nothing to install, you just need a browser with JavaScript enabled.
 
+NOTE: This application is a static single‑page app (SPA) with no server‑side processing. Loading the base template, filtering, and ZIP creation all happen in your browser. The hosting server never receives your documents. When you use an internal `base_template_url`, files are fetched directly from your local/network origin and are not uploaded to the Internet.
+
 * You can install this tool on premise by downloading a https://github.com/bflorat/document-template-customizer/releases[release]. Just unzip it and expose it by a Web server.
 
 * A NGINX-based Docker image is available https://hub.docker.com/repository/docker/bflorat/document-template-customizer/general[here].
 
-NOTE: This application is a static single‑page app (SPA) with no server‑side processing. Loading the base template, filtering, and ZIP creation all happen in your browser. The hosting server never receives your documents. When you use an internal `base_template_url`, files are fetched directly from your local/network origin and are not uploaded to the Internet.
 
 ## Prerequisites for a Base Template
 
@@ -35,7 +36,7 @@ TIP: sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style)
 
 * `language` : IETF BCP‑47 language code (e.g., `en`, `fr`, `es`, `de`, `pt`, `it`) used to localize the “See also” text inserted for `link_to` (default to English).
 
-* `multi_values_labels` (optional): used to define available values for multi-values labels (like `detail_level::overview`,`detail_level::in-depth`, ...).
+* `multi_values_labels` (optional): used to define available values for multi-values labels (like `detail_level::overview`,`detail_level::in-depth`, ...) in addition to those discovered automatically in the base model.
 
 * `files_imported_into_blank_templates` imports static resources into the produced blank template only. Each entry uses `src_dir` and `dest_dir` (both mandatory). Use `dest_dir: .` to place files at the root of `blank-template/`.
 

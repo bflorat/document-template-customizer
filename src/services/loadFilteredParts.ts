@@ -1,6 +1,6 @@
 import { fetchTemplateAndParts } from '../fetchTemplateManifest'
 import { buildFilteredPartsFromResult, buildKnownLabelSet, type FilteredPart } from '../generateFilteredParts'
-import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, compareLabels, definedLabelValues } from '../utils/labels'
+import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, compareLabels, definedLabelValues, computeMultiValueNamesFromKnown } from '../utils/labels'
 import { toDropMap } from '../utils/dropRules'
 
 export type LoadFilteredPartsOptions = {
@@ -28,9 +28,13 @@ export async function loadFilteredParts(
   // Build selectable labels from known and manifest-defined multi-values
   const knownSet = buildKnownLabelSet(result)
   const { order: labelOrder, multiValueNames } = buildLabelOrder(result.metadata.data.labels)
+  // Also treat discovered multi-value bases as multi groups
+  const discoveredMultiNames = computeMultiValueNamesFromKnown(knownSet)
+  const allMultiNames = new Set<string>([...multiValueNames, ...discoveredMultiNames])
   const fromDefinitions = definedLabelValues(result.metadata.data.labels)
-  const discoveredSingles = Array.from(knownSet).filter(l => !l.includes('::') && !multiValueNames.has(l))
-  const union = new Set<string>([...discoveredSingles, ...fromDefinitions])
+  const discoveredSingles = Array.from(knownSet).filter(l => !l.includes('::') && !allMultiNames.has(l))
+  const discoveredMulti = Array.from(knownSet).filter(l => l.includes('::'))
+  const union = new Set<string>([...discoveredSingles, ...discoveredMulti, ...fromDefinitions])
   const selectableLabels = Array.from(union)
     .filter(label => !label.endsWith('::*'))
     .sort((a, b) => compareLabels(a, b, labelOrder))
