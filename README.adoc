@@ -31,8 +31,8 @@ NOTE: This application is a static single‑page app (SPA) with no server‑side
 TIP: sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style) headings.
 
 * A **`README.adoc`** file must be present at the root of the base template URL, providing an introduction and links to the document parts.
+
 * A **`base-template-manifest.yaml`** file must be present at the root of the base template URL. A sample is provided below. 
-* All part files must be located in the same directory than the `README.adoc` file.
 
 * `language` : IETF BCP‑47 language code (e.g., `en`, `fr`, `es`, `de`, `pt`, `it`) used to localize the “See also” text inserted for `link_to` (default to English).
 
