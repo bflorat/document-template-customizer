@@ -19,5 +19,10 @@ describe('blank imports path mapping', () => {
     expect(urlPath).toBe('top/a/b/c/d.txt')
     expect(zipRel).toBe('a/b/c/d.txt')
   })
-})
 
+  it('treats base_dir "." as repository root', () => {
+    const { urlPath, zipRel } = computeZipRel('.', 'LICENSE.md')
+    expect(urlPath).toBe('LICENSE.md')
+    expect(zipRel).toBe('LICENSE.md')
+  })
+})

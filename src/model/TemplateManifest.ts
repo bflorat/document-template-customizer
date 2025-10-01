@@ -13,7 +13,10 @@ export interface TemplateManifest {
   // Optional base directory (relative to README.adoc) from which listed files are resolved.
   // When set, each listed file path is preserved relative to this base in the blank template.
   files_imports_base_dir?: string;
-  // Preferred form: list of import groups, each with a base_dir and files.
-  // base_dir is mandatory, relative to README.adoc; files are relative to base_dir.
-  files_imports?: Array<{ base_dir: string; files: string[] }>;
+  // Preferred form: list of import groups using explicit source and destination dirs.
+  // - src_dir: mandatory, relative to README.adoc; files paths are relative to src_dir.
+  // - dest_dir: optional, destination subfolder inside the zip ('' or '.' means root of target: blank-template/ or template/)
+  files_imports?: Array<{ src_dir: string; dest_dir?: string; files: string[] }>;
+  // Preferred form for the resulting templates (full templates)
+  files_imports_templates?: Array<{ src_dir: string; dest_dir?: string; files: string[] }>;
 }

@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useCallback, type ChangeEvent, type FormEv
 import JSZip from 'jszip'
 import { stringify, parse as parseYaml } from 'yaml'
 import './App.css'
-import { fetchTemplateAndParts } from './fetchTemplateManifest'
-import { buildFilteredPartsFromResult, buildKnownLabelSet, type FilteredPart } from './generateFilteredParts'
-import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, compareLabels, definedLabelValues } from './utils/labels'
+import type { FilteredPart } from './generateFilteredParts'
+import { loadFilteredParts as loadFilteredPartsService } from './services/loadFilteredParts'
+import { toDropMap } from './utils/dropRules'
+import { computeZipRel } from './utils/blankImports'
 
 const DEFAULT_TEMPLATE_URL = 'https://raw.githubusercontent.com/bflorat/architecture-document-template/refs/heads/master/'
 const defaultIncludingLabels: string[] = []
@@ -100,11 +101,37 @@ const App = () => {
     }
     // Important: do not rely on state immediately after reset; use [] when base changed
     const labelsToInclude = baseChanged ? [] : computeLabelsToInclude()
+    setTemplateLoadInfo({ state: 'loading' })
+    const start = performance.now()
     try {
-      await loadFilteredParts(baseUrl, labelsToInclude, { forceAutoSelect: baseChanged })
+      const res = await loadFilteredPartsService(baseUrl, labelsToInclude, dropRules.map(r => ({ partFile: r.partFile, sectionTitle: r.sectionTitle })), { includeAnchors })
+      // Update derived states
+      setAvailableLabels(res.selectableLabels)
+      setAvailableSectionsByPart(res.availableSectionsByPart)
+      setPartNamesByFile(res.partNamesByFile)
+
+      // Auto-select all labels on first load if none provided
+      const shouldAutoSelect = (baseChanged || !didAutoSelectAll) && labelsToInclude.length === 0
+      if (shouldAutoSelect) {
+        setIncludingLabels(res.selectableLabels)
+        setDidAutoSelectAll(true)
+      }
+
+      // Ensure expandedParts has an entry for each part
+      setExpandedParts(prev => {
+        const nextState: Record<string, { blank: boolean; full: boolean }> = {}
+        res.filteredParts.forEach(part => {
+          const existing = prev[part.file]
+          nextState[part.file] = existing ?? { blank: false, full: false }
+        })
+        return nextState
+      })
+
+      setTemplateLoadInfo({ state: 'loaded', durationMs: performance.now() - start })
       lastLoadedBaseUrlRef.current = baseUrl
-    } catch {
-      // loadFilteredParts already updates templateLoadInfo with the error
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      setTemplateLoadInfo({ state: 'error', message })
     }
   }
 
@@ -113,85 +140,7 @@ const App = () => {
     await handleLoadTemplate()
   }
 
-  const loadFilteredParts = useCallback(async (
-    baseUrl: string,
-    labelsToInclude: string[],
-    opts?: { skipAutoSelect?: boolean; includeAnchors?: boolean; forceAutoSelect?: boolean }
-  ): Promise<{ filteredParts: FilteredPart[]; readme: { file: string; content: string }; selectableLabels: string[]; importGroups: Array<{ baseDir: string; files: string[] }> }> => {
-    setTemplateLoadInfo({ state: 'loading' })
-    const start = performance.now()
-    setAvailableLabels([])
-    setPreviewParts([])
-    try {
-      const result = await fetchTemplateAndParts(baseUrl)
-      const knownSet = buildKnownLabelSet(result)
-      const { order: labelOrder, multiValueNames } = buildLabelOrder(result.metadata.data.labels)
-      // Multi-value labels are only taken from manifest definitions
-      const fromDefinitions = definedLabelValues(result.metadata.data.labels)
-      // Keep only regular (non multi-value) discovered labels; drop any that collide with multi-value base names
-      const discoveredSingles = Array.from(knownSet).filter(l => !l.includes('::') && !multiValueNames.has(l))
-      const union = new Set<string>([...discoveredSingles, ...fromDefinitions])
-      const selectableLabels = Array.from(union)
-        .filter(label => !label.endsWith('::*'))
-        .sort((a, b) => compareLabels(a, b, labelOrder))
-      setAvailableLabels(selectableLabels)
-      setAvailableSectionsByPart(buildAvailableSectionsUtil(result))
-      setPartNamesByFile(Object.fromEntries(result.metadata.data.parts.map(p => [p.file, p.name])))
-
-      // Select all available labels by default on first load (UI only)
-      const shouldAutoSelect = (opts?.forceAutoSelect === true || (!opts?.skipAutoSelect && !didAutoSelectAll)) && labelsToInclude.length === 0
-      if (shouldAutoSelect) {
-        setIncludingLabels(selectableLabels)
-        setDidAutoSelectAll(true)
-      }
-
-      // Matching rule: if none OR all labels are selected, keep full template
-      const selectedSet = new Set(labelsToInclude)
-      const isAllSelected = labelsToInclude.length > 0 &&
-        labelsToInclude.length === selectableLabels.length &&
-        selectableLabels.every(l => selectedSet.has(l))
-      const effectiveLabels = (labelsToInclude.length === 0 || isAllSelected) ? [] : labelsToInclude
-      const filteredParts = buildFilteredPartsFromResult(
-        result,
-        effectiveLabels,
-        knownSet,
-        toDropMap(dropRules),
-        { includeAnchors: opts?.includeAnchors ?? true }
-      )
-      setExpandedParts(prev => {
-        const nextState: Record<string, { blank: boolean; full: boolean }> = {}
-        filteredParts.forEach(part => {
-          const existing = prev[part.file]
-          nextState[part.file] = existing ?? { blank: false, full: false }
-        })
-        return nextState
-      })
-      const durationMs = performance.now() - start
-      setTemplateLoadInfo({ state: 'loaded', durationMs })
-      // Build import groups from manifest (new preferred form)
-      const importGroups: Array<{ baseDir: string; files: string[] }> = []
-      if (Array.isArray(result.metadata.data.files_imports)) {
-        result.metadata.data.files_imports.forEach(g => {
-          if (!g) return
-          const base = String(g.base_dir || '').trim()
-          const files = Array.isArray(g.files) ? g.files.filter(Boolean) : []
-          if (base && files) importGroups.push({ baseDir: base, files })
-        })
-      } else {
-        // Backward compatibility if older fields are still present
-        const files = Array.isArray(result.metadata.data.files_imported_into_blank_templates)
-          ? result.metadata.data.files_imported_into_blank_templates
-          : []
-        const base = (result.metadata.data.files_imports_base_dir ?? '').trim()
-        if (base && files.length) importGroups.push({ baseDir: base, files })
-      }
-      return { filteredParts, readme: result.readme, selectableLabels, importGroups }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      setTemplateLoadInfo({ state: 'error', message })
-      throw error
-    }
-  }, [didAutoSelectAll, includingLabels, dropRules])
+  // loadFilteredParts moved to services; use it directly where needed
 
   const handleGenerate = async () => {
     if (isGenerating) return
@@ -205,7 +154,7 @@ const App = () => {
     setSuccessMessage(null)
 
     try {
-      const { filteredParts, readme: fetchedReadme, importGroups } = await loadFilteredParts(baseUrl, labelsToInclude, { includeAnchors })
+      const { filteredParts, readme: fetchedReadme, importGroups, templateImportGroups } = await loadFilteredPartsService(baseUrl, labelsToInclude, dropRules.map(r => ({ partFile: r.partFile, sectionTitle: r.sectionTitle })), { includeAnchors })
       const includedParts = filteredParts.length
       if (!includedParts) {
         throw new Error('No parts left after applying label filters.')
@@ -231,11 +180,9 @@ const App = () => {
         const normalized = baseUrl.replace(/\/+$/, '')
         const results: Array<{ path: string; ok: boolean }> = []
         for (const group of importGroups) {
-          const base = String(group.baseDir).replace(/\/+$/, '').replace(/^\/+/, '')
-          const baseSuffix = base.split('/').filter(Boolean).slice(1).join('/')
+          const dest = (group.destDir ?? '').trim().replace(/^[\/]+|[\/]+$/g, '')
           for (const rel of group.files) {
-            const path = String(rel).replace(/^\/+/, '')
-            const urlPath = `${base}/${path}`
+            const { urlPath, zipRel } = computeZipRel(group.srcDir, String(rel))
             const url = `${normalized}/${urlPath}`
             try {
               const res = await fetch(url)
@@ -244,9 +191,8 @@ const App = () => {
                 continue
               }
               const ab = await res.arrayBuffer()
-              // Keep directories relative to base_dir
-              const zipRel = baseSuffix ? `${baseSuffix}/${path}` : path
-              zip.file(`blank-template/${zipRel}`, ab)
+              const finalRel = dest ? `${dest}/${zipRel}` : zipRel
+              zip.file(`blank-template/${finalRel}`, ab)
               results.push({ path: urlPath, ok: true })
             } catch {
               results.push({ path: urlPath, ok: false })
@@ -256,6 +202,36 @@ const App = () => {
         const missing = results.filter(r => !r.ok).map(r => r.path)
         if (missing.length) {
           throw new Error(`Missing file(s) declared in manifest: ${missing.join(', ')}`)
+        }
+      }
+
+      // Import additional files into resulting full template as declared in manifest
+      if (templateImportGroups && templateImportGroups.length) {
+        const normalized = baseUrl.replace(/\/+$/, '')
+        const results: Array<{ path: string; ok: boolean }> = []
+        for (const group of templateImportGroups) {
+          const dest = (group.destDir ?? '').trim().replace(/^[\/]+|[\/]+$/g, '')
+          for (const rel of group.files) {
+            const { urlPath, zipRel } = computeZipRel(group.srcDir, String(rel))
+            const url = `${normalized}/${urlPath}`
+            try {
+              const res = await fetch(url)
+              if (!res.ok) {
+                results.push({ path: urlPath, ok: false })
+                continue
+              }
+              const ab = await res.arrayBuffer()
+              const finalRel = dest ? `${dest}/${zipRel}` : zipRel
+              zip.file(`template/${finalRel}`, ab)
+              results.push({ path: urlPath, ok: true })
+            } catch {
+              results.push({ path: urlPath, ok: false })
+            }
+          }
+        }
+        const missing = results.filter(r => !r.ok).map(r => r.path)
+        if (missing.length) {
+          throw new Error(`Missing file(s) declared in manifest (template): ${missing.join(', ')}`)
         }
       }
 
@@ -301,7 +277,7 @@ const App = () => {
     setPreviewLoading(true)
     setPreviewError(null)
     try {
-      const { filteredParts } = await loadFilteredParts(baseUrl, labelsToInclude, { includeAnchors })
+      const { filteredParts } = await loadFilteredPartsService(baseUrl, labelsToInclude, dropRules.map(r => ({ partFile: r.partFile, sectionTitle: r.sectionTitle })), { includeAnchors })
       setPreviewParts(filteredParts)
       if (!filteredParts.length) {
         setPreviewError('No parts left after applying label filters.')
@@ -313,7 +289,7 @@ const App = () => {
     } finally {
       setPreviewLoading(false)
     }
-  }, [templateUrl, includingLabels, includeAnchors, loadFilteredParts])
+  }, [templateUrl, includingLabels, includeAnchors, dropRules])
 
   const handleTogglePreview = async () => {
     const next = !previewOpen
@@ -371,18 +347,18 @@ const App = () => {
       }
       if (disabledLabels.length) {
         // First load to get selectable labels, then compute included = selectable - disabled
-        const { selectableLabels } = await loadFilteredParts(effectiveBase, [], { skipAutoSelect: true, forceAutoSelect: true })
+        const { selectableLabels } = await loadFilteredPartsService(effectiveBase, [], [], { includeAnchors })
         const disabledSet = new Set(disabledLabels)
         const included = selectableLabels.filter(l => !disabledSet.has(l))
         setIncludingLabels(included)
         // Load again with the computed included labels to reflect in preview and state
-        await loadFilteredParts(effectiveBase, included, { skipAutoSelect: true })
+        await handleLoadTemplate(effectiveBase)
         lastLoadedBaseUrlRef.current = effectiveBase
         if (previewOpen) await refreshPreview(included)
       } else {
         // Backward compat: context with selected_labels
         setIncludingLabels(loadedLabels)
-        await loadFilteredParts(effectiveBase, loadedLabels, { skipAutoSelect: true })
+        await handleLoadTemplate(effectiveBase)
         lastLoadedBaseUrlRef.current = effectiveBase
         if (previewOpen) await refreshPreview()
       }
@@ -721,13 +697,4 @@ function formatDuration(ms: number): string {
 }
 
 
-function toDropMap(rules: Array<{ partFile: string; sectionTitle: string }>): Record<string, string[]> {
-  const map: Record<string, string[]> = {}
-  for (const r of rules) {
-    const title = r.sectionTitle?.trim()
-    if (!r.partFile || !title) continue
-    if (!map[r.partFile]) map[r.partFile] = []
-    if (!map[r.partFile].includes(title)) map[r.partFile].push(title)
-  }
-  return map
-}
+// toDropMap moved to utils/dropRules

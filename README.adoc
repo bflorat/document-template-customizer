@@ -35,7 +35,9 @@ TIP: sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style)
 
 * `multi_values_labels` (optional): used to define available values for multi-values labels (like `detail_level::overview`,`detail_level::in-depth`, ...).
 
-* `files_imported_into_blank_templates` allows to import automatically static resources into the produced blank template. The `base_dir` key is mandatory for every entry. Each file path is resolved relative to `base_dir` (itself relative to the README.adoc location) and will be placed in the blank template under the same relative path.
+* `files_imported_into_blank_templates` imports static resources into the produced blank template only. Each entry uses `src_dir` (mandatory) and optional `dest_dir`.
+
+* `files_imported_into_templates` works the same way but targets the resulting full templates (the `template/` folder in the generated archive).
 
 ### Sample full `base-template-manifest.yaml`
 
@@ -56,13 +58,19 @@ multi_values_labels:
   - name: project_size
     available_values: [small, medium, large]
 files_imported_into_blank_templates:
-  - base_dir: blank-templates
+  - src_dir: blank-templates
     files:
       - file
       - README.adoc
-  - base_dir: blank-templates/resources
+  - src_dir: blank-templates/resources
     files:
       - myimage.png
+files_imported_into_templates:
+  - src_dir: template-assets
+    dest_dir: assets
+    files:
+      - css/main.css
+      - images/logo.png
 ```
 
 ## Sections metadata

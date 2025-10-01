@@ -1,5 +1,8 @@
 export function normalizeBaseDir(baseDir: string): string {
-  return String(baseDir || '').trim().replace(/\/+$/, '').replace(/^\/+/, '')
+  const s = String(baseDir || '').trim().replace(/\/+$/, '').replace(/^\/+/, '')
+  // Treat "." as repository root
+  if (s === '.' || s === './') return ''
+  return s
 }
 
 export function computeZipRel(baseDir: string, relPath: string): { urlPath: string; zipRel: string } {
@@ -10,4 +13,3 @@ export function computeZipRel(baseDir: string, relPath: string): { urlPath: stri
   const zipRel = baseSuffix ? `${baseSuffix}/${path}` : path
   return { urlPath, zipRel }
 }
-
