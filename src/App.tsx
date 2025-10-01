@@ -206,7 +206,7 @@ const App = () => {
         }
       }
 
-      // Import additional files into resulting full template as declared in manifest
+      // Import additional files into resulting filtered template as declared in manifest
       if (templateImportGroups && templateImportGroups.length) {
         const normalized = baseUrl.replace(/\/+$/, '')
         const results: Array<{ path: string; ok: boolean }> = []
@@ -626,7 +626,7 @@ const App = () => {
                             handleSectionToggle(part.file, 'full', (event.target as HTMLDetailsElement).open)
                           }
                         >
-                          <summary>Full template</summary>
+                          <summary>Filtered template</summary>
                           <pre>{part.templateContent.trim() ? part.templateContent : '(blank)'}</pre>
                         </details>
                       </div>

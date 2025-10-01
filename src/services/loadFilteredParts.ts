@@ -35,7 +35,7 @@ export async function loadFilteredParts(
     .filter(label => !label.endsWith('::*'))
     .sort((a, b) => compareLabels(a, b, labelOrder))
 
-  // Compute effective labels: none OR all selected means keep full template
+  // Compute effective labels: none OR all selected means keep filtered template
   const selectedSet = new Set(labelsToInclude)
   const isAllSelected = labelsToInclude.length > 0 &&
     labelsToInclude.length === selectableLabels.length &&

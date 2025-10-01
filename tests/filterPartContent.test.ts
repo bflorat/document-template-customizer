@@ -84,7 +84,7 @@ describe("filterPartContent", () => {
     expect(result.templateContent).not.toContain("## Introduction");
   });
 
-  it("keeps an unlabeled section when no labels are selected (full template)", () => {
+  it("keeps an unlabeled section when no labels are selected (filtered template)", () => {
     const view = `# Root\n\n## Unlabeled\nBody`;
     const result = filterPartContent(view, { includeLabels: [] });
     expect(result.templateContent).toContain("## Unlabeled");

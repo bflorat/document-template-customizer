@@ -10,7 +10,7 @@ Any template following a simple manifest is supported, not only our owns.
 ## Common use cases
 
 . An expert (typically an *Enterprise Architect*) selects or writes a base template. This base template is usually organization-wide.
-. Another expert (typically a *Senior Solution Architect*) creates a customized, curated template for one or several similar projects. This includes both a *full template with explanations* and *blank documents* to be filled (can be partially pre-filled).
+. Another expert (typically a *Senior Solution Architect*) creates a customized, curated template for one or several similar projects. This includes both a *filtered resulting template with explanations* and *blank documents* to be filled (can be partially pre-filled).
 . The **single project architect** or skilled team member then finishes to fill the *blank document*, guided by the explanations in the customized template.
 
 ## Installation
@@ -37,7 +37,7 @@ TIP: sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style)
 
 * `files_imported_into_blank_templates` imports static resources into the produced blank template only. Each entry uses `src_dir` and `dest_dir` (both mandatory). Use `dest_dir: .` to place files at the root of `blank-template/`.
 
-* `files_imported_into_templates` works the same way but targets the resulting full templates (the `template/` folder in the generated archive). Use `dest_dir: .` for the root of `template/`.
+* `files_imported_into_templates` works the same way but targets the resulting filtered templates (the `template/` folder in the generated archive). Use `dest_dir: .` for the root of `template/`.
 
 ### Sample full `base-template-manifest.yaml`
 
