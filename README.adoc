@@ -28,7 +28,7 @@ NOTE: This application is a static single‑page app (SPA) with no server‑side
 
 * The template must be written in **https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/[Asciidoc]** 
 
-TIP: sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style) headings.
+TIP: Sections can start with either `=` (AsciiDoc-style) or `#` (Markdown-style) headings.
 
 * A **`README.adoc`** file must be present at the root of the base template URL, providing an introduction and links to the document parts.
 
