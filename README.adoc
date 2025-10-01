@@ -107,7 +107,7 @@ NOTE: IDs are optional and only needed if a section will be linked to. They can 
 ** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Their finite set of available values must be defined in the manifest under `multi_values_labels[].available_values`. Only values defined in the manifest are recognized (they are not auto-discovered from sections). Their order is preserved and used for display/sorting.
 * `link_to`: One or more target section ids to reference. Automatically inserts a `TIP: See also …` line after the heading in both template and blank outputs. The text is localized using `language` from the manifest (e.g., fr → `Voir aussi`). Use a single id string or an array. Cross-document `xref:` links are generated when the target id belongs to another part.
 
-TIP: See many examples in https://github.com/bflorat/architecture-document-template[this base template].
+TIP: See many examples in https://github.com/bflorat/architecture-document-template/blob/master/view-application.adoc[this base template].
 
 
 ## Matching rules
