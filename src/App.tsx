@@ -36,6 +36,7 @@ const App = () => {
   const [dropRules, setDropRules] = useState<Array<{ id: string; partFile: string; sectionTitle: string }>>([])
   const [partNamesByFile, setPartNamesByFile] = useState<Record<string, string>>({})
   const [includeAnchors, setIncludeAnchors] = useState(true)
+  const [exportMode, setExportMode] = useState<'both' | 'blank' | 'full'>('both')
   const contextFileInputRef = useRef<HTMLInputElement | null>(null)
   const lastLoadedBaseUrlRef = useRef<string | null>(null)
 
@@ -163,20 +164,20 @@ const App = () => {
       const zip = new JSZip()
 
       for (const part of filteredParts) {
-        if (part.templateContent.trim()) {
+        if (exportMode !== 'blank' && part.templateContent.trim()) {
           zip.file(`template/${part.file}`, part.templateContent)
         }
-        if (part.blankContent.trim()) {
+        if (exportMode !== 'full' && part.blankContent.trim()) {
           zip.file(`blank-template/${part.file}`, part.blankContent)
         }
       }
 
-      if (fetchedReadme?.content) {
+      if (exportMode !== 'blank' && fetchedReadme?.content) {
         zip.file(`template/${fetchedReadme.file}`, fetchedReadme.content)
       }
 
       // Import additional files into blank template as declared in manifest
-      if (importGroups && importGroups.length) {
+      if (exportMode !== 'full' && importGroups && importGroups.length) {
         const normalized = baseUrl.replace(/\/+$/, '')
         const results: Array<{ path: string; ok: boolean }> = []
         for (const group of importGroups) {
@@ -207,7 +208,7 @@ const App = () => {
       }
 
       // Import additional files into resulting filtered template as declared in manifest
-      if (templateImportGroups && templateImportGroups.length) {
+      if (exportMode !== 'blank' && templateImportGroups && templateImportGroups.length) {
         const normalized = baseUrl.replace(/\/+$/, '')
         const results: Array<{ path: string; ok: boolean }> = []
         for (const group of templateImportGroups) {
@@ -592,6 +593,39 @@ const App = () => {
                 Refresh preview
               </button>
             ) : null}
+            <div className="output-mode" style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span>Output:</span>
+              <label className="radio">
+                <input
+                  type="radio"
+                  name="output-mode"
+                  value="blank"
+                  checked={exportMode === 'blank'}
+                  onChange={() => setExportMode('blank')}
+                />
+                <span>Blank only</span>
+              </label>
+              <label className="radio">
+                <input
+                  type="radio"
+                  name="output-mode"
+                  value="full"
+                  checked={exportMode === 'full'}
+                  onChange={() => setExportMode('full')}
+                />
+                <span>Template only</span>
+              </label>
+              <label className="radio">
+                <input
+                  type="radio"
+                  name="output-mode"
+                  value="both"
+                  checked={exportMode === 'both'}
+                  onChange={() => setExportMode('both')}
+                />
+                <span>Both</span>
+              </label>              
+            </div>
           </div>
           {previewOpen ? (
             <div className="preview-body">
@@ -604,6 +638,8 @@ const App = () => {
               ) : (
                 previewParts.map(part => {
                   const state = expandedParts[part.file] ?? { blank: true, full: false }
+                  const showBlank = exportMode !== 'full'
+                  const showFull = exportMode !== 'blank'
                   return (
                     <div key={part.file} className="preview-view">
                       <h4>
@@ -611,24 +647,28 @@ const App = () => {
                         <span className="preview-file"> ({part.file})</span>
                       </h4>
                       <div className="preview-sections">
-                        <details
-                          open={state.blank}
-                          onToggle={event =>
-                            handleSectionToggle(part.file, 'blank', (event.target as HTMLDetailsElement).open)
-                          }
-                        >
-                          <summary>Blank template</summary>
-                          <pre>{part.blankContent.trim() ? part.blankContent : '(blank)'}</pre>
-                        </details>
-                        <details
-                          open={state.full}
-                          onToggle={event =>
-                            handleSectionToggle(part.file, 'full', (event.target as HTMLDetailsElement).open)
-                          }
-                        >
-                          <summary>Filtered template</summary>
-                          <pre>{part.templateContent.trim() ? part.templateContent : '(blank)'}</pre>
-                        </details>
+                        {showBlank ? (
+                          <details
+                            open={state.blank}
+                            onToggle={event =>
+                              handleSectionToggle(part.file, 'blank', (event.target as HTMLDetailsElement).open)
+                            }
+                          >
+                            <summary>Blank template</summary>
+                            <pre>{part.blankContent.trim() ? part.blankContent : '(blank)'}</pre>
+                          </details>
+                        ) : null}
+                        {showFull ? (
+                          <details
+                            open={state.full}
+                            onToggle={event =>
+                              handleSectionToggle(part.file, 'full', (event.target as HTMLDetailsElement).open)
+                            }
+                          >
+                            <summary>Filtered template</summary>
+                            <pre>{part.templateContent.trim() ? part.templateContent : '(blank)'}</pre>
+                          </details>
+                        ) : null}
                       </div>
                     </div>
                   )
