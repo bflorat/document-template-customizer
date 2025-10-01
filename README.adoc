@@ -34,6 +34,8 @@ TIP: sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style)
 
 * A **`base-template-manifest.yaml`** file must be present at the root of the base template URL. A sample is provided below. 
 
+## Base Template Manifest
+
 * `language` : IETF BCP‑47 language code (e.g., `en`, `fr`, `es`, `de`, `pt`, `it`) used to localize the “See also” text inserted for `link_to` (default to English).
 
 * `multi_values_labels` (optional): used to define available values for multi-values labels (like `detail_level::overview`,`detail_level::in-depth`, ...) in addition to those discovered automatically in the base model.
