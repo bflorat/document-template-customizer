@@ -71,6 +71,19 @@ files_imported_into_templates:
     files:
       - css/main.css
       - images/logo.png
+  # Keep the 'diagrammes' directory structure in the template/ archive
+  - src_dir: diagrammes
+    dest_dir: diagrammes
+    files:
+      - archi-applicative-detaillee-dynamique.puml
+      - archi-applicative-detaillee-inventaire.puml
+      - archi-applicative-generale.puml
+      - infrastructure.puml
+      - roles.svg
+      - archi-applicative-detaillee-dynamique.svg
+      - archi-applicative-detaillee-inventaire.svg
+      - archi-applicative-generale.svg
+      - infrastructure.svg
 ```
 
 ## Sections metadata
