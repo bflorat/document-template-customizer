@@ -35,9 +35,9 @@ TIP: sections can start with either `#` (Markdown-style) or `=` (AsciiDoc-style)
 
 * `multi_values_labels` (optional): used to define available values for multi-values labels (like `detail_level::overview`,`detail_level::in-depth`, ...).
 
-* `files_imported_into_blank_templates` imports static resources into the produced blank template only. Each entry uses `src_dir` (mandatory) and optional `dest_dir`.
+* `files_imported_into_blank_templates` imports static resources into the produced blank template only. Each entry uses `src_dir` and `dest_dir` (both mandatory). Use `dest_dir: .` to place files at the root of `blank-template/`.
 
-* `files_imported_into_templates` works the same way but targets the resulting full templates (the `template/` folder in the generated archive).
+* `files_imported_into_templates` works the same way but targets the resulting full templates (the `template/` folder in the generated archive). Use `dest_dir: .` for the root of `template/`.
 
 ### Sample full `base-template-manifest.yaml`
 
@@ -59,10 +59,12 @@ multi_values_labels:
     available_values: [small, medium, large]
 files_imported_into_blank_templates:
   - src_dir: blank-templates
+    dest_dir: .
     files:
       - file
       - README.adoc
   - src_dir: blank-templates/resources
+    dest_dir: .
     files:
       - myimage.png
 files_imported_into_templates:
@@ -71,18 +73,10 @@ files_imported_into_templates:
     files:
       - css/main.css
       - images/logo.png
-  # Keep the 'diagrammes' directory structure in the template/ archive
   - src_dir: diagrammes
     dest_dir: diagrammes
     files:
-      - archi-applicative-detaillee-dynamique.puml
-      - archi-applicative-detaillee-inventaire.puml
-      - archi-applicative-generale.puml
-      - infrastructure.puml
       - roles.svg
-      - archi-applicative-detaillee-dynamique.svg
-      - archi-applicative-detaillee-inventaire.svg
-      - archi-applicative-generale.svg
       - infrastructure.svg
 ```
 

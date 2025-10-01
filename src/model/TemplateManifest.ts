@@ -16,7 +16,7 @@ export interface TemplateManifest {
   // Preferred form: list of import groups using explicit source and destination dirs.
   // - src_dir: mandatory, relative to README.adoc; files paths are relative to src_dir.
   // - dest_dir: optional, destination subfolder inside the zip ('' or '.' means root of target: blank-template/ or template/)
-  files_imports?: Array<{ src_dir: string; dest_dir?: string; files: string[] }>;
+  files_imports?: Array<{ src_dir: string; dest_dir: string; files: string[] }>;
   // Preferred form for the resulting templates (full templates)
-  files_imports_templates?: Array<{ src_dir: string; dest_dir?: string; files: string[] }>;
+  files_imports_templates?: Array<{ src_dir: string; dest_dir: string; files: string[] }>;
 }

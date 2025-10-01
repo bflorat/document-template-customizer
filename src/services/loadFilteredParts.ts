@@ -13,8 +13,8 @@ export type LoadFilteredPartsResult = {
   selectableLabels: string[]
   availableSectionsByPart: Record<string, string[]>
   partNamesByFile: Record<string, string>
-  importGroups: Array<{ srcDir: string; destDir?: string; files: string[] }>
-  templateImportGroups: Array<{ srcDir: string; destDir?: string; files: string[] }>
+  importGroups: Array<{ srcDir: string; destDir: string; files: string[] }>
+  templateImportGroups: Array<{ srcDir: string; destDir: string; files: string[] }>
 }
 
 export async function loadFilteredParts(
@@ -55,23 +55,23 @@ export async function loadFilteredParts(
   const partNamesByFile = Object.fromEntries(result.metadata.data.parts.map(p => [p.file, p.name]))
 
   // Build import groups from manifest
-  const importGroups: Array<{ srcDir: string; destDir?: string; files: string[] }> = []
+  const importGroups: Array<{ srcDir: string; destDir: string; files: string[] }> = []
   if (Array.isArray(result.metadata.data.files_imports)) {
     result.metadata.data.files_imports.forEach(g => {
       if (!g) return
       const src = String((g as any).src_dir || '').trim()
-      const dest = (g as any).dest_dir ? String((g as any).dest_dir).trim() : undefined
+      const dest = String((g as any).dest_dir || '').trim()
       const files = Array.isArray((g as any).files) ? (g as any).files.filter(Boolean) : []
       if (src && files) importGroups.push({ srcDir: src, destDir: dest, files })
     })
   }
 
-  const templateImportGroups: Array<{ srcDir: string; destDir?: string; files: string[] }> = []
+  const templateImportGroups: Array<{ srcDir: string; destDir: string; files: string[] }> = []
   if (Array.isArray(result.metadata.data.files_imports_templates)) {
     result.metadata.data.files_imports_templates.forEach(g => {
       if (!g) return
       const src = String((g as any).src_dir || '').trim()
-      const dest = (g as any).dest_dir ? String((g as any).dest_dir).trim() : undefined
+      const dest = String((g as any).dest_dir || '').trim()
       const files = Array.isArray((g as any).files) ? (g as any).files.filter(Boolean) : []
       if (src && files) templateImportGroups.push({ srcDir: src, destDir: dest, files })
     })

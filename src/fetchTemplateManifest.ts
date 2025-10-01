@@ -116,8 +116,21 @@ export async function fetchTemplateManifest(
       if (!Array.isArray(filesRaw)) {
         throw new Error(`${label}${where}: files must be an array of strings`)
       }
+      // dest_dir is mandatory. Use '.' to target the root of the output folder
+      if (typeof destRaw !== 'string') {
+        throw new Error(`${label}${where}: dest_dir is mandatory (use '.' for root) and must be a string`)
+      }
+      let dest_dir = String(destRaw).trim()
+      if (dest_dir === '.') {
+        // keep as '.' and handle in consumer
+      } else {
+        // remove surrounding slashes
+        dest_dir = dest_dir.replace(/^\/+|\/+$/g, '')
+        if (!dest_dir) {
+          throw new Error(`${label}${where}: dest_dir cannot be empty; use '.' for root`)
+        }
+      }
       const src_dir = String(srcRaw).trim().replace(/[\/+]+$/, '').replace(/^\/+/, '')
-      const dest_dir = typeof destRaw === 'string' ? String(destRaw).trim() : undefined
       const files = (filesRaw as unknown[])
         .filter((v: unknown): v is string => typeof v === 'string')
         .map((v: string) => v.trim())
@@ -125,7 +138,7 @@ export async function fetchTemplateManifest(
       return { src_dir, dest_dir, files }
     }
 
-    let filesImportsGroups: Array<{ src_dir: string; dest_dir?: string; files: string[] }> | undefined
+    let filesImportsGroups: Array<{ src_dir: string; dest_dir: string; files: string[] }> | undefined
     const rawImports: any = parsed.files_imported_into_blank_templates
     if (rawImports != null) {
       if (Array.isArray(rawImports)) {
@@ -141,7 +154,7 @@ export async function fetchTemplateManifest(
       }
     }
 
-    let filesImportsTemplatesGroups: Array<{ src_dir: string; dest_dir?: string; files: string[] }> | undefined
+    let filesImportsTemplatesGroups: Array<{ src_dir: string; dest_dir: string; files: string[] }> | undefined
     const rawImportsTpl: any = parsed.files_imported_into_templates
     if (rawImportsTpl != null) {
       if (Array.isArray(rawImportsTpl)) {

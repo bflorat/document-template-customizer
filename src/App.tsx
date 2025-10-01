@@ -180,7 +180,8 @@ const App = () => {
         const normalized = baseUrl.replace(/\/+$/, '')
         const results: Array<{ path: string; ok: boolean }> = []
         for (const group of importGroups) {
-          const dest = (group.destDir ?? '').trim().replace(/^[\/]+|[\/]+$/g, '')
+          const destInput = (group.destDir ?? '').trim()
+          const dest = destInput === '.' ? '' : destInput.replace(/^[\/]+|[\/]+$/g, '')
           for (const rel of group.files) {
             const { urlPath, zipRel } = computeZipRel(group.srcDir, String(rel))
             const url = `${normalized}/${urlPath}`
@@ -210,7 +211,8 @@ const App = () => {
         const normalized = baseUrl.replace(/\/+$/, '')
         const results: Array<{ path: string; ok: boolean }> = []
         for (const group of templateImportGroups) {
-          const dest = (group.destDir ?? '').trim().replace(/^[\/]+|[\/]+$/g, '')
+          const destInput = (group.destDir ?? '').trim()
+          const dest = destInput === '.' ? '' : destInput.replace(/^[\/]+|[\/]+$/g, '')
           for (const rel of group.files) {
             const { urlPath, zipRel } = computeZipRel(group.srcDir, String(rel))
             const url = `${normalized}/${urlPath}`

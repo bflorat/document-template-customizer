@@ -13,8 +13,8 @@ vi.mock('../src/fetchTemplateManifest', () => {
         ],
         labels: [ { name: 'level', available_values: ['basic', 'advanced'] } ],
         language: 'en',
-        files_imports: [ { src_dir: 'blank-templates', files: ['README.adoc', 'assets/a.png'] } ],
-        files_imports_templates: [ { src_dir: 'template-assets', files: ['css/main.css'] } ],
+        files_imports: [ { src_dir: 'blank-templates', dest_dir: '.', files: ['README.adoc', 'assets/a.png'] } ],
+        files_imports_templates: [ { src_dir: 'template-assets', dest_dir: 'assets', files: ['css/main.css'] } ],
       }
 
       const content = [
@@ -84,10 +84,10 @@ describe('loadFilteredParts service', () => {
 
     // Import groups
     expect(res.importGroups).toEqual([
-      { srcDir: 'blank-templates', destDir: undefined, files: ['README.adoc', 'assets/a.png'] },
+      { srcDir: 'blank-templates', destDir: '.', files: ['README.adoc', 'assets/a.png'] },
     ])
     expect(res.templateImportGroups).toEqual([
-      { srcDir: 'template-assets', destDir: undefined, files: ['css/main.css'] },
+      { srcDir: 'template-assets', destDir: 'assets', files: ['css/main.css'] },
     ])
 
     // Filtered parts produced, at least one with content
