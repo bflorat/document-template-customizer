@@ -21,6 +21,8 @@ Any template following a simple manifest is supported, not only our owns.
 
 * A NGINX-based Docker image is available https://hub.docker.com/repository/docker/bflorat/document-template-customizer/general[here].
 
+NOTE: This application is a static single‑page app (SPA) with no server‑side processing. Loading the base template, filtering, and ZIP creation all happen in your browser. The hosting server never receives your documents. When you use an internal `base_template_url`, files are fetched directly from your local/network origin and are not uploaded to the Internet.
+
 ## Prerequisites for a Base Template
 
 * The template must be written in **https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/[Asciidoc]** 
