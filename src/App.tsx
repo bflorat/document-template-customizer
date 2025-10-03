@@ -66,12 +66,7 @@ const App = () => {
     }
   }, [])
 
-  // When parts list becomes available, ensure any rule with empty partFile gets a default
-  useEffect(() => {
-    const partFiles = Object.keys(availableSectionsByPart)
-    if (partFiles.length === 0) return
-    setDropRules(prev => prev.map(r => (r.partFile ? r : { ...r, partFile: partFiles[0] })))
-  }, [availableSectionsByPart])
+  // Do not auto-select a part when parts list becomes available; user must choose explicitly
 
   const resetStateForNewBase = () => {
     setIncludingLabels([])
@@ -416,9 +411,10 @@ const App = () => {
     }
   }
 
+  const partSelectRefs = useRef<Record<string, HTMLSelectElement | null>>({})
+
   const handleAddDropRule = () => {
-    const firstPart = Object.keys(availableSectionsByPart)[0] ?? ''
-    const newRule = { id: String(Date.now() + Math.random()), partFile: firstPart, sectionTitle: '' }
+    const newRule = { id: String(Date.now() + Math.random()), partFile: '', sectionTitle: '' }
     setDropRules(prev => [...prev, newRule])
     setLastAddedRuleId(newRule.id)
   }
@@ -446,6 +442,9 @@ const App = () => {
         setFlashRuleIds(prev => { const next = { ...prev }; delete next[lastAddedRuleId]; return next })
       }, 1500)
     }
+    // Focus the Part selector for the newly added rule
+    const sel = partSelectRefs.current[lastAddedRuleId]
+    try { sel?.focus() } catch { /* no-op */ }
   }, [lastAddedRuleId])
 
   // Auto-refresh preview when options affecting preview change and preview is open
@@ -576,6 +575,7 @@ const App = () => {
                           <select
                             value={rule.partFile}
                             onChange={e => handleChangeRulePart(rule.id, e.target.value)}
+                            ref={el => { partSelectRefs.current[rule.id] = el }}
                           >
                             {(!rule.partFile) ? (
                               <option value="" disabled>Select a part</option>
@@ -592,8 +592,9 @@ const App = () => {
                             items={treeItems}
                             value={rule.sectionTitle}
                             onChange={(val) => handleChangeRuleTitle(rule.id, val)}
-                            autoFocus={lastAddedRuleId === rule.id}
-                            defaultOpen={lastAddedRuleId === rule.id}
+                            autoFocus={false}
+                            defaultOpen={false}
+                            disabled={!rule.partFile}
                             onCommit={() => { try { generateBtnRef.current?.focus() } catch { /* no-op */ } }}
                             placeholder="Type or pick a section title"
                           />
@@ -823,7 +824,7 @@ function formatDuration(ms: number): string {
 
 type SectionItem = { title: string; level: number }
 
-function SectionTreeCombo({ items, value, onChange, placeholder, autoFocus, defaultOpen, onCommit }: {
+function SectionTreeCombo({ items, value, onChange, placeholder, autoFocus, defaultOpen, onCommit, disabled }: {
   items: SectionItem[]
   value: string
   onChange: (val: string) => void
@@ -831,6 +832,7 @@ function SectionTreeCombo({ items, value, onChange, placeholder, autoFocus, defa
   autoFocus?: boolean
   defaultOpen?: boolean
   onCommit?: () => void
+  disabled?: boolean
 }) {
   const [open, setOpen] = useState(!!defaultOpen)
   const [query, setQuery] = useState(value)
@@ -860,14 +862,15 @@ function SectionTreeCombo({ items, value, onChange, placeholder, autoFocus, defa
   const filtered = q ? items.filter(i => norm(i.title).includes(q)) : items
 
   return (
-    <div className="combo" ref={ref}>
+    <div className={`combo${disabled ? ' combo--disabled' : ''}`} ref={ref}>
       <input
         type="text"
         className="combo-input"
         value={query}
-        onChange={e => { setQuery(e.target.value); onChange(e.target.value) }}
-        onFocus={() => setOpen(true)}
+        onChange={e => { if (disabled) return; setQuery(e.target.value); onChange(e.target.value) }}
+        onFocus={() => { if (disabled) return; setOpen(true) }}
         onKeyDown={e => {
+          if (disabled) return
           if (e.key === 'Escape') { setOpen(false); return }
           if (e.key === 'Enter') {
             if (filtered.length > 0) {
@@ -882,6 +885,7 @@ function SectionTreeCombo({ items, value, onChange, placeholder, autoFocus, defa
         }}
         placeholder={placeholder}
         ref={inputRef}
+        disabled={!!disabled}
       />
       {open && filtered.length > 0 ? (
         <div className="combo-dropdown">

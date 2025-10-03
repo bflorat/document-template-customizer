@@ -465,6 +465,11 @@ header h1 {
   position: relative;
 }
 
+.combo.combo--disabled .combo-input {
+  background: var(--secondary-bg);
+  cursor: not-allowed;
+}
+
 .combo-input {
   width: 100%;
   padding: 0 0.5rem;
