@@ -1,6 +1,6 @@
 import { fetchTemplateAndParts } from '../fetchTemplateManifest'
 import { buildFilteredPartsFromResult, buildKnownLabelSet, type FilteredPart } from '../generateFilteredParts'
-import { buildAvailableSections as buildAvailableSectionsUtil, buildLabelOrder, compareLabels, definedLabelValues, computeMultiValueNamesFromKnown } from '../utils/labels'
+import { buildAvailableSections as buildAvailableSectionsUtil, buildAvailableSectionsTreeList, buildLabelOrder, compareLabels, definedLabelValues, computeMultiValueNamesFromKnown } from '../utils/labels'
 import { toDropMap } from '../utils/dropRules'
 
 export type LoadFilteredPartsOptions = {
@@ -12,6 +12,7 @@ export type LoadFilteredPartsResult = {
   readme: { file: string; content: string }
   selectableLabels: string[]
   availableSectionsByPart: Record<string, string[]>
+  availableSectionsTreeByPart: Record<string, Array<{ title: string; level: number }>>
   partNamesByFile: Record<string, string>
   importGroups: Array<{ srcDir: string; destDir: string; files: string[] }>
   templateImportGroups: Array<{ srcDir: string; destDir: string; files: string[] }>
@@ -56,6 +57,7 @@ export async function loadFilteredParts(
 
   // Build helper maps
   const availableSectionsByPart = buildAvailableSectionsUtil(result)
+  const availableSectionsTreeByPart = buildAvailableSectionsTreeList(result)
   const partNamesByFile = Object.fromEntries(result.metadata.data.parts.map(p => [p.file, p.name]))
 
   // Build import groups from manifest
@@ -86,6 +88,7 @@ export async function loadFilteredParts(
     readme: result.readme,
     selectableLabels,
     availableSectionsByPart,
+    availableSectionsTreeByPart,
     partNamesByFile,
     importGroups,
     templateImportGroups,

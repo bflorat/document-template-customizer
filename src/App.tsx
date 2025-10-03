@@ -33,6 +33,7 @@ const App = () => {
   const [templateLoadInfo, setTemplateLoadInfo] = useState<TemplateLoadInfo>({ state: 'idle' })
   const [didAutoSelectAll, setDidAutoSelectAll] = useState(false)
   const [availableSectionsByPart, setAvailableSectionsByPart] = useState<Record<string, string[]>>({})
+  const [availableSectionsTreeByPart, setAvailableSectionsTreeByPart] = useState<Record<string, Array<{ title: string; level: number }>>>({})
   const [dropRules, setDropRules] = useState<Array<{ id: string; partFile: string; sectionTitle: string }>>([])
   const [partNamesByFile, setPartNamesByFile] = useState<Record<string, string>>({})
   const [includeAnchors, setIncludeAnchors] = useState(true)
@@ -110,6 +111,7 @@ const App = () => {
       // Update derived states
       setAvailableLabels(res.selectableLabels)
       setAvailableSectionsByPart(res.availableSectionsByPart)
+      setAvailableSectionsTreeByPart(res.availableSectionsTreeByPart)
       setPartNamesByFile(res.partNamesByFile)
 
       // Auto-select all labels on first load if none provided
@@ -542,8 +544,7 @@ const App = () => {
                 <tbody>
                   {dropRules.map(rule => {
                     const parts = Object.keys(availableSectionsByPart)
-                    const options = availableSectionsByPart[rule.partFile] ?? []
-                    const datalistId = `dl-${rule.id}`
+                    const treeItems = availableSectionsTreeByPart[rule.partFile] ?? []
                     return (
                       <tr key={rule.id}>
                         <td>
@@ -559,18 +560,12 @@ const App = () => {
                           </select>
                         </td>
                         <td>
-                          <input
-                            type="text"
+                          <SectionTreeCombo
+                            items={treeItems}
                             value={rule.sectionTitle}
-                            onChange={e => handleChangeRuleTitle(rule.id, e.target.value)}
-                            list={datalistId}
+                            onChange={(val) => handleChangeRuleTitle(rule.id, val)}
                             placeholder="Type or pick a section title"
                           />
-                          <datalist id={datalistId}>
-                            {options.map(title => (
-                              <option key={title} value={title} />
-                            ))}
-                          </datalist>
                         </td>
                         <td>
                           <button type="button" className="secondary-action icon-only" onClick={() => handleRemoveDropRule(rule.id)} title="Remove">
@@ -793,3 +788,61 @@ function formatDuration(ms: number): string {
 
 
 // toDropMap moved to utils/dropRules
+
+type SectionItem = { title: string; level: number }
+
+function SectionTreeCombo({ items, value, onChange, placeholder }: {
+  items: SectionItem[]
+  value: string
+  onChange: (val: string) => void
+  placeholder?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState(value)
+  const ref = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => { setQuery(value) }, [value])
+
+  useEffect(() => {
+    const onDocMouseDown = (e: MouseEvent) => {
+      if (!ref.current) return
+      if (!ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDocMouseDown)
+    return () => document.removeEventListener('mousedown', onDocMouseDown)
+  }, [])
+
+  const norm = (s: string) => s.toLowerCase()
+  const q = norm(query.trim())
+  const filtered = q ? items.filter(i => norm(i.title).includes(q)) : items
+
+  return (
+    <div className="combo" ref={ref}>
+      <input
+        type="text"
+        className="combo-input"
+        value={query}
+        onChange={e => { setQuery(e.target.value); onChange(e.target.value) }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={e => { if (e.key === 'Escape') setOpen(false) }}
+        placeholder={placeholder}
+      />
+      {open && filtered.length > 0 ? (
+        <div className="combo-dropdown">
+          {filtered.map((item, idx) => (
+            <div
+              key={`${item.title}-${idx}`}
+              className="combo-item"
+              style={{ paddingLeft: Math.max(0, item.level - 1) * 12 + 8 }}
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => { setQuery(item.title); onChange(item.title); setOpen(false) }}
+              title={item.title}
+            >
+              {item.title}
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  )
+}

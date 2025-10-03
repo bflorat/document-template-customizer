@@ -98,3 +98,18 @@ export function buildAvailableSections(result: TemplateWithParts): Record<string
   })
   return map
 }
+
+// Build a flat tree-ordered list with heading level for UI indentation
+export function buildAvailableSectionsTreeList(result: TemplateWithParts): Record<string, Array<{ title: string; level: number }>> {
+  const map: Record<string, Array<{ title: string; level: number }>> = {}
+  const pushOrdered = (acc: Array<{ title: string; level: number }>, section: PartSection) => {
+    acc.push({ title: section.title, level: section.level })
+    section.children.forEach(child => pushOrdered(acc, child))
+  }
+  result.parts.forEach(part => {
+    const list: Array<{ title: string; level: number }> = []
+    part.sections?.forEach(section => pushOrdered(list, section))
+    map[part.file] = list
+  })
+  return map
+}

@@ -439,6 +439,47 @@ header h1 {
   font-size: 0.95rem;
 }
 
+/* Minimal combobox styles */
+.combo {
+  position: relative;
+}
+
+.combo-input {
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  font-size: 1rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--fg);
+}
+
+.combo-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--card-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  z-index: 20;
+}
+
+.combo-item {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.combo-item:hover {
+  background: var(--secondary-bg-hover);
+}
+
 .preview-file {
   font-weight: 400;
   color: var(--muted);
