@@ -43,6 +43,7 @@ const App = () => {
   const [exportMode, setExportMode] = useState<'both' | 'blank' | 'full'>('both')
   const [copyStatus, setCopyStatus] = useState<Record<string, 'copied' | 'error'>>({})
   const contextFileInputRef = useRef<HTMLInputElement | null>(null)
+  const generateBtnRef = useRef<HTMLButtonElement | null>(null)
   const lastLoadedBaseUrlRef = useRef<string | null>(null)
 
   // Prefill base URL from ?base_template_url=... (supports legacy ?base_url=...)
@@ -593,6 +594,7 @@ const App = () => {
                             onChange={(val) => handleChangeRuleTitle(rule.id, val)}
                             autoFocus={lastAddedRuleId === rule.id}
                             defaultOpen={lastAddedRuleId === rule.id}
+                            onCommit={() => { try { generateBtnRef.current?.focus() } catch { /* no-op */ } }}
                             placeholder="Type or pick a section title"
                           />
                         </td>
@@ -761,6 +763,7 @@ const App = () => {
           onClick={() => { void handleGenerate() }}
           disabled={templateLoadInfo.state !== 'loaded' || isGenerating}
           title={templateLoadInfo.state !== 'loaded' ? 'Load a base template first' : undefined}
+          ref={generateBtnRef}
         >
           {isGenerating ? '⏳ Generating…' : '🚀 Generate your template'}
         </button>
@@ -820,13 +823,14 @@ function formatDuration(ms: number): string {
 
 type SectionItem = { title: string; level: number }
 
-function SectionTreeCombo({ items, value, onChange, placeholder, autoFocus, defaultOpen }: {
+function SectionTreeCombo({ items, value, onChange, placeholder, autoFocus, defaultOpen, onCommit }: {
   items: SectionItem[]
   value: string
   onChange: (val: string) => void
   placeholder?: string
   autoFocus?: boolean
   defaultOpen?: boolean
+  onCommit?: () => void
 }) {
   const [open, setOpen] = useState(!!defaultOpen)
   const [query, setQuery] = useState(value)
@@ -863,7 +867,19 @@ function SectionTreeCombo({ items, value, onChange, placeholder, autoFocus, defa
         value={query}
         onChange={e => { setQuery(e.target.value); onChange(e.target.value) }}
         onFocus={() => setOpen(true)}
-        onKeyDown={e => { if (e.key === 'Escape') setOpen(false) }}
+        onKeyDown={e => {
+          if (e.key === 'Escape') { setOpen(false); return }
+          if (e.key === 'Enter') {
+            if (filtered.length > 0) {
+              const next = filtered[0].title
+              setQuery(next)
+              onChange(next)
+              setOpen(false)
+              onCommit?.()
+              e.preventDefault()
+            }
+          }
+        }}
         placeholder={placeholder}
         ref={inputRef}
       />
@@ -875,7 +891,7 @@ function SectionTreeCombo({ items, value, onChange, placeholder, autoFocus, defa
               className="combo-item"
               style={{ paddingLeft: Math.max(0, item.level - 1) * 12 + 8 }}
               onMouseDown={e => e.preventDefault()}
-              onClick={() => { setQuery(item.title); onChange(item.title); setOpen(false) }}
+              onClick={() => { setQuery(item.title); onChange(item.title); setOpen(false); onCommit?.() }}
               title={item.title}
             >
               {item.title}

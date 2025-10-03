@@ -467,12 +467,13 @@ header h1 {
 
 .combo-input {
   width: 100%;
-  padding: 0.45rem 0.5rem;
+  padding: 0 0.5rem;
   font-size: 1rem;
   border: 1px solid var(--input-border);
   border-radius: 4px;
   background: var(--card-bg);
   color: var(--fg);
+  height: 2.2rem;
 }
 
 .combo-dropdown {
@@ -499,6 +500,22 @@ header h1 {
 
 .combo-item:hover {
   background: var(--secondary-bg-hover);
+}
+
+/* Ensure consistent widget height in drop rules rows */
+.drop-rules-table select {
+  height: 2.2rem;
+  padding: 0 0.5rem;
+  font-size: 1rem;
+}
+
+.drop-rules-table .secondary-action.icon-only {
+  height: 2.2rem;
+  width: 2.2rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .preview-file {
