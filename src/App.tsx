@@ -62,6 +62,13 @@ const App = () => {
     }
   }, [])
 
+  // When parts list becomes available, ensure any rule with empty partFile gets a default
+  useEffect(() => {
+    const partFiles = Object.keys(availableSectionsByPart)
+    if (partFiles.length === 0) return
+    setDropRules(prev => prev.map(r => (r.partFile ? r : { ...r, partFile: partFiles[0] })))
+  }, [availableSectionsByPart])
+
   const resetStateForNewBase = () => {
     setIncludingLabels([])
     setDidAutoSelectAll(false)
