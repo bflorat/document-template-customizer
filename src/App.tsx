@@ -37,6 +37,7 @@ const App = () => {
   const [partNamesByFile, setPartNamesByFile] = useState<Record<string, string>>({})
   const [includeAnchors, setIncludeAnchors] = useState(true)
   const [exportMode, setExportMode] = useState<'both' | 'blank' | 'full'>('both')
+  const [copyStatus, setCopyStatus] = useState<Record<string, 'copied' | 'error'>>({})
   const contextFileInputRef = useRef<HTMLInputElement | null>(null)
   const lastLoadedBaseUrlRef = useRef<string | null>(null)
 
@@ -142,6 +143,34 @@ const App = () => {
   }
 
   // loadFilteredParts moved to services; use it directly where needed
+
+  const copyToClipboard = async (key: string, text: string) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        // Fallback using a temporary textarea
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.left = '-9999px'
+        document.body.appendChild(ta)
+        ta.focus()
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+      }
+      setCopyStatus(prev => ({ ...prev, [key]: 'copied' }))
+      window.setTimeout(() => {
+        setCopyStatus(prev => { const next = { ...prev }; delete next[key]; return next })
+      }, 1500)
+    } catch {
+      setCopyStatus(prev => ({ ...prev, [key]: 'error' }))
+      window.setTimeout(() => {
+        setCopyStatus(prev => { const next = { ...prev }; delete next[key]; return next })
+      }, 2000)
+    }
+  }
 
   const handleGenerate = async () => {
     if (isGenerating) return
@@ -654,7 +683,19 @@ const App = () => {
                               handleSectionToggle(part.file, 'blank', (event.target as HTMLDetailsElement).open)
                             }
                           >
-                            <summary>Blank template</summary>
+                            <summary style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                              <span>Blank template</span>
+                              <button
+                                type="button"
+                                className="secondary-action icon-only"
+                                title={copyStatus[`${part.file}::blank`] === 'copied' ? 'Copied!' : copyStatus[`${part.file}::blank`] === 'error' ? 'Copy failed' : 'Copy content'}
+                                aria-label="Copy blank content"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); void copyToClipboard(`${part.file}::blank`, part.blankContent) }}
+                                disabled={!part.blankContent.trim()}
+                              >
+                                📋
+                              </button>
+                            </summary>
                             <pre>{part.blankContent.trim() ? part.blankContent : '(blank)'}</pre>
                           </details>
                         ) : null}
@@ -665,7 +706,19 @@ const App = () => {
                               handleSectionToggle(part.file, 'full', (event.target as HTMLDetailsElement).open)
                             }
                           >
-                            <summary>Filtered template</summary>
+                            <summary style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                              <span>Filtered template</span>
+                              <button
+                                type="button"
+                                className="secondary-action icon-only"
+                                title={copyStatus[`${part.file}::full`] === 'copied' ? 'Copied!' : copyStatus[`${part.file}::full`] === 'error' ? 'Copy failed' : 'Copy content'}
+                                aria-label="Copy filtered content"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); void copyToClipboard(`${part.file}::full`, part.templateContent) }}
+                                disabled={!part.templateContent.trim()}
+                              >
+                                📋
+                              </button>
+                            </summary>
                             <pre>{part.templateContent.trim() ? part.templateContent : '(blank)'}</pre>
                           </details>
                         ) : null}
