@@ -394,6 +394,17 @@ header h1 {
   text-align: left;
 }
 
+.muted { color: var(--muted); font-weight: 500; }
+
+@keyframes rowFlash {
+  0% { background-color: rgba(180, 215, 255, 0.6); }
+  100% { background-color: transparent; }
+}
+
+.row-flash {
+  animation: rowFlash 1.5s ease-out 1;
+}
+
 .drop-rules-table th {
   font-weight: 600;
   color: var(--fg);

@@ -35,6 +35,9 @@ const App = () => {
   const [availableSectionsByPart, setAvailableSectionsByPart] = useState<Record<string, string[]>>({})
   const [availableSectionsTreeByPart, setAvailableSectionsTreeByPart] = useState<Record<string, Array<{ title: string; level: number }>>>({})
   const [dropRules, setDropRules] = useState<Array<{ id: string; partFile: string; sectionTitle: string }>>([])
+  const [lastAddedRuleId, setLastAddedRuleId] = useState<string | null>(null)
+  const [flashRuleIds, setFlashRuleIds] = useState<Record<string, boolean>>({})
+  const ruleRowRefs = useRef<Record<string, HTMLTableRowElement | null>>({})
   const [partNamesByFile, setPartNamesByFile] = useState<Record<string, string>>({})
   const [includeAnchors, setIncludeAnchors] = useState(true)
   const [exportMode, setExportMode] = useState<'both' | 'blank' | 'full'>('both')
@@ -416,6 +419,7 @@ const App = () => {
     const firstPart = Object.keys(availableSectionsByPart)[0] ?? ''
     const newRule = { id: String(Date.now() + Math.random()), partFile: firstPart, sectionTitle: '' }
     setDropRules(prev => [...prev, newRule])
+    setLastAddedRuleId(newRule.id)
   }
 
   const handleRemoveDropRule = (id: string) => {
@@ -429,6 +433,19 @@ const App = () => {
   const handleChangeRuleTitle = (id: string, title: string) => {
     setDropRules(prev => prev.map(r => (r.id === id ? { ...r, sectionTitle: title } : r)))
   }
+
+  // When a rule is added: scroll into view, flash highlight, and auto-open combobox
+  useEffect(() => {
+    if (!lastAddedRuleId) return
+    const row = ruleRowRefs.current[lastAddedRuleId]
+    if (row) {
+      try { row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) } catch { /* no-op */ }
+      setFlashRuleIds(prev => ({ ...prev, [lastAddedRuleId]: true }))
+      window.setTimeout(() => {
+        setFlashRuleIds(prev => { const next = { ...prev }; delete next[lastAddedRuleId]; return next })
+      }, 1500)
+    }
+  }, [lastAddedRuleId])
 
   // Auto-refresh preview when options affecting preview change and preview is open
   useEffect(() => {
@@ -533,7 +550,7 @@ const App = () => {
 
         <section className="drop-rules-panel">
           <div className="drop-header">
-            <h3>🧹 Drop specific sections (optional)</h3>
+            <h3>🧹 Drop specific sections (optional) <span className="muted">({dropRules.length})</span></h3>
             <button type="button" className="secondary-action" onClick={handleAddDropRule}>Add item</button>
           </div>
           <div className="drop-table-wrapper">
@@ -553,7 +570,7 @@ const App = () => {
                     const parts = Object.keys(availableSectionsByPart)
                     const treeItems = availableSectionsTreeByPart[rule.partFile] ?? []
                     return (
-                      <tr key={rule.id}>
+                      <tr key={rule.id} ref={el => { ruleRowRefs.current[rule.id] = el }} className={flashRuleIds[rule.id] ? 'row-flash' : undefined}>
                         <td>
                           <select
                             value={rule.partFile}
@@ -571,6 +588,8 @@ const App = () => {
                             items={treeItems}
                             value={rule.sectionTitle}
                             onChange={(val) => handleChangeRuleTitle(rule.id, val)}
+                            autoFocus={lastAddedRuleId === rule.id}
+                            defaultOpen={lastAddedRuleId === rule.id}
                             placeholder="Type or pick a section title"
                           />
                         </td>
@@ -798,15 +817,18 @@ function formatDuration(ms: number): string {
 
 type SectionItem = { title: string; level: number }
 
-function SectionTreeCombo({ items, value, onChange, placeholder }: {
+function SectionTreeCombo({ items, value, onChange, placeholder, autoFocus, defaultOpen }: {
   items: SectionItem[]
   value: string
   onChange: (val: string) => void
   placeholder?: string
+  autoFocus?: boolean
+  defaultOpen?: boolean
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(!!defaultOpen)
   const [query, setQuery] = useState(value)
   const ref = useRef<HTMLDivElement | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => { setQuery(value) }, [value])
 
@@ -818,6 +840,13 @@ function SectionTreeCombo({ items, value, onChange, placeholder }: {
     document.addEventListener('mousedown', onDocMouseDown)
     return () => document.removeEventListener('mousedown', onDocMouseDown)
   }, [])
+
+  useEffect(() => {
+    if (autoFocus && inputRef.current) {
+      try { inputRef.current.focus() } catch { /* no-op */ }
+      setOpen(true)
+    }
+  }, [autoFocus])
 
   const norm = (s: string) => s.toLowerCase()
   const q = norm(query.trim())
@@ -833,6 +862,7 @@ function SectionTreeCombo({ items, value, onChange, placeholder }: {
         onFocus={() => setOpen(true)}
         onKeyDown={e => { if (e.key === 'Escape') setOpen(false) }}
         placeholder={placeholder}
+        ref={inputRef}
       />
       {open && filtered.length > 0 ? (
         <div className="combo-dropdown">
