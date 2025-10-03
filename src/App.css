@@ -394,6 +394,16 @@ header h1 {
   text-align: left;
 }
 
+.drop-rules-table td.section-cell {
+  width: 100%;
+}
+
+.drop-rules-table td.drop-actions {
+  width: 1%;
+  white-space: nowrap;
+  padding-left: 1rem; /* extra space between selector and remove button */
+}
+
 .muted { color: var(--muted); font-weight: 500; }
 
 @keyframes rowFlash {

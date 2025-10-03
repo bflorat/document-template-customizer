@@ -576,6 +576,9 @@ const App = () => {
                             value={rule.partFile}
                             onChange={e => handleChangeRulePart(rule.id, e.target.value)}
                           >
+                            {(!rule.partFile) ? (
+                              <option value="" disabled>Select a part</option>
+                            ) : null}
                             {parts.map(file => (
                               <option key={file} value={file}>
                                 {partNamesByFile[file] ?? file}
@@ -583,7 +586,7 @@ const App = () => {
                             ))}
                           </select>
                         </td>
-                        <td>
+                        <td className="section-cell">
                           <SectionTreeCombo
                             items={treeItems}
                             value={rule.sectionTitle}
@@ -593,7 +596,7 @@ const App = () => {
                             placeholder="Type or pick a section title"
                           />
                         </td>
-                        <td>
+                        <td className="drop-actions">
                           <button type="button" className="secondary-action icon-only" onClick={() => handleRemoveDropRule(rule.id)} title="Remove">
                             ✖
                           </button>
