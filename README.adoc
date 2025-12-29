@@ -102,20 +102,16 @@ Metadata fields:
 NOTE: IDs are optional and only needed if a section will be linked to. They can be UUIDs or any other unique string without spaces. Some AsciiDoc rendering engines have issues with linking to anchors containing special characters, so we advise sticking to ASCII characters.
 
 * `labels`: Filtering tags used to filter sections. Values are discovered from usage across parts.
-** Discovered automatically from `//🏷{...}` markers.
 ** Can be a simple flag (e.g., `performance`).
-** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Their finite set of available values must be defined in the manifest under `multi_values_labels[].available_values`. Only values defined in the manifest are recognized (they are not auto-discovered from sections). Their order is preserved and used for display/sorting.
+** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Preset values can optionally be defined in the manifest under `multi_values_labels[].available_values` but others values will be discovered when used from the model sections. Their order is preserved and used for display/sorting.
 * `link_to`: One or more target section ids to reference. Automatically inserts a `TIP: See also …` line after the heading in both template and blank outputs. The text is localized using `language` from the manifest (e.g., fr → `Voir aussi`). Use a single id string or an array. Cross-document `xref:` links are generated when the target id belongs to another part.
 
 TIP: See many examples in https://github.com/bflorat/architecture-document-template/blob/master/view-application.adoc[this base template].
-
 
 ## Matching rules
 
 - If all or no labels are selected, the resulting template is the full base template.
 - Level-1 sections (single `#` or `=`) are always kept.
-
-TIP: Example: if the base template owns a section labeled `["foo","bar"]`, this section will be kept only if both `foo` and `bar` are kept selected.
 
 - If a parent section doesn't match, all its subsections are dropped recursively.
 
@@ -141,7 +137,7 @@ You can write multiple lines here.
 ```
 
 ## Tips
-* The generated zip contains a `customization-context.yaml` file with the generation date, base template URL, the disabled labels (`disabled_labels`) and dropped sections.
+* The generated zip contains a `customization-context.yaml` history file with the generation date, base template URL, the disabled labels (`disabled_labels`) and dropped sections.
 * A base template URL can be pre-filled using the `base_template_url` query param, example: `https://document-template-customizer.florat.net/?base_template_url=https%3A%2F%2Fraw.githubusercontent.com%2Fbflorat%2Fmodele-da%2Frefs%2Fheads%2Fmaster%2F`.
 
 
