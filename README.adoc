@@ -104,7 +104,7 @@ NOTE: IDs are optional and only needed if a section will be linked to. They can 
 * `labels`: Filtering tags used to filter sections. Values are discovered from usage across parts.
 ** Can be a simple flag (e.g., `performance`).
 ** Multi-valued labels use the `name::value` form (e.g., `project_size::large`, `project_size::medium`, `project_size::small`). Preset values can optionally be defined in the manifest under `multi_values_labels[].available_values` but others values will be discovered when used from the model sections. Their order is preserved and used for display/sorting.
-* `link_to`: One or more target section ids to reference. Automatically inserts a `TIP: See also …` line after the heading in both template and blank outputs. The text is localized using `language` from the manifest (e.g., fr → `Voir aussi`). Use a single id string or an array. Cross-document `xref:` links are generated when the target id belongs to another part.
+* `link_to`: One or more target section ids to reference. Can be to a section of another part. Automatically inserts a `TIP: See also …` line after the heading in both template and blank outputs. The text is localized using `language` from the manifest (e.g., fr → `Voir aussi`). Use a single id string or an array. Cross-document `xref:` links are generated when the target id belongs to another part.
 
 TIP: See many examples in https://github.com/bflorat/architecture-document-template/blob/master/view-application.adoc[this base template].
 
